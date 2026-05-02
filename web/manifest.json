@@ -1,6 +1,6 @@
 {
-    "name": "projetsndcp",
-    "short_name": "projetsndcp",
+    "name": "fishapp",
+    "short_name": "fishapp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

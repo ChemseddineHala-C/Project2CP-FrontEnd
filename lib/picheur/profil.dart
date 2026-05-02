@@ -166,9 +166,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Correction : Utilisation correcte de Share
                     Share.share(
                       "🐟 Découvre Let's Fishing !\n"
-                      "L'app du marché de poisson en Algérie.\n\n"
-                      "📱 Télécharge ici :\n"
-                      "https://play.google.com/store/apps/details?id=com.example.projetsndcp",
+                          "L'app du marché de poisson en Algérie.\n\n"
+                          "📱 Télécharge ici :\n"
+                          "https://play.google.com/store/apps/details?id=com.example.projetsndcp",
                       subject: "Let's Fishing App",
                     );
                   },

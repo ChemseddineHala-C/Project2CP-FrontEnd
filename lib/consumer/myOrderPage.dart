@@ -32,10 +32,10 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     return _orders.where((order) {
       // Check if the name contains the search text
       bool matchesSearch = order.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      
+
       // Check if the status matches the selected chip
-      bool matchesFilter = _selectedFilter == "All" || 
-                          order.status == _selectedFilter.toUpperCase();
+      bool matchesFilter = _selectedFilter == "All" ||
+          order.status == _selectedFilter.toUpperCase();
 
       return matchesSearch && matchesFilter;
     }).toList();
@@ -68,68 +68,68 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Search Bar - Styled like your myBatches.dart
-                  TextFormField(
-                    controller: _searchController,
-                    onChanged: _updateSearchQuery,
-                    decoration: InputDecoration(
-                      hintText: "Search batches...",
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(13),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const Block(),
-                  // Filter Row
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        "All",
-                        "Delivered",
-                        "Pending",
-                        "Processing",
-                      ].map((filter) => _buildFilterChip(filter)).toList(),
-                    ),
-                  ),
-                  const Block(),
-                  if (_filteredOrders.isEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'No Orderss found for that name.',
-                        style: TextStyle(
-                          color: Color(0xFF475569),
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  else
-                  // Orders List
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _filteredOrders.length,
-                    itemBuilder: (context, index) =>
-                        OrderCard(order: _filteredOrders[index]),
-                  ),
-                  // Skeleton loader placeholder (as seen in your image)
-                  //const OrderSkeleton(),
-                ],
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Search Bar - Styled like your myBatches.dart
+            TextFormField(
+              controller: _searchController,
+              onChanged: _updateSearchQuery,
+              decoration: InputDecoration(
+                hintText: "Search batches...",
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
+            const Block(),
+            // Filter Row
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  "All",
+                  "Delivered",
+                  "Pending",
+                  "Processing",
+                ].map((filter) => _buildFilterChip(filter)).toList(),
+              ),
+            ),
+            const Block(),
+            if (_filteredOrders.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'No Orderss found for that name.',
+                  style: TextStyle(
+                    color: Color(0xFF475569),
+                    fontSize: 14,
+                  ),
+                ),
+              )
+            else
+            // Orders List
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredOrders.length,
+                itemBuilder: (context, index) =>
+                    OrderCard(order: _filteredOrders[index]),
+              ),
+            // Skeleton loader placeholder (as seen in your image)
+            //const OrderSkeleton(),
+          ],
+        ),
+      ),
     );
   }
 

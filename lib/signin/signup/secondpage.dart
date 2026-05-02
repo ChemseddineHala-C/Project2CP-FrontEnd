@@ -1,12 +1,10 @@
+import 'package:fishapp/signin/signup/sixpage.dart';
+import 'package:fishapp/signin/signup/therdpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:projetsndcp/signin/signup/sixpage.dart';
-import 'package:projetsndcp/signin/signup/therdpage.dart';
 import '../cubit/authcubit.dart';
 import '../cubit/authstate.dart';
 import 'fivepage.dart';
-import '../../picheur/homepage.dart'; // Import de la homepage
-
 class Secondpage extends StatefulWidget {
   const Secondpage({super.key});
 
@@ -39,7 +37,7 @@ class _SecondpageState extends State<Secondpage> {
             Navigator.pushReplacement(
               context,
               // MaterialPageRoute(builder: (_) => RoleSelectionPage()),
-              MaterialPageRoute(builder: (_) => Sixpage()),
+              MaterialPageRoute(builder: (_) => Sixpage( email: state.user['email'] ?? '')),
 
             );
           } else if (state is AuthError) {
@@ -130,18 +128,18 @@ class _SecondpageState extends State<Secondpage> {
         disabledColor: color.withOpacity(0.6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: borderSide),
         onPressed: onPressed,
-        child: showLoader 
-          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue))
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (image != null) ...[
-                  Image.asset(image, height: 24),
-                  const SizedBox(width: 12),
-                ],
-                Text(text, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
-              ],
-            ),
+        child: showLoader
+            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue))
+            : Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (image != null) ...[
+              Image.asset(image, height: 24),
+              const SizedBox(width: 12),
+            ],
+            Text(text, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

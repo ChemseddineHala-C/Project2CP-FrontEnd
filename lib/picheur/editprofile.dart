@@ -72,14 +72,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         title: const Text(
           "Edit Profile",
           style: TextStyle(
-              // color: Color(0xFF011A33),
+            // color: Color(0xFF011A33),
               fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back,
-              // color: Colors.black
+            // color: Colors.black
           ),
         ),
       ),
@@ -97,7 +97,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           if (state is ProfileUpdatedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Profile updated successfully"),
-                  // backgroundColor: Colors.green
+                // backgroundColor: Colors.green
               ),
             );
             Navigator.pop(context);
@@ -105,7 +105,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           if (state is ProfileError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message),
-                  // backgroundColor: Colors.red
+                // backgroundColor: Colors.red
               ),
             );
           }
@@ -156,9 +156,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   backgroundColor:isDark? Colors.white12: Color(0xFFE3F2FD),
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
-                      : (networkImage != null 
-                          ? NetworkImage(networkImage) 
-                          : const NetworkImage('https://via.placeholder.com/150')) as ImageProvider,
+                      : (networkImage != null
+                      ? NetworkImage(networkImage)
+                      : const NetworkImage('https://via.placeholder.com/150')) as ImageProvider,
                 ),
               ),
             ),
@@ -263,19 +263,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
-      child: state is AuthLoading 
-        ? const CircularProgressIndicator(color: Colors.white)
-        : const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.check_circle_outline, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                "Save Changes",
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
+      child: state is AuthLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_outline, color: Colors.white),
+          SizedBox(width: 8),
+          Text(
+            "Save Changes",
+            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
+        ],
+      ),
     );
   }
 

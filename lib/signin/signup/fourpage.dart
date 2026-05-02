@@ -5,7 +5,7 @@ import '../cubit/authstate.dart';
 import 'fivepage.dart';
 
 class Fourpage extends StatefulWidget {
-  final String email; 
+  final String email;
   const Fourpage({super.key, required this.email});
 
   @override

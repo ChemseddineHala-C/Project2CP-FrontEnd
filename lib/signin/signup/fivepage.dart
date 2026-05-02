@@ -1,11 +1,11 @@
+import 'package:fishapp/signin/signup/sixpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:projetsndcp/signin/signup/sixpage.dart';
 import '../cubit/authcubit.dart';
 import '../cubit/authstate.dart';
 
 class Fivepage extends StatefulWidget {
-  final String email; 
+  final String email;
   const Fivepage({super.key, required this.email});
 
   @override
@@ -14,7 +14,7 @@ class Fivepage extends StatefulWidget {
 
 class _FivepageState extends State<Fivepage> {
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false; 
+  bool _isPasswordVisible = false;
 
   bool _hasNumber(String password) {
     return password.contains(RegExp(r'[0-9]'));
@@ -33,15 +33,20 @@ class _FivepageState extends State<Fivepage> {
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
-          if (state is PasswordSentSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Account created successfully!"),
-                backgroundColor: Colors.green, // Vert pour succès
-              ),
-            );
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Sixpage()));
-          } else if (state is AuthError) {
+          // if (state is PasswordSentSuccess) {
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     const SnackBar(
+          //       content: Text("Account created successfully!"),
+          //       backgroundColor: Colors.green, // Vert pour succès
+          //     ),
+          //   );
+          //   Navigator.push(context, MaterialPageRoute(builder: (context) => Sixpage(email: widget.email,)));
+          // }
+          if (state is AuthAuthenticated) {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Sixpage(email: widget.email)));
+          }
+          else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
@@ -105,7 +110,7 @@ class _FivepageState extends State<Fivepage> {
                           if (!isLengthValid) errorMsg = "Password must be 6-20 characters";
                           else if (!hasSymbol) errorMsg = "Password must have at least one symbol";
                           else if (!hasDigit) errorMsg = "Password must have at least one number";
-                          
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(errorMsg),
@@ -123,7 +128,7 @@ class _FivepageState extends State<Fivepage> {
                           : MaterialButton(
                         onPressed: () {
                           Navigator.of(context).push(
-                             MaterialPageRoute(builder: (context) => Sixpage()),
+                            MaterialPageRoute(builder: (context) => Sixpage(email: widget.email,)),
                           );
                         },
                         child: const Text(

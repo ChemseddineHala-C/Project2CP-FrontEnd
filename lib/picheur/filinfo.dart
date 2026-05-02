@@ -163,8 +163,8 @@ class _InfopageState extends State<Infopage> {
                     _label("Expiry Date"),
                     customTextField("mm/dd/yyyy", _expiryController, isDark),
                     const SizedBox(height: 24),
-                    Text("Required Uploads (PDF or JPG)", 
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.cyanAccent : const Color(0xFF033F78))),
+                    Text("Required Uploads (PDF or JPG)",
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.cyanAccent : const Color(0xFF033F78))),
                     const SizedBox(height: 16),
                     _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFile, () => _pickFile(true), isDark),
                     const SizedBox(height: 12),
@@ -205,8 +205,8 @@ class _InfopageState extends State<Infopage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05), 
-            blurRadius: 10
+              color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+              blurRadius: 10
           )
         ],
       ),
@@ -216,9 +216,9 @@ class _InfopageState extends State<Infopage> {
           Row(
             children: [
               CircleAvatar(
-                radius: 15, 
-                backgroundColor: isDark ? const Color(0xFF01A896) : const Color(0xFF033F78), 
-                child: Text(number, style: const TextStyle(color: Colors.white))
+                  radius: 15,
+                  backgroundColor: isDark ? const Color(0xFF01A896) : const Color(0xFF033F78),
+                  child: Text(number, style: const TextStyle(color: Colors.white))
               ),
               const SizedBox(width: 12),
               Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -232,8 +232,8 @@ class _InfopageState extends State<Infopage> {
   }
 
   Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 8), 
-    child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))
   );
 
   Widget _buildUploadTile(IconData icon, String title, File? file, VoidCallback onTap, bool isDark) {
@@ -282,8 +282,8 @@ class _InfopageState extends State<Infopage> {
           children: [
             const TextSpan(text: "By completing setup, you agree to Finder's "),
             TextSpan(
-              text: "Terms of Maritime Service", 
-              style: TextStyle(color: isDark ? Colors.cyanAccent : const Color(0xFF0D2B55), decoration: TextDecoration.underline)
+                text: "Terms of Maritime Service",
+                style: TextStyle(color: isDark ? Colors.cyanAccent : const Color(0xFF0D2B55), decoration: TextDecoration.underline)
             ),
             const TextSpan(text: " and Safety Guidelines."),
           ],

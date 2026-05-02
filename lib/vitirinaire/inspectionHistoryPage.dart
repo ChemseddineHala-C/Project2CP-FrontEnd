@@ -17,12 +17,12 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
 
   // filtring list
   List<InspectionItem> get _filteredInspections =>
-    _inspections.where((item) {
-      if (_selectedFilter == "ALL") return true;
-      return item.status.toLowerCase() == _selectedFilter.toLowerCase();
-    }).toList();
+      _inspections.where((item) {
+        if (_selectedFilter == "ALL") return true;
+        return item.status.toLowerCase() == _selectedFilter.toLowerCase();
+      }).toList();
 
-  
+
 
   @override
   void initState() {
@@ -59,73 +59,73 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
         padding: EdgeInsets.all(16),
         child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
 
-            SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children:
-                          ["ALL", "APPROVED", "REJECTED"]
-                              .map(
-                                (filter) => GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedFilter = filter;
-                                    });
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 8),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _selectedFilter == filter
-                                          ? const Color(0xFF01A896)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      filter,
-                                      style: TextStyle(
-                                        color: _selectedFilter == filter
-                                            ? Colors.white
-                                            : const Color(0xFF334155),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+              ["ALL", "APPROVED", "REJECTED"]
+                  .map(
+                    (filter) => GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedFilter = filter;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _selectedFilter == filter
+                          ? const Color(0xFF01A896)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      filter,
+                      style: TextStyle(
+                        color: _selectedFilter == filter
+                            ? Colors.white
+                            : const Color(0xFF334155),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-
-            Block(),
-
-            Text(
-              "RECENT INSPECTIONS",
-              style: TextStyle(
-                fontFamily: 'Inter',
-                color: Color(0xFF64748B),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
+                ),
+              )
+                  .toList(),
             ),
+          ),
 
-            Block(),
+          Block(),
 
-            _isLoading
+          Text(
+            "RECENT INSPECTIONS",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+
+          Block(),
+
+          _isLoading
               ? Center(child: CircularProgressIndicator())
               : ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount:_filteredInspections.length,
-                  itemBuilder: (context, index) => InspectionCard(
-                    inspection: _filteredInspections[index],
-                  ),
-                ),
-          ],
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount:_filteredInspections.length,
+            itemBuilder: (context, index) => InspectionCard(
+              inspection: _filteredInspections[index],
+            ),
+          ),
+        ],
         ),
       ),
     );
@@ -176,7 +176,7 @@ class InspectionCard extends StatelessWidget {
                   color: _statusColor(),
                 ),
               ),
-              
+
               SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -214,7 +214,7 @@ class InspectionCard extends StatelessWidget {
 
           SizedBox(height: 12),
 
-          
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -223,9 +223,9 @@ class InspectionCard extends StatelessWidget {
               label: Text("View Report"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF00A896),
-                    
+
                 foregroundColor:  Colors.white,
-                    
+
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

@@ -1,8 +1,7 @@
+import 'package:fishapp/picheur/profil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:projetsndcp/picheur/profil.dart';//appel aux profile papge
-
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import 'Weather&Safety.dart';
@@ -407,37 +406,37 @@ class _HomePageState extends State<HomePage> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF013D73),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: const Color(0xFF013D73).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
-        ),
-        child:MaterialButton(onPressed: (){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Addbatchpage(),
-          ));
-        },child:Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.add_box_outlined, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Add New Batch", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text("Log your latest catch", style: TextStyle(color: Colors.white70, fontSize: 13)),
-                ],
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF013D73),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: const Color(0xFF013D73).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
+          ),
+          child:MaterialButton(onPressed: (){
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Addbatchpage(),
+                ));
+          },child:Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.add_box_outlined, color: Colors.white, size: 28),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: Colors.white),
-          ],
-        ) ,)
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Add New Batch", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text("Log your latest catch", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white),
+            ],
+          ) ,)
 
       ),
     );
@@ -446,27 +445,27 @@ class _HomePageState extends State<HomePage> {
   Widget _buildQuickActions(bool isDark) {
     return Container(
       child:
-           InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyBatchesPage(),
-                ),
-              );
-            },
-            child: _buildActionItem(Icons.list_alt, "My Batches"),
-          ),
+      InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyBatchesPage(),
+            ),
+          );
+        },
+        child: _buildActionItem(Icons.list_alt, "My Batches"),
+      ),
     );
   }
 
   Widget _buildActionItem(IconData icon, String title) {
     return MaterialButton(onPressed: (){
       Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BatchDetailspage(batch: BatchItem(fishName: "Sardine", quantity: 45.5, date: "Oct 24, 05:30 AM", pricePerKg: 320.50, total: 1370.50, status: "APPROVED",)),
-        ));
+          context,
+          MaterialPageRoute(
+            builder: (context) => BatchDetailspage(batch: BatchItem(fishName: "Sardine", quantity: 45.5, date: "Oct 24, 05:30 AM", pricePerKg: 320.50, total: 1370.50, status: "APPROVED",)),
+          ));
     },child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -479,7 +478,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     ),)
-      ;
+    ;
   }
 
   Widget _buildSectionHeader(IconData icon, String title, {String? trailing}) {
