@@ -11,7 +11,7 @@ import 'authstate.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  final String _baseUrl = "http://10.209.195.228:3000/";
+  final String _baseUrl = "http://localhost:3000/api";
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -117,90 +117,90 @@ class AuthCubit extends Cubit<AuthState> {
     await storage.delete(key: "refresh_token");
   }
   // --- LOGIN GOOGLE+API ---
-  Future<void> signInWithGoogle() async {
-    try {
-      emit(AuthLoading());
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();//pour ouvrir boit de google account
-
-      if (googleUser == null) {
-        emit(AuthError("User cancelled"));
-        return;
-      }
-
-      final googleAuth = await googleUser.authentication; //pour access aux token
-      final String? idToken = googleAuth.idToken;
-      final String? serverAuthCode = googleUser.serverAuthCode;
-      final String email = googleUser.email;
-
-      // Vérification si le token est bien présent
-      if (idToken == null) {
-        emit(AuthError("Failed to get ID Token from Google"));
-        return;
-      }
-      // final response= await _authorizedRequest("Post", "$_baseUrl/auth/google-login-fishmen", body: jsonEncode({
-      //   "idToken": idToken,
-      //   "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
-      //   "serverAuthCode": serverAuthCode,
-      // }),);
-      final response = await http.post(
-        Uri.parse("$_baseUrl/google-login-fishmen"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
-          "idToken": idToken,
-          "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
-          "serverAuthCode": serverAuthCode,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        // Sauvegarde token + role si le serveur les renvoie
-        if (data['token'] != null && data['role'] != null) {
-          await _saveTokenAndRole(data['token'], data['role']);
-        }
-        // Succès : on envoie l'email pour la suite (Fivepage)
-        emit(GooglePasswordRequired(email));
-      }else {
-        emit(AuthError("Server error: ${response.body}"));
-      }
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
-  // --- LOGIN FACEBOOK+API ---
-  Future<void> signInWithFacebook() async {
-    try {
-      emit(AuthLoading());
-      final LoginResult result = await FacebookAuth.instance.login();
-
-      if (result.status != LoginStatus.success) {
-        emit(AuthError("Facebook login cancelled"));
-        return;
-      }
-
-      final response = await http.post(
-        Uri.parse("$_baseUrl/facebook-login-fishmen"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({"accessToken": result.accessToken!.token}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        // ✅ Sauvegarde token + role
-        await _saveTokenAndRole(data['token'], data['role']);
-        emit(AuthAuthenticated(data));
-      } else {
-        emit(AuthError("Server error during Facebook login"));
-      }
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
+  // Future<void> signInWithGoogle() async {
+  //   try {
+  //     emit(AuthLoading());
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();//pour ouvrir boit de google account
+  //
+  //     if (googleUser == null) {
+  //       emit(AuthError("User cancelled"));
+  //       return;
+  //     }
+  //
+  //     final googleAuth = await googleUser.authentication; //pour access aux token
+  //     final String? idToken = googleAuth.idToken;
+  //     final String? serverAuthCode = googleUser.serverAuthCode;
+  //     final String email = googleUser.email;
+  //
+  //     // Vérification si le token est bien présent
+  //     if (idToken == null) {
+  //       emit(AuthError("Failed to get ID Token from Google"));
+  //       return;
+  //     }
+  //     // final response= await _authorizedRequest("Post", "$_baseUrl/auth/google-login-fishmen", body: jsonEncode({
+  //     //   "idToken": idToken,
+  //     //   "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
+  //     //   "serverAuthCode": serverAuthCode,
+  //     // }),);
+  //     final response = await http.post(
+  //       Uri.parse("$_baseUrl/google-login-fishmen"),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: jsonEncode({
+  //         "idToken": idToken,
+  //         "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
+  //         "serverAuthCode": serverAuthCode,
+  //       }),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       // Sauvegarde token + role si le serveur les renvoie
+  //       if (data['token'] != null && data['role'] != null) {
+  //         await _saveTokenAndRole(data['token'], data['role']);
+  //       }
+  //       // Succès : on envoie l'email pour la suite (Fivepage)
+  //       emit(GooglePasswordRequired(email));
+  //     }else {
+  //       emit(AuthError("Server error: ${response.body}"));
+  //     }
+  //   } catch (e) {
+  //     emit(AuthError(e.toString()));
+  //   }
+  // }
+  //
+  // // --- LOGIN FACEBOOK+API ---
+  // Future<void> signInWithFacebook() async {
+  //   try {
+  //     emit(AuthLoading());
+  //     final LoginResult result = await FacebookAuth.instance.login();
+  //
+  //     if (result.status != LoginStatus.success) {
+  //       emit(AuthError("Facebook login cancelled"));
+  //       return;
+  //     }
+  //
+  //     final response = await http.post(
+  //       Uri.parse("$_baseUrl/facebook-login-fishmen"),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: jsonEncode({"accessToken": result.accessToken!.token}),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       // ✅ Sauvegarde token + role
+  //       await _saveTokenAndRole(data['token'], data['role']);
+  //       emit(AuthAuthenticated(data));
+  //     } else {
+  //       emit(AuthError("Server error during Facebook login"));
+  //     }
+  //   } catch (e) {
+  //     emit(AuthError(e.toString()));
+  //   }
+  // }
 
   // --- LOGIN CLASSIQUE+API ---
   Future<void> login(String email, String password) async {
@@ -524,7 +524,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       emit(AuthLoading());
       final response = await http.post(
-        Uri.parse("$_baseUrl/send-email"),
+        Uri.parse("$_baseUrl/auth/send-code"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email}),
       );
@@ -1019,7 +1019,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
   // --- SÉLECTION DU RÔLE ---
-  Future<void> selectRole(String email,String role) async {
+  Future<void> selectRole(String email,String password,String role) async {
     try {
       emit(AuthLoading());
 
@@ -1035,13 +1035,14 @@ class AuthCubit extends Cubit<AuthState> {
       //   "role": role});
       //")
       final response = await http.post(
-        Uri.parse("$_baseUrl/send-email"),
+        Uri.parse("$_baseUrl/auth/register"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
         body: jsonEncode({
           "email":email,
+          "password": password,
           "role": role}),
         // on envoie : {"role": "fishmen"}
         // ou         {"role": "vet"}
@@ -1064,7 +1065,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       emit(AuthLoading());
       final response = await http.post(
-          Uri.parse("$_baseUrl/verify-code-fishmen"),
+          Uri.parse("$_baseUrl/verify-email"),
           headers:
           {
             "Content-Type": "application/json",

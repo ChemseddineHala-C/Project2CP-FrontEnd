@@ -161,7 +161,8 @@ import '../cubit/authstate.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   final String email;
-  const RoleSelectionPage({super.key, required String this.email});
+  final String password;
+  const RoleSelectionPage({super.key, required this.email, required this.password});
 
   @override
   State<RoleSelectionPage> createState() => _RoleSelectionPageState();
@@ -277,7 +278,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         ? null
                         : () {
                       // Envoie le rôle au backend via le Cubit
-                      context.read<AuthCubit>().selectRole( widget.email,selectedRole!);
+                      context.read<AuthCubit>().selectRole( widget.email,widget.password,selectedRole!);
                     },
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)

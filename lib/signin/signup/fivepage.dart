@@ -44,7 +44,7 @@ class _FivepageState extends State<Fivepage> {
           // }
           if (state is AuthAuthenticated) {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => Sixpage(email: widget.email)));
+                MaterialPageRoute(builder: (context) => Sixpage(email: widget.email, password: _passwordController.text)));
           }
           else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -128,7 +128,7 @@ class _FivepageState extends State<Fivepage> {
                           : MaterialButton(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => Sixpage(email: widget.email,)),
+                            MaterialPageRoute(builder: (context) => Sixpage(email: widget.email,password: _passwordController.text)),
                           );
                         },
                         child: const Text(
