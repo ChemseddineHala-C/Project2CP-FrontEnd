@@ -228,30 +228,30 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
   // --- INSCRIPTION+API ---
-  Future<void> registerUser(String email, String password) async {
-    try {
-      emit(AuthLoading());
-      final response = await http.post(
-        Uri.parse("$_baseUrl/register-fishmen"),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({"email": email, "password": password}),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final userData = jsonDecode(response.body);
-        await _saveTokenAndRole(userData['token'], userData['role'],
-          // refreshToken: userData['refresh_token']
-        );
-        emit(AuthAuthenticated(userData));
-      } else {
-        emit(AuthError("Registration failed: ${response.statusCode}"));
-      }
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
+  // Future<void> registerUser(String email, String password) async {
+  //   try {
+  //     emit(AuthLoading());
+  //     final response = await http.post(
+  //       Uri.parse("$_baseUrl/register-fishmen"),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: jsonEncode({"email": email, "password": password}),
+  //     );
+  //
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final userData = jsonDecode(response.body);
+  //       await _saveTokenAndRole(userData['token'], userData['role'],
+  //         // refreshToken: userData['refresh_token']
+  //       );
+  //       emit(AuthAuthenticated(userData));
+  //     } else {
+  //       emit(AuthError("Registration failed: ${response.statusCode}"));
+  //     }
+  //   } catch (e) {
+  //     emit(AuthError(e.toString()));
+  //   }
+  // }
 
   // --- PROFIL ---
 
@@ -1019,42 +1019,76 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
   // --- SÉLECTION DU RÔLE ---
-  Future<void> selectRole(String email,String password,String role) async {
+  // Future<void> selectRole(String email,String password,String role) async {
+  //   try {
+  //     emit(AuthLoading());
+  //
+  //     String? token = await _getToken();
+  //     if (token == null) {
+  //       emit(AuthError("No token found"));
+  //       return;
+  //     }
+  //
+  //     // Envoie le rôle au backend
+  //     // final response = await _authorizedRequest("POST", "$_baseUrl/auth/send-email-fishmen", body: {
+  //     //   "email":email,
+  //     //   "role": role});
+  //     //")
+  //     final response = await http.post(
+  //       Uri.parse("$_baseUrl/auth/register"),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": "Bearer $token",
+  //       },
+  //       body: jsonEncode({
+  //         "email":email,
+  //         "password": password,
+  //         "role": role}),
+  //       // on envoie : {"role": "fishmen"}
+  //       // ou         {"role": "vet"}
+  //       // ou         {"role": "consumer"}
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       // Sauvegarde le rôle localement
+  //       await storage.write(key: "role", value: role);
+  //       emit(RoleSelectedSuccess(role)); // → redirige selon le rôle
+  //     }
+  //     else {
+  //       emit(AuthError("Failed to select role: ${response.body}"));
+  //     }
+  //   } catch (e) {
+  //     emit(AuthError(e.toString()));
+  //   }
+  // }
+  Future<void> selectRole(String email, String password, String role) async {
     try {
       emit(AuthLoading());
 
-      String? token = await _getToken();
-      if (token == null) {
-        emit(AuthError("No token found"));
-        return;
-      }
-
-      // Envoie le rôle au backend
-      // final response = await _authorizedRequest("POST", "$_baseUrl/auth/send-email-fishmen", body: {
-      //   "email":email,
-      //   "role": role});
-      //")
+      // ✅ Pas besoin de token avant — c'est le register
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/register"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "email":email,
+          "email": email,
           "password": password,
-          "role": role}),
-        // on envoie : {"role": "fishmen"}
-        // ou         {"role": "vet"}
-        // ou         {"role": "consumer"}
+          "role": role,
+        }),
       );
 
-      if (response.statusCode == 200) {
-        // Sauvegarde le rôle localement
-        await storage.write(key: "role", value: role);
-        emit(RoleSelectedSuccess(role)); // → redirige selon le rôle
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        // ✅ Sauvegarde token + role reçus du backend
+        await _saveTokenAndRole(
+          data['token'],
+          role,
+          refreshToken: data['refresh_token'],
+        );
+
+        emit(RoleSelectedSuccess(role));
       } else {
-        emit(AuthError("Failed to select role: ${response.body}"));
+        emit(AuthError("Failed: ${response.body}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -1065,7 +1099,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       emit(AuthLoading());
       final response = await http.post(
-          Uri.parse("$_baseUrl/verify-email"),
+          Uri.parse("$_baseUrl/auth/verify-email"),
           headers:
           {
             "Content-Type": "application/json",
