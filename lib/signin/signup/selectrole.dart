@@ -186,14 +186,17 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
           if (state is RoleSelectedSuccess) {
             // Redirige vers la bonne page selon le rôle
             if (state.role == "fishrman") {
+              context.read<AuthCubit>().selectRole(widget.email,widget.password,state.role);
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfacepage()));
 
             } else if (state.role == "veterinarian") {
+              context.read<AuthCubit>().selectRole(widget.email,widget.password,state.role);
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfacevitpage()));
 
             } else if (state.role == "customer") {
+              context.read<AuthCubit>().selectRole(widget.email,widget.password,state.role);
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfaceconsumerpage()));
             }
@@ -233,7 +236,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
                 // CARTE PÊCHEUR
                 _buildRoleCard(
-                  role: "fishmen",
+                  role: "fisherman",
                   title: "Pêcheur",
                   description: "Gérez vos sorties et vos prises",
                   icon: Icons.directions_boat,
@@ -243,7 +246,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
                 // CARTE VÉTÉRINAIRE
                 _buildRoleCard(
-                  role: "vet",
+                  role: "veterinarian",
                   title: "Vétérinaire",
                   description: "Inspectez et validez les lots de poisson",
                   icon: Icons.medical_services,
@@ -253,7 +256,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
                 // CARTE CONSUMER
                 _buildRoleCard(
-                  role: "consumer",
+                  role: "customer",
                   title: "Consommateur",
                   description: "Achetez du poisson frais et certifié",
                   icon: Icons.shopping_cart,

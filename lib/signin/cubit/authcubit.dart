@@ -1083,7 +1083,6 @@ class AuthCubit extends Cubit<AuthState> {
         await _saveTokenAndRole(
           data['token'],
           role,
-          refreshToken: data['refresh_token'],
         );
 
         emit(RoleSelectedSuccess(role));
