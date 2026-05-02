@@ -185,15 +185,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
         listener: (context, state) {
           if (state is RoleSelectedSuccess) {
             // Redirige vers la bonne page selon le rôle
-            if (state.role == "fishmen") {
+            if (state.role == "fishrman") {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfacepage()));
 
-            } else if (state.role == "vet") {
+            } else if (state.role == "veterinarian") {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfacevitpage()));
 
-            } else if (state.role == "consumer") {
+            } else if (state.role == "customer") {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (_) => Interfaceconsumerpage()));
             }
