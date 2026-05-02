@@ -47,30 +47,87 @@ class _InfopageState extends State<Infopage> {
     super.dispose();
   }
 
-  Future<void> _pickFile(bool isLicense) async {
+  // Future<void> _pickFile(bool isLicense) async {
+  //   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       // if (isLicense) {
+  //       //   _fishingLicenseFile = File(pickedFile.path);
+  //       // } else {
+  //       //   _boatRegistrationFile = File(pickedFile.path);
+  //       // }
+  //       if (type == "license") {
+  //         _fishingLicenseFile = File(pickedFile.path);
+  //       } else if (type == "boat") {
+  //         _boatRegistrationFile = File(pickedFile.path);
+  //       } else if (type == "idcard") {
+  //         _IdcardFile = File(pickedFile.path);
+  //       }
+  //     });
+  //   }
+  // }
+  Future<void> _pickFile(String type) async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        if (isLicense) {
+        if (type == "license") {
           _fishingLicenseFile = File(pickedFile.path);
-        } else {
+        } else if (type == "boat") {
           _boatRegistrationFile = File(pickedFile.path);
+        } else if (type == "idcard") {
+          _IdcardFile = File(pickedFile.path);
         }
       });
     }
   }
 
+  // void _submit() {
+  //   if (_fullNameController.text.isEmpty || _boatNameController.text.isEmpty || _licenseController.text.isEmpty || _expiryController.text.isEmpty || _fishingLicenseFile == null || _boatRegistrationFile == null || _homePortController.text.isEmpty || _registrationController.text.isEmpty || _phoneController.text.isEmpty || _emailController.text.isEmpty || _nationalIdController.text.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Please fill all required fields"), backgroundColor: Colors.red),
+  //     );
+  //     return;
+  //   }
+  //   else{
+  //     Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+  //   }
+  //
+  //   context.read<AuthCubit>().submitSetup(
+  //     fullName: _fullNameController.text.trim(),
+  //     nationalId: _nationalIdController.text.trim(),
+  //     phone: _phoneController.text.trim(),
+  //     email: _emailController.text.trim(),
+  //     boatName: _boatNameController.text.trim(),
+  //     registrationNumber: _registrationController.text.trim(),
+  //     vesselType: _selectedvesselType,
+  //     homePort: _homePortController.text.trim(),
+  //     licenseNumber: _licenseController.text.trim(),
+  //     expiryDate: _expiryController.text.trim(),
+  //     fishingLicense: _fishingLicenseFile,
+  //     boatRegistration: _boatRegistrationFile,
+  //     Idcard: _IdcardFile,
+  //   );
+  // }
   void _submit() {
-    if (_fullNameController.text.isEmpty || _boatNameController.text.isEmpty || _licenseController.text.isEmpty || _expiryController.text.isEmpty || _fishingLicenseFile == null || _boatRegistrationFile == null || _homePortController.text.isEmpty || _registrationController.text.isEmpty || _phoneController.text.isEmpty || _emailController.text.isEmpty || _nationalIdController.text.isEmpty) {
+    if (_fullNameController.text.isEmpty ||
+        _boatNameController.text.isEmpty ||
+        _licenseController.text.isEmpty ||
+        _expiryController.text.isEmpty ||
+        _fishingLicenseFile == null ||
+        _boatRegistrationFile == null ||
+        _IdcardFile == null ||         // ← ajouter
+        _homePortController.text.isEmpty ||
+        _registrationController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _nationalIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields"), backgroundColor: Colors.red),
       );
       return;
     }
-    else{
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-    }
 
+    // ✅ Envoie au backend directement — le listener gère la navigation
     context.read<AuthCubit>().submitSetup(
       fullName: _fullNameController.text.trim(),
       nationalId: _nationalIdController.text.trim(),
@@ -166,11 +223,11 @@ class _InfopageState extends State<Infopage> {
                     Text("Required Uploads (PDF or JPG)",
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.cyanAccent : const Color(0xFF033F78))),
                     const SizedBox(height: 16),
-                    _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFile, () => _pickFile(true), isDark),
+                    _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFile, () => _pickFile("license"), isDark),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.directions_boat, "Boat Registration", _boatRegistrationFile, () => _pickFile(false), isDark),
+                    _buildUploadTile(Icons.directions_boat, "Boat Registration", _boatRegistrationFile, () => _pickFile("boat"), isDark),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.add_card_outlined, "ID_CARD", _IdcardFile, () => _pickFile(false), isDark),
+                    _buildUploadTile(Icons.add_card_outlined, "ID_CARD", _IdcardFile, () => _pickFile("idcard"), isDark),
                   ],
                 ),
                 const SizedBox(height: 30),
