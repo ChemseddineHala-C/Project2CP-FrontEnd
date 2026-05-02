@@ -13,7 +13,7 @@ class Fourpage extends StatefulWidget {
 }
 
 class _FourpageState extends State<Fourpage> {
-  final List<TextEditingController> _controllers = List.generate(5, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   @override

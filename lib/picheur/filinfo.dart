@@ -115,7 +115,7 @@ class _InfopageState extends State<Infopage> {
         _expiryController.text.isEmpty ||
         _fishingLicenseFile == null ||
         _boatRegistrationFile == null ||
-        _IdcardFile == null ||         // ← ajouter
+        _IdcardFile == null ||
         _homePortController.text.isEmpty ||
         _registrationController.text.isEmpty ||
         _phoneController.text.isEmpty ||
