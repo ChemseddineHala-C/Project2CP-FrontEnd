@@ -1,9 +1,9 @@
+import 'package:fishapp/picheur/profil.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:projetsndcp/picheur/profil.dart';
 import 'dart:convert';
 import '../signin/cubit/authcubit.dart';
 import 'homepage.dart';
@@ -290,13 +290,13 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
         ),
         const SizedBox(width: 10),
         _actionBtn(
-            Icons.navigation_outlined,
-            "Navigate to\nPort",
-            const Color(0xFF0F172A),
-            Colors.white,
-          ), 
-        
-        
+          Icons.navigation_outlined,
+          "Navigate to\nPort",
+          const Color(0xFF0F172A),
+          Colors.white,
+        ),
+
+
       ],
     );
   }
@@ -463,14 +463,14 @@ class WeatherInfo extends StatelessWidget {
 }
 
 Widget cardInfo(
-  Color color,
-  IconData icon,
-  String title,
-  String i1,
-  String v1,
-  String i2,
-  String v2,
-) {
+    Color color,
+    IconData icon,
+    String title,
+    String i1,
+    String v1,
+    String i2,
+    String v2,
+    ) {
   return Container(
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(

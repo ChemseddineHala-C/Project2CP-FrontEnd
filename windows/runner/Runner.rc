@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "projetsndcp" "\0"
+            VALUE "FileDescription", "fishapp" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "projetsndcp" "\0"
+            VALUE "InternalName", "fishapp" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "projetsndcp.exe" "\0"
-            VALUE "ProductName", "projetsndcp" "\0"
+            VALUE "OriginalFilename", "fishapp.exe" "\0"
+            VALUE "ProductName", "fishapp" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

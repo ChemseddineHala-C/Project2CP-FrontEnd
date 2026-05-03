@@ -43,9 +43,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     super.initState();
   }
 
-  
 
-  
+
+
   double get _subtotal {
     return _cartItems.fold(0, (sum, item) => sum + item.totalPrice);
   }
@@ -54,7 +54,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     return _subtotal + _deliveryFee;
   }
 
-  
+
   void _updateQuantity(int index, double change) {
     setState(() {
       double newWeight = _cartItems[index].weightKg + change;
@@ -97,23 +97,23 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Item List using your ListView.builder pattern
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _cartItems.length,
-                    itemBuilder: (context, index) => _buildCartCard(index),
-                  ),
-                  const Block(), // Vertical spacing widget re-used from your files
-                  _buildPromoCodeField(),
-                  const Block(),
-                  _buildSummaryCard(),
-                ],
-              ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Item List using your ListView.builder pattern
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _cartItems.length,
+              itemBuilder: (context, index) => _buildCartCard(index),
             ),
+            const Block(), // Vertical spacing widget re-used from your files
+            _buildPromoCodeField(),
+            const Block(),
+            _buildSummaryCard(),
+          ],
+        ),
+      ),
     );
   }
 

@@ -17,7 +17,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
     super.initState();
   }
 
-  
+
 
   @override
   Widget build(BuildContext context) {
@@ -212,13 +212,13 @@ class _BatchReportPageState extends State<BatchReportPage> {
           Container(
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: Color(0x1A0C6780),
-              shape: BoxShape.circle
+                color: Color(0x1A0C6780),
+                shape: BoxShape.circle
             ),
-            
+
             child: Icon(Icons.signal_cellular_alt_outlined, color: const Color(0xFF01A896), size: 18),
           ),
-          
+
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -233,12 +233,12 @@ class _BatchReportPageState extends State<BatchReportPage> {
                 ),
                 SizedBox(height: 8),
                 LinearProgressIndicator(
-                value: score / 100,
-                backgroundColor: const Color(0xFFE2E8F0),
-                color: const Color(0xFF01A896),        
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
-              ),
+                  value: score / 100,
+                  backgroundColor: const Color(0xFFE2E8F0),
+                  color: const Color(0xFF01A896),
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ],
             ),
           ),
@@ -260,12 +260,12 @@ class _BatchReportPageState extends State<BatchReportPage> {
           Container(
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: Color(0x1A0C6780),
-              shape: BoxShape.circle
+                color: Color(0x1A0C6780),
+                shape: BoxShape.circle
             ),
             child: Icon(icon, color: const Color(0xFF01A896), size: 18),
           ),
-          
+
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -328,65 +328,65 @@ class Block extends StatelessWidget {
 
 Color _pointColor(String str) {
   Color _tmpColor = Colors.black;
-    switch (str) {
-      case "Neutral / Sea-like":
-        _tmpColor = Color(0xFFD7FFE1);
-        break;
-      case "Strong":
-        _tmpColor = Color(0xFFFFFCD7);
-        break;
-      case "Sour / Ammonia-like":
-        _tmpColor = Color(0xFFFFD7D7);
-        break;
-    }
+  switch (str) {
+    case "Neutral / Sea-like":
+      _tmpColor = Color(0xFFD7FFE1);
+      break;
+    case "Strong":
+      _tmpColor = Color(0xFFFFFCD7);
+      break;
+    case "Sour / Ammonia-like":
+      _tmpColor = Color(0xFFFFD7D7);
+      break;
+  }
 
-    switch (str) {
-      case "Bright Red":
-        _tmpColor = Color(0xFFD7FFE1);
-        break;
-      case "Brownish / Dark Red":
-        _tmpColor = Color(0xFFFFFCD7);
-        break;
-      case "Gray / Green / Black":
-        _tmpColor = Color(0xFFFFD7D7);
-        break;
-      case "Not a Mesure ..":
-        _tmpColor = Color(0xFFF2F2F2);
-        break;
-    }
+  switch (str) {
+    case "Bright Red":
+      _tmpColor = Color(0xFFD7FFE1);
+      break;
+    case "Brownish / Dark Red":
+      _tmpColor = Color(0xFFFFFCD7);
+      break;
+    case "Gray / Green / Black":
+      _tmpColor = Color(0xFFFFD7D7);
+      break;
+    case "Not a Mesure ..":
+      _tmpColor = Color(0xFFF2F2F2);
+      break;
+  }
 
-    switch (str) {
-      case "Firm":
-        _tmpColor = Color(0xFFD7FFE1);
-        break;
-      case "Slightly Soft":
-        _tmpColor = Color(0xFFFFFCD7);
-        break;
-      case "Soft":
-        _tmpColor = Color(0xFFFFDFA0);
-        break;
-      case "Mushy":
-        _tmpColor = Color(0xFFFFD7D7);
-    }
+  switch (str) {
+    case "Firm":
+      _tmpColor = Color(0xFFD7FFE1);
+      break;
+    case "Slightly Soft":
+      _tmpColor = Color(0xFFFFFCD7);
+      break;
+    case "Soft":
+      _tmpColor = Color(0xFFFFDFA0);
+      break;
+    case "Mushy":
+      _tmpColor = Color(0xFFFFD7D7);
+  }
 
-    switch (str) {
-      case "Clear / Bright":
-        _tmpColor = Color(0xFFD7FFE1);
-        break;
-      case "Slightly Cloudy":
-        _tmpColor = Color(0xFFFFFCD7);
-        break;
-      case "Cloudy":
-        _tmpColor = Color(0xFFFFDFA0);
-        break;
-      case "Sunken / Opaque":
-        _tmpColor = Color(0xFFFFD7D7);
-    }
+  switch (str) {
+    case "Clear / Bright":
+      _tmpColor = Color(0xFFD7FFE1);
+      break;
+    case "Slightly Cloudy":
+      _tmpColor = Color(0xFFFFFCD7);
+      break;
+    case "Cloudy":
+      _tmpColor = Color(0xFFFFDFA0);
+      break;
+    case "Sunken / Opaque":
+      _tmpColor = Color(0xFFFFD7D7);
+  }
 
-    // double? value = double.parse(str);
-    // if (value != null){
-    //   _tmpColor = (value > -1 && value < 4) ? Color(0xFFD7FFE1) : Color(0xFFFFD7D7) ;
-    // }
+  // double? value = double.parse(str);
+  // if (value != null){
+  //   _tmpColor = (value > -1 && value < 4) ? Color(0xFFD7FFE1) : Color(0xFFFFD7D7) ;
+  // }
 
   return _tmpColor;
 }

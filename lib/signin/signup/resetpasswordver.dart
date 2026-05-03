@@ -129,9 +129,9 @@ class ResetPasswordSentPage extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           // Navigator.push(
-            //     context,
-            //     MaterialPageRoute(builder: (context) => const LoginPage()),
-            //   );
+          //     context,
+          //     MaterialPageRoute(builder: (context) => const LoginPage()),
+          //   );
           // Retourne à LoginPage en supprimant toutes les pages
           // Navigator.popUntil(context, (route) => route.isFirst);
 

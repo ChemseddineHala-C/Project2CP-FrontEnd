@@ -1,10 +1,10 @@
+import 'package:fishapp/picheur/profil.dart';
 import 'package:flutter/material.dart';
-import 'package:projetsndcp/picheur/batchDetailsPage.dart';
-import 'package:projetsndcp/picheur/objects.dart';
-import 'package:projetsndcp/picheur/profil.dart';
-import 'package:projetsndcp/picheur/addBatchPage.dart';
 import 'Weather&Safety.dart';
+import 'addBatchPage.dart';
+import 'batchDetailsPage.dart';
 import 'homepage.dart';
+import 'objects.dart';
 
 class MyBatchesPage extends StatefulWidget {
   const MyBatchesPage({super.key});
@@ -96,109 +96,109 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
             ),
           ),
         ],
-        
+
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _searchController,
-                    onChanged: _updateSearchQuery,
-                    decoration: InputDecoration(
-                      hintText: "Search batches...",
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(13),
-                        borderSide: BorderSide.none,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _searchController,
+              onChanged: _updateSearchQuery,
+              decoration: InputDecoration(
+                hintText: "Search batches...",
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const Block(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children:
+                ["All", "Pending", "Approved", "Rejected", "Expired"]
+                    .map(
+                      (filter) => GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedFilter = filter;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
                       ),
-                    ),
-                  ),
-                  const Block(),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children:
-                          ["All", "Pending", "Approved", "Rejected", "Expired"]
-                              .map(
-                                (filter) => GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedFilter = filter;
-                                    });
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 8),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _selectedFilter == filter
-                                          ? const Color(0xFF023E77)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      filter,
-                                      style: TextStyle(
-                                        color: _selectedFilter == filter
-                                            ? Colors.white
-                                            : const Color(0xFF475569),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                    ),
-                  ),
-                  const Block(),
-                  if (_filteredBatches.isEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        color: _selectedFilter == filter
+                            ? const Color(0xFF023E77)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        'No batches found for that name.',
+                      child: Text(
+                        filter,
                         style: TextStyle(
-                          color: Color(0xFF475569),
+                          color: _selectedFilter == filter
+                              ? Colors.white
+                              : const Color(0xFF475569),
+                          fontWeight: FontWeight.w500,
                           fontSize: 14,
                         ),
                       ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _filteredBatches.length,
-                      itemBuilder: (context, index) => InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BatchDetailspage(
-                                batch: _filteredBatches[index],
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: BatchCard(_filteredBatches[index]),
-                      ),
                     ),
-                ],
+                  ),
+                )
+                    .toList(),
               ),
             ),
+            const Block(),
+            if (_filteredBatches.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'No batches found for that name.',
+                  style: TextStyle(
+                    color: Color(0xFF475569),
+                    fontSize: 14,
+                  ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredBatches.length,
+                itemBuilder: (context, index) => InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BatchDetailspage(
+                          batch: _filteredBatches[index],
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: BatchCard(_filteredBatches[index]),
+                ),
+              ),
+          ],
+        ),
+      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }

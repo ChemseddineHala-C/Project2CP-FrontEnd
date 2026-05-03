@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fishapp/picheur/picheur_Api.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,8 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:projetsndcp/picheur/picheur_Api.dart';
-
 class Addbatchpage extends StatefulWidget {
   const Addbatchpage({super.key});
 
@@ -261,8 +260,8 @@ class _AddBatchPageState extends State<Addbatchpage> {
                 ...?_fishByCategory[_selectedCategory]
                     ?.map(
                       (fish) =>
-                          DropdownMenuItem(value: fish, child: Text(fish)),
-                    )
+                      DropdownMenuItem(value: fish, child: Text(fish)),
+                )
                     .toList(),
                 DropdownMenuItem(
                   value: "Other",
@@ -336,8 +335,8 @@ class _AddBatchPageState extends State<Addbatchpage> {
               items: _catchMethods
                   .map(
                     (method) =>
-                        DropdownMenuItem(value: method, child: Text(method)),
-                  )
+                    DropdownMenuItem(value: method, child: Text(method)),
+              )
                   .toList(),
               onChanged: (value) {
                 setState(() => _selectedCatchMethod = value);
@@ -575,25 +574,25 @@ class _AddBatchPageState extends State<Addbatchpage> {
                   width: double.infinity,
                   child: _locationLoaded
                       ? GestureDetector(
-                          onTap: () => {print("map")},
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(13),
-                            child: Image.network(
-                              "https://maps.googleapis.com/maps/api/staticmap"
-                              "?center=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                              "&zoom=14&size=400x200"
-                              "&markers=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                              "&key=YOUR_API_KEY",
-                              width: double.infinity,
-                              height: 180,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
+                    onTap: () => {print("map")},
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: Image.network(
+                        "https://maps.googleapis.com/maps/api/staticmap"
+                            "?center=${_currentPosition!.latitude},${_currentPosition!.longitude}"
+                            "&zoom=14&size=400x200"
+                            "&markers=${_currentPosition!.latitude},${_currentPosition!.longitude}"
+                            "&key=YOUR_API_KEY",
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
                       : Container(
-                          color: Color(0xFFF5F7F9),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
+                    color: Color(0xFFF5F7F9),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
                 ),
               ),
             ),

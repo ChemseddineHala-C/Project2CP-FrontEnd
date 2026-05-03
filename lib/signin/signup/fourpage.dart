@@ -5,7 +5,7 @@ import '../cubit/authstate.dart';
 import 'fivepage.dart';
 
 class Fourpage extends StatefulWidget {
-  final String email; 
+  final String email;
   const Fourpage({super.key, required this.email});
 
   @override
@@ -13,8 +13,8 @@ class Fourpage extends StatefulWidget {
 }
 
 class _FourpageState extends State<Fourpage> {
-  final List<TextEditingController> _controllers = List.generate(5, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(5, (_) => FocusNode());
+  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   @override
   void dispose() {
@@ -67,7 +67,7 @@ class _FourpageState extends State<Fourpage> {
                 ),
                 const SizedBox(height: 30),
                 Text(
-                  "We just sent 5-digit code to",
+                  "We just sent 6-digit code to",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[700], fontSize: 16),
                 ),
@@ -89,7 +89,7 @@ class _FourpageState extends State<Fourpage> {
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(5, (index) => _buildCodeBox(index)),
+                  children: List.generate(6, (index) => _buildCodeBox(index)),
                 ),
                 const SizedBox(height: 30),
                 SizedBox(
@@ -167,7 +167,7 @@ class _FourpageState extends State<Fourpage> {
           ),
         ),
         onChanged: (value) {
-          if (value.isNotEmpty && index < 4) {
+          if (value.isNotEmpty && index < 5) {
             _focusNodes[index + 1].requestFocus();
           } else if (value.isEmpty && index > 0) {
             _focusNodes[index - 1].requestFocus();

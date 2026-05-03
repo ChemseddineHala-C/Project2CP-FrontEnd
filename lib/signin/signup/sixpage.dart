@@ -1,9 +1,10 @@
 import 'package:checkmark/checkmark.dart';
+import 'package:fishapp/signin/signup/selectrole.dart';
 import 'package:flutter/material.dart';
-import 'package:projetsndcp/signin/signup/selectrole.dart';
-
 class Sixpage extends StatefulWidget {
-  const Sixpage({super.key});
+  final String email;
+  final String password;
+  const Sixpage({super.key, required this.email, required this.password});
 
   @override
   State<Sixpage> createState() => _SixpageState();
@@ -43,7 +44,7 @@ class _SixpageState extends State<Sixpage> {
               ),
             ),
             const SizedBox(height: 20),
-             const Text(
+            const Text(
               "Your account",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
@@ -64,7 +65,7 @@ class _SixpageState extends State<Sixpage> {
                 ),
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => RoleSelectionPage()),
+                    MaterialPageRoute(builder: (context) => RoleSelectionPage(email: widget.email,password: widget.password,)),
                   );
                 },
                 child: const Text(

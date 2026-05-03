@@ -72,7 +72,7 @@ class _TherdpageState extends State<Therdpage> {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF013D73), 
+                      backgroundColor: const Color(0xFF013D73),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -91,10 +91,10 @@ class _TherdpageState extends State<Therdpage> {
                     },
                     child: state is AuthLoading
                         ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
                         : const Text("Create an account", style: TextStyle(color: Colors.white)),
                   ),
                 ),

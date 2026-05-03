@@ -27,12 +27,12 @@ class _HomePageState extends State<HomePage> {
       // 1. Check Category Match
       bool matchesCategory =
           _selectedCategory == "All" ||
-          product.category.toLowerCase() == _selectedCategory.toLowerCase();
+              product.category.toLowerCase() == _selectedCategory.toLowerCase();
 
       // 2. Check Search Match (Fish Name or Fisher Name)
       bool matchesSearch =
           product.name.toLowerCase().contains(query) ||
-          product.fisher.toLowerCase().contains(query);
+              product.fisher.toLowerCase().contains(query);
 
       return matchesCategory && matchesSearch;
     }).toList();
@@ -134,12 +134,12 @@ class _HomePageState extends State<HomePage> {
         // Optional: Add a clear button when typing
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, size: 20),
-                onPressed: () {
-                  _searchController.clear();
-                  _onSearchChanged("");
-                },
-              )
+          icon: const Icon(Icons.clear, size: 20),
+          onPressed: () {
+            _searchController.clear();
+            _onSearchChanged("");
+          },
+        )
             : null,
       ),
     );

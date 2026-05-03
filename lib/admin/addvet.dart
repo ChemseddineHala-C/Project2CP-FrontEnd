@@ -42,10 +42,10 @@ class _AddvetState extends State<Addvet> {
 
     // On lance l'appel API. La navigation se fera dans le listener ci-dessous.
     context.read<AuthCubit>().submitAdmin(
-          emailvet: _emailvetController.text.trim(),
-          passwordvet: _passwordvetController.text.trim(),
-          homePortvet: _homePortvetController.text.trim(),
-        );
+      emailvet: _emailvetController.text.trim(),
+      passwordvet: _passwordvetController.text.trim(),
+      homePortvet: _homePortvetController.text.trim(),
+    );
   }
 
   @override
@@ -118,14 +118,14 @@ class _AddvetState extends State<Addvet> {
                         child: isLoading
                             ? const CircularProgressIndicator(color: Colors.white)
                             : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.person_add_alt_outlined, color: Colors.white),
-                                  SizedBox(width: 10),
-                                  Text("Create Account",
-                                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.person_add_alt_outlined, color: Colors.white),
+                            SizedBox(width: 10),
+                            Text("Create Account",
+                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
                     ),
                   ],

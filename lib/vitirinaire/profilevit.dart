@@ -1,10 +1,10 @@
+import 'package:fishapp/vitirinaire/updatpassword.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:projetsndcp/vitirinaire/updatpaasword.dart';
 import 'package:share_plus/share_plus.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
-import 'editeprofilevit.dart';
+import 'editprofilvit.dart';
 
 class ProfilevitPage extends StatefulWidget {
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:projetsndcp/consumer/batchReportPageC.dart';
+
+import '../vitirinaire/batchReportPageV.dart';
 
 class BatchDetails extends StatefulWidget {
   const BatchDetails({super.key});
@@ -124,7 +125,7 @@ class _BatchDetailsState extends State<BatchDetails> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 _batch.photos.length,
-                (index) => Container(
+                    (index) => Container(
                   margin: EdgeInsets.symmetric(horizontal: 4),
                   width: 8,
                   height: 8,

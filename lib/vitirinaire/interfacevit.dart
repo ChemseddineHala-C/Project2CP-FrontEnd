@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
+// import 'package:flutter/cupertino.dart';
+import 'package:fishapp/vitirinaire/setupvit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:projetsndcp/vitirinaire/setupvit.dart';
-
 class Interfacevitpage extends StatefulWidget {
   const Interfacevitpage({super.key});
 
@@ -74,6 +73,7 @@ class _InterfacevitpageState extends State<Interfacevitpage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: MaterialButton(onPressed: (){
+                // Navigator.push(context, MaterialPageRoute(builder: (context) => SetupVitpage()));
                 Navigator.push(context, MaterialPageRoute(builder: (context) => SetupVitpage()));
               },child: const Text("Start Setup", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),)
           ),

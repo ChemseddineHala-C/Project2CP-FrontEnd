@@ -59,7 +59,7 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
 
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF5F7F9),
       appBar: AppBar(
@@ -88,37 +88,37 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
         padding: EdgeInsets.all(16),
         child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
 
-            TextFormField(
-              controller: _searchController,
-              onChanged: (value) => setState(() => _searchQuery = value),
-              decoration: InputDecoration(
-                hintText: "Search Batch ID",
-                hintStyle: TextStyle(
-                  fontFamily: 'Inter',
-                  color: Color(0xFF94A3B8),
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ),
-                prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+          TextFormField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchQuery = value),
+            decoration: InputDecoration(
+              hintText: "Search Batch ID",
+              hintStyle: TextStyle(
+                fontFamily: 'Inter',
+                color: Color(0xFF94A3B8),
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+              ),
+              prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
             ),
+          ),
 
-            Block(),
+          Block(),
 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ["All Types", "Sardin", "Roudji", "Atlantic Salmon"].map((type) =>
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ["All Types", "Sardin", "Roudji", "Atlantic Salmon"].map((type) =>
                   GestureDetector(
                     onTap: () => setState(() => _selectedType = type),
                     child: Container(
@@ -142,35 +142,35 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
                       ),
                     ),
                   )
-                ).toList(),
-              ),
+              ).toList(),
             ),
+          ),
 
-            Block(),
+          Block(),
 
-            Text(
-              "TODAY'S ARRIVALS",
-              style: TextStyle(
-                fontFamily: 'Inter',
-                color: Color(0xFF000000),
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-              ),
+          Text(
+            "TODAY'S ARRIVALS",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              color: Color(0xFF000000),
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
             ),
+          ),
 
-            Block(),
+          Block(),
 
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: _filteredBatches.length,
-              itemBuilder: (context, index) => PendingBatchCard(
-                batch: _filteredBatches[index],
-              ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _filteredBatches.length,
+            itemBuilder: (context, index) => PendingBatchCard(
+              batch: _filteredBatches[index],
             ),
+          ),
 
 
-          ]
+        ]
         ),
       ),
     );
