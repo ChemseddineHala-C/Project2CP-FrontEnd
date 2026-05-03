@@ -1078,6 +1078,15 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        //pour verify token
+        print("RESPONSE DATA: $data");
+        print("TOKEN: ${data['token']}");
+        print("ROLE: $role");
+
+        if (data['token'] == null) {
+          emit(AuthError("Token null reçu du backend"));
+          return;
+        }
 
         // ✅ Sauvegarde token + role reçus du backend
         await _saveTokenAndRole(
