@@ -356,13 +356,11 @@ class AuthCubit extends Cubit<AuthState> {
     required String fullName,
     required String nationalId,
     required String phone,
-    required String email,
-    required String boatName,
-    required String registrationNumber,
-    required String vesselType,
     required String homePort,
     required String licenseNumber,
     required String expiryDate,
+    required String boatName,
+    required String registrationNumber,
     File? fishingLicense,
     File? boatRegistration,
     File? Idcard,
@@ -374,44 +372,122 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/complete-setup-fishmen"));
-      request.headers.addAll({
-        "Authorization": "Bearer $token",
-      });
 
-      request.fields['fullName'] = fullName;
-      request.fields['nationalId'] = nationalId;
-      request.fields['phone'] = phone;
-      request.fields['email'] = email;
-      request.fields['boatName'] = boatName;
-      request.fields['registrationNumber'] = registrationNumber;
-      request.fields['vesselType'] = vesselType;
-      request.fields['homePort'] = homePort;
-      request.fields['licenseNumber'] = licenseNumber;
-      request.fields['expiryDate'] = expiryDate;
+      // ✅ Step 1 — Setup fisherman
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse("$_baseUrl/fishermen/setup"), // ← URL corrigée
+      );
+      request.headers.addAll({"Authorization": "Bearer $token"});
 
+      // ✅ Field names corrigés selon backend
+      request.fields['full_name']              = fullName;
+      request.fields['national_id']            = nationalId;
+      request.fields['phone_number']           = phone;
+      request.fields['home_port']              = homePort;
+      request.fields['fishing_license_number'] = licenseNumber;
+      request.fields['license_expiry_date']    = expiryDate;
+
+      // ✅ File names corrigés selon backend
       if (fishingLicense != null) {
-        request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicense.path));
+        request.files.add(await http.MultipartFile.fromPath('fishing_license', fishingLicense.path));
       }
       if (boatRegistration != null) {
-        request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistration.path));
+        request.files.add(await http.MultipartFile.fromPath('boat_registration', boatRegistration.path));
       }
       if (Idcard != null) {
-        request.files.add(await http.MultipartFile.fromPath('Id-Card', Idcard.path));
+        request.files.add(await http.MultipartFile.fromPath('id_card', Idcard.path));
       }
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        emit(AuthError("Setup failed: ${response.body}"));
+        return;
+      }
+
+      // ✅ Step 2 — Créer le bateau séparément
+      final boatResponse = await _authorizedRequest(//send information of boat
+        "POST",
+        "$_baseUrl/boats",
+        body: {
+          "boat_name":            boatName,
+          "registration_number":  registrationNumber,
+          "home_port":            homePort,
+        },
+      );
+
+      if (boatResponse.statusCode == 200 || boatResponse.statusCode == 201) {
         emit(SetupSuccess());
       } else {
-        emit(AuthError("Setup failed: ${response.body}"));
+        emit(AuthError("Boat creation failed: ${boatResponse.body}"));
       }
+
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
+  // Future<void> submitSetup({
+  //   required String fullName,
+  //   required String nationalId,
+  //   required String phone,
+  //   required String email,
+  //   required String boatName,
+  //   required String registrationNumber,
+  //   required String vesselType,
+  //   required String homePort,
+  //   required String licenseNumber,
+  //   required String expiryDate,
+  //   File? fishingLicense,
+  //   File? boatRegistration,
+  //   File? Idcard,
+  // }) async {
+  //   try {
+  //     emit(SetupLoading());
+  //     String? token = await _getToken();
+  //     if (token == null) {
+  //       emit(AuthError("No token found"));
+  //       return;
+  //     }
+  //     var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/complete-setup-fishmen"));
+  //     request.headers.addAll({
+  //       "Authorization": "Bearer $token",
+  //     });
+  //
+  //     request.fields['fullName'] = fullName;
+  //     request.fields['nationalId'] = nationalId;
+  //     request.fields['phone'] = phone;
+  //     request.fields['email'] = email;
+  //     request.fields['boatName'] = boatName;
+  //     request.fields['registrationNumber'] = registrationNumber;
+  //     request.fields['vesselType'] = vesselType;
+  //     request.fields['homePort'] = homePort;
+  //     request.fields['licenseNumber'] = licenseNumber;
+  //     request.fields['expiryDate'] = expiryDate;
+  //
+  //     if (fishingLicense != null) {
+  //       request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicense.path));
+  //     }
+  //     if (boatRegistration != null) {
+  //       request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistration.path));
+  //     }
+  //     if (Idcard != null) {
+  //       request.files.add(await http.MultipartFile.fromPath('Id-Card', Idcard.path));
+  //     }
+  //
+  //     var streamedResponse = await request.send();
+  //     var response = await http.Response.fromStream(streamedResponse);
+  //
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       emit(SetupSuccess());
+  //     } else {
+  //       emit(AuthError("Setup failed: ${response.body}"));
+  //     }
+  //   } catch (e) {
+  //     emit(AuthError(e.toString()));
+  //   }
+  // }
 
   // --- LOGOUT+api ---
   Future<void> logout() async {
