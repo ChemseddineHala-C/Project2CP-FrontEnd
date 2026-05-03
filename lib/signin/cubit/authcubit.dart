@@ -19,43 +19,45 @@ class AuthCubit extends Cubit<AuthState> {
   );
 
   // Sauvegarde token ET role ensemble
-  Future<void> _saveTokenAndRole(String token, String role,{String? refreshToken}) async {
+  Future<void> _saveTokenAndRole(String token, String role,
+      // {String? refreshToken}
+      ) async {
     await storage.write(key: "token", value: token);
     await storage.write(key: "role", value: role);
-    if (refreshToken != null) {
-      await storage.write(key: "refresh_token", value: refreshToken);
-    }
+    // if (refreshToken != null) {
+    //   await storage.write(key: "refresh_token", value: refreshToken);
+    // }
   }
   //---refresh token---
-  Future<bool> _refreshToken() async {
-    try {
-      final refreshToken = await storage.read(key: "refresh_token");
-      if (refreshToken == null) return false;
-
-      final response = await http.post(
-        Uri.parse("$_baseUrl/refresh-token-fishmen"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"refresh_token": refreshToken}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        // Mettre à jour les tokens
-        await storage.write(key: "token", value: data['token']);
-        if (data['refresh_token'] != null) {
-          await storage.write(key: "refresh_token", value: data['refresh_token']);
-        }
-        return true;
-      } else {
-        // Refresh token expiré → logout
-        await _clearSession();
-        emit(AuthInitial());
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
+  // Future<bool> _refreshToken() async {
+  //   try {
+  //     final refreshToken = await storage.read(key: "refresh_token");
+  //     if (refreshToken == null) return false;
+  //
+  //     final response = await http.post(
+  //       Uri.parse("$_baseUrl/refresh-token-fishmen"),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode({"refresh_token": refreshToken}),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       // Mettre à jour les tokens
+  //       await storage.write(key: "token", value: data['token']);
+  //       if (data['refresh_token'] != null) {
+  //         await storage.write(key: "refresh_token", value: data['refresh_token']);
+  //       }
+  //       return true;
+  //     } else {
+  //       // Refresh token expiré → logout
+  //       await _clearSession();
+  //       emit(AuthInitial());
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
 
   //---Remplace http---
   Future<http.Response> _authorizedRequest(
@@ -89,13 +91,13 @@ class AuthCubit extends Cubit<AuthState> {
     var response = await makeRequest(token);
 
     // Si token expiré → on tente le refresh
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshToken();
-      if (refreshed) {
-        token = await _getToken();
-        response = await makeRequest(token!); // on réessaie
-      }
-    }
+    // if (response.statusCode == 401) {
+    //   final refreshed = await _refreshToken();
+    //   if (refreshed) {
+    //     token = await _getToken();
+    //     response = await makeRequest(token!); // on réessaie
+    //   }
+    // }
 
     return response;
   }
@@ -114,7 +116,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> _clearSession() async {
     await storage.delete(key: "token");
     await storage.delete(key: "role");
-    await storage.delete(key: "refresh_token");
+    // await storage.delete(key: "refresh_token");
   }
   // --- LOGIN GOOGLE+API ---
   // Future<void> signInWithGoogle() async {
