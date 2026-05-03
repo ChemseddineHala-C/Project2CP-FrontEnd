@@ -19,14 +19,23 @@ class AuthCubit extends Cubit<AuthState> {
   );
 
   // Sauvegarde token ET role ensemble
-  Future<void> _saveTokenAndRole(String token, String role,
-      // {String? refreshToken}
-      ) async {
+  // Future<void> _saveTokenAndRole(String token, String role,
+  //     // {String? refreshToken}
+  //     ) async {
+  //   await storage.write(key: "token", value: token);
+  //   await storage.write(key: "role", value: role);
+  //   // if (refreshToken != null) {
+  //   //   await storage.write(key: "refresh_token", value: refreshToken);
+  //   // }
+  // }
+  // Dans _saveTokenAndRole — ajouter print pour vérifier
+  Future<void> _saveTokenAndRole(String token, String role, {String? refreshToken}) async {
     await storage.write(key: "token", value: token);
     await storage.write(key: "role", value: role);
-    // if (refreshToken != null) {
-    //   await storage.write(key: "refresh_token", value: refreshToken);
-    // }
+
+    // 🔍 DEBUG — vérifier que la sauvegarde a fonctionné
+    final savedToken = await storage.read(key: "token");
+    print("TOKEN SAUVEGARDÉ: $savedToken");
   }
   //---refresh token---
   // Future<bool> _refreshToken() async {
@@ -368,6 +377,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       emit(SetupLoading());
       String? token = await _getToken();
+      print("TOKEN DANS SUBMITSETUP: $token");
       if (token == null) {
         emit(AuthError("No token found"));
         return;
@@ -401,6 +411,8 @@ class AuthCubit extends Cubit<AuthState> {
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         emit(AuthError("Setup failed: ${response.body}"));
