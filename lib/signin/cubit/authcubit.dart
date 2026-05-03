@@ -408,7 +408,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       // ✅ Step 2 — Créer le bateau séparément
-      final boatResponse = await _authorizedRequest(
+      final boatResponse = await _authorizedRequest(//send information of boat
         "POST",
         "$_baseUrl/boats",
         body: {
