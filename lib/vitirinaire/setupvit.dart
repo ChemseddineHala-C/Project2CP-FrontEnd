@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:fishapp/vitirinaire/profilevit.dart';
+import 'package:fishapp/vitirinaire/succesverfc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,13 +21,12 @@ class _SetupVitpageState extends State<SetupVitpage> {
   final _nationalIdVitController = TextEditingController();
   final _phoneVitController = TextEditingController();
   final _emailVitController = TextEditingController();
-  final _boatNameVitController = TextEditingController();
+  final _specializationController = TextEditingController();
   final _registrationVitController = TextEditingController();
-  final _homePortVitController = TextEditingController();
   final _licenseVitController = TextEditingController();
   final _expiryVitController = TextEditingController();
   File? _fishingLicenseFileVit;
-  File? _boatRegistrationFileVit;
+  File? _idcardFileVit;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -34,29 +35,71 @@ class _SetupVitpageState extends State<SetupVitpage> {
     _nationalIdVitController.dispose();
     _phoneVitController.dispose();
     _emailVitController.dispose();
-    _boatNameVitController.dispose();
+    _specializationController.dispose();
     _registrationVitController.dispose();
-    _homePortVitController.dispose();
     _licenseVitController.dispose();
     _expiryVitController.dispose();
     super.dispose();
   }
+  Future<void> _pickFile(String type) async {
+    try {
+      // ✅ الطريقة الصحيحة والمحدثة لاختيار الملفات (بدون .platform)
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
 
-  Future<void> _pickFile(bool isLicense) async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        if (isLicense) {
-          _fishingLicenseFileVit = File(pickedFile.path);
-        } else {
-          _boatRegistrationFileVit = File(pickedFile.path);
-        }
-      });
+      if (result != null && result.files.single.path != null) {
+        File selectedFile = File(result.files.single.path!);
+
+        setState(() {
+          switch (type) {
+            case "license":
+              _fishingLicenseFileVit = selectedFile;
+              break;
+            case "idcard":
+              _idcardFileVit = selectedFile;
+              break;
+          }
+        });
+
+        // رسالة تأكيد اختيار الملف
+        String fileName = result.files.single.name;
+        String fileType = fileName.toLowerCase().contains('.pdf')
+            ? 'PDF'
+            : 'Image';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OK $fileType: $fileName'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print('No file');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
     }
   }
+  // Future<void> _pickFile(bool isLicense) async {
+  //   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       if (isLicense) {
+  //         _fishingLicenseFileVit = File(pickedFile.path);
+  //       } else {
+  //         _idcardFileVit = File(pickedFile.path);
+  //       }
+  //     });
+  //   }
+  // }
 
   void _submit() {
-    if (_fullNameVitController.text.isEmpty || _boatNameVitController.text.isEmpty || _licenseVitController.text.isEmpty) {
+    if (_fullNameVitController.text.isEmpty || _specializationController.text.isEmpty || _licenseVitController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields")),
       );
@@ -70,14 +113,12 @@ class _SetupVitpageState extends State<SetupVitpage> {
       fullNameVit: _fullNameVitController.text.trim(),
       nationalIdVit: _nationalIdVitController.text.trim(),
       phoneVit: _phoneVitController.text.trim(),
-      emailVit: _emailVitController.text.trim(),
-      boatNameVit: _boatNameVitController.text.trim(),
+      specialization: _specializationController.text.trim(),
       registrationNumberVit: _registrationVitController.text.trim(),
-      homePortVit: _homePortVitController.text.trim(),
       licenseNumberVit: _licenseVitController.text.trim(),
       expiryDateVit: _expiryVitController.text.trim(),
       fishingLicenseVit: _fishingLicenseFileVit,
-      boatRegistrationVit: _boatRegistrationFileVit,
+      Idcard: _idcardFileVit,
     );
   }
 
@@ -125,30 +166,31 @@ class _SetupVitpageState extends State<SetupVitpage> {
                     _label("Phone Number"),
                     customTextField("+213 674854088", _phoneVitController),
                     const SizedBox(height: 16),
-                    _label("Email Address"),
-                    customTextField("Projet@esi-sba.dz", _emailVitController),
+                    // _label("Email Address"),
+                    // customTextField("Projet@esi-sba.dz", _emailVitController),
                   ],
                 ),
-                const SizedBox(height: 20),
-                _buildSection(
-                  number: "2",
-                  title: "Boat Details",
-                  children: [
-                    _label("Boat Name"),
-                    customTextField("Sea's King", _boatNameVitController),
-                    const SizedBox(height: 16),
-                    _label("Registration Number"),
-                    customTextField("REG-8829-X", _registrationVitController),
-                    const SizedBox(height: 16),
-                    _label("Home Port"),
-                    portTextField("City, Port Name", _homePortVitController),
-                  ],
-                ),
+                // const SizedBox(height: 20),
+                // _buildSection(
+                //   number: "2",
+                //   title: "Boat Details",
+                //   children: [
+                //     _label("Boat Name"),
+                //     customTextField("Sea's King", _boatNameVitController),
+                //     const SizedBox(height: 16),
+                //     _label("Registration Number"),
+                //     customTextField("REG-8829-X", _registrationVitController),
+                //     const SizedBox(height: 16),
+                //   ],
+                // ),
                 const SizedBox(height: 20),
                 _buildSection(
                   number: "3",
                   title: "Licenses & Documents",
                   children: [
+                    _label("Specialization #"),
+                    customTextField("LIC-00-1122", _specializationController),
+                    const SizedBox(height: 16),
                     _label("Primary License #"),
                     customTextField("LIC-00-1122", _licenseVitController),
                     const SizedBox(height: 16),
@@ -157,9 +199,9 @@ class _SetupVitpageState extends State<SetupVitpage> {
                     const SizedBox(height: 24),
                     const Text("Required Uploads (PDF or JPG)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
                     const SizedBox(height: 16),
-                    _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFileVit, () => _pickFile(true)),
+                    _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFileVit, () => _pickFile("license")),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.directions_boat, "Boat Registration", _boatRegistrationFileVit, () => _pickFile(false)),
+                    _buildUploadTile(Icons.directions_boat, "ID Card", _idcardFileVit, () => _pickFile("idcard")),
                   ],
                 ),
                 const SizedBox(height: 32),
