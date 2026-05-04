@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http_parser/http_parser.dart'; 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -388,7 +389,7 @@ class AuthCubit extends Cubit<AuthState> {
         'POST',
         Uri.parse("$_baseUrl/fishermen/setup"), // ← URL corrigée
       );
-      request.headers.addAll({"Authorization": "Bearer $token"});
+      request.headers['Authorization'] = 'Bearer $token';
 
       // ✅ Field names corrigés selon backend
       request.fields['full_name']              = fullName;
@@ -399,14 +400,45 @@ class AuthCubit extends Cubit<AuthState> {
       request.fields['license_expiry_date']    = expiryDate;
 
       // ✅ File names corrigés selon backend
+            MediaType _getMediaType(File file) {
+        String path = file.path.toLowerCase();
+        if (path.endsWith('.png')) {
+          return MediaType('image', 'png');
+        } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+          return MediaType('image', 'jpeg');
+        } else if (path.endsWith('.pdf')) {
+          return MediaType('application', 'pdf');
+        } else {
+          return MediaType('application', 'octet-stream');
+        }
+      }
+
+      // ✅ إضافة الملفات مع تحديد MIME type صحيح
       if (fishingLicense != null) {
-        request.files.add(await http.MultipartFile.fromPath('fishing_license', fishingLicense.path));
+          var file = await http.MultipartFile.fromPath(
+              'fishing_license', 
+              fishingLicense.path,
+              contentType: _getMediaType(fishingLicense), // تحديد نوع الملف
+          );
+          request.files.add(file);
       }
+
       if (boatRegistration != null) {
-        request.files.add(await http.MultipartFile.fromPath('boat_registration', boatRegistration.path));
+          var file = await http.MultipartFile.fromPath(
+              'boat_registration', 
+              boatRegistration.path,
+              contentType: _getMediaType(boatRegistration),
+          );
+          request.files.add(file);
       }
+
       if (Idcard != null) {
-        request.files.add(await http.MultipartFile.fromPath('id_card', Idcard.path));
+          var file = await http.MultipartFile.fromPath(
+              'id_card', 
+              Idcard.path,
+              contentType: _getMediaType(Idcard),
+          );
+          request.files.add(file);
       }
 
       var streamedResponse = await request.send();

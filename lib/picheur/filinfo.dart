@@ -1,7 +1,7 @@
-import 'dart:io';
+import 'dart:io' hide Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import 'homepage.dart';
@@ -14,19 +14,19 @@ class Infopage extends StatefulWidget {
 }
 
 class _InfopageState extends State<Infopage> {
-  final _fullNameController      = TextEditingController();
-  final _nationalIdController    = TextEditingController();
-  final _phoneController         = TextEditingController();
-  final _boatNameController      = TextEditingController();
-  final _registrationController  = TextEditingController();
-  final _homePortController      = TextEditingController();
-  final _licenseController       = TextEditingController();
-  final _expiryController        = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _nationalIdController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _boatNameController = TextEditingController();
+  final _registrationController = TextEditingController();
+  final _homePortController = TextEditingController();
+  final _licenseController = TextEditingController();
+  final _expiryController = TextEditingController();
 
   File? _fishingLicenseFile;
   File? _boatRegistrationFile;
   File? _IdcardFile;
-  final ImagePicker _picker = ImagePicker();
+  //final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -41,18 +41,67 @@ class _InfopageState extends State<Infopage> {
     super.dispose();
   }
 
+  // Future<void> _pickFile(String type) async {
+  //   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       if (type == "license") {
+  //         _fishingLicenseFile = File(pickedFile.path);
+  //       } else if (type == "boat") {
+  //         _boatRegistrationFile = File(pickedFile.path);
+  //       } else if (type == "idcard") {
+  //         _IdcardFile = File(pickedFile.path);
+  //       }
+  //     });
+  //   }
+  // }
+
+  // قم باستبدال دالة _pickFile بالكامل بهذا الكود
   Future<void> _pickFile(String type) async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        if (type == "license") {
-          _fishingLicenseFile = File(pickedFile.path);
-        } else if (type == "boat") {
-          _boatRegistrationFile = File(pickedFile.path);
-        } else if (type == "idcard") {
-          _IdcardFile = File(pickedFile.path);
-        }
-      });
+    try {
+      // ✅ الطريقة الصحيحة والمحدثة لاختيار الملفات (بدون .platform)
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        File selectedFile = File(result.files.single.path!);
+
+        setState(() {
+          switch (type) {
+            case "license":
+              _fishingLicenseFile = selectedFile;
+              break;
+            case "boat":
+              _boatRegistrationFile = selectedFile;
+              break;
+            case "idcard":
+              _IdcardFile = selectedFile;
+              break;
+          }
+        });
+
+        // رسالة تأكيد اختيار الملف
+        String fileName = result.files.single.name;
+        String fileType = fileName.toLowerCase().contains('.pdf')
+            ? 'PDF'
+            : 'Image';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OK $fileType: $fileName'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print('No file');
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -79,17 +128,17 @@ class _InfopageState extends State<Infopage> {
 
     // ✅ Envoie au backend — listener gère la navigation
     context.read<AuthCubit>().submitSetup(
-      fullName:           _fullNameController.text.trim(),
-      nationalId:         _nationalIdController.text.trim(),
-      phone:              _phoneController.text.trim(),
-      homePort:           _homePortController.text.trim(),
-      licenseNumber:      _licenseController.text.trim(),
-      expiryDate:         _expiryController.text.trim(),
-      boatName:           _boatNameController.text.trim(),
+      fullName: _fullNameController.text.trim(),
+      nationalId: _nationalIdController.text.trim(),
+      phone: _phoneController.text.trim(),
+      homePort: _homePortController.text.trim(),
+      licenseNumber: _licenseController.text.trim(),
+      expiryDate: _expiryController.text.trim(),
+      boatName: _boatNameController.text.trim(),
       registrationNumber: _registrationController.text.trim(),
-      fishingLicense:     _fishingLicenseFile,
-      boatRegistration:   _boatRegistrationFile,
-      Idcard:             _IdcardFile,
+      fishingLicense: _fishingLicenseFile,
+      boatRegistration: _boatRegistrationFile,
+      Idcard: _IdcardFile,
     );
   }
 
@@ -100,10 +149,13 @@ class _InfopageState extends State<Infopage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text("Setup",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black)),
+        title: Text(
+          "Setup",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
@@ -115,7 +167,10 @@ class _InfopageState extends State<Infopage> {
             );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -136,13 +191,25 @@ class _InfopageState extends State<Infopage> {
                   title: "Personal Information",
                   children: [
                     _label("Full Name"),
-                    customTextField("Enter your full name", _fullNameController, isDark),
+                    customTextField(
+                      "Enter your full name",
+                      _fullNameController,
+                      isDark,
+                    ),
                     const SizedBox(height: 16),
                     _label("National ID/Passport"),
-                    customTextField("Enter National Id", _nationalIdController, isDark),
+                    customTextField(
+                      "Enter National Id",
+                      _nationalIdController,
+                      isDark,
+                    ),
                     const SizedBox(height: 16),
                     _label("Phone Number"),
-                    customTextField("Enter your phone number", _phoneController, isDark),
+                    customTextField(
+                      "Enter your phone number",
+                      _phoneController,
+                      isDark,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -154,13 +221,25 @@ class _InfopageState extends State<Infopage> {
                   title: "Boat details",
                   children: [
                     _label("Boat Name"),
-                    customTextField("Enter your Boat name", _boatNameController, isDark),
+                    customTextField(
+                      "Enter your Boat name",
+                      _boatNameController,
+                      isDark,
+                    ),
                     const SizedBox(height: 16),
                     _label("Registration Number"),
-                    customTextField("Enter your Registration Number", _registrationController, isDark),
+                    customTextField(
+                      "Enter your Registration Number",
+                      _registrationController,
+                      isDark,
+                    ),
                     const SizedBox(height: 16),
                     _label("Home Port"),
-                    portTextField("City, Port Name", _homePortController, isDark),
+                    portTextField(
+                      "City, Port Name",
+                      _homePortController,
+                      isDark,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -180,19 +259,37 @@ class _InfopageState extends State<Infopage> {
                     Text(
                       "Required Uploads (PDF or JPG)",
                       style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.cyanAccent : const Color(0xFF033F78)),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? Colors.cyanAccent
+                            : const Color(0xFF033F78),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    _buildUploadTile(Icons.description, "Fishing License",
-                        _fishingLicenseFile, () => _pickFile("license"), isDark),
+                    _buildUploadTile(
+                      Icons.description,
+                      "Fishing License",
+                      _fishingLicenseFile,
+                      () => _pickFile("license"),
+                      isDark,
+                    ),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.directions_boat, "Boat Registration",
-                        _boatRegistrationFile, () => _pickFile("boat"), isDark),
+                    _buildUploadTile(
+                      Icons.directions_boat,
+                      "Boat Registration",
+                      _boatRegistrationFile,
+                      () => _pickFile("boat"),
+                      isDark,
+                    ),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.add_card_outlined, "ID Card",
-                        _IdcardFile, () => _pickFile("idcard"), isDark),
+                    _buildUploadTile(
+                      Icons.add_card_outlined,
+                      "ID Card",
+                      _IdcardFile,
+                      () => _pickFile("idcard"),
+                      isDark,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 30),
@@ -203,13 +300,23 @@ class _InfopageState extends State<Infopage> {
                   child: ElevatedButton(
                     onPressed: state is SetupLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF01A896) : const Color(0xFF033F78),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: isDark
+                          ? const Color(0xFF01A896)
+                          : const Color(0xFF033F78),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: state is SetupLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Complete Setup",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        : const Text(
+                            "Complete Setup",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -238,7 +345,7 @@ class _InfopageState extends State<Infopage> {
           BoxShadow(
             color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
             blurRadius: 10,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -248,11 +355,22 @@ class _InfopageState extends State<Infopage> {
             children: [
               CircleAvatar(
                 radius: 15,
-                backgroundColor: isDark ? const Color(0xFF01A896) : const Color(0xFF033F78),
-                child: Text(number, style: const TextStyle(color: Colors.white)),
+                backgroundColor: isDark
+                    ? const Color(0xFF01A896)
+                    : const Color(0xFF033F78),
+                child: Text(
+                  number,
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
               const SizedBox(width: 12),
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -264,29 +382,54 @@ class _InfopageState extends State<Infopage> {
 
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+    ),
   );
 
-  Widget _buildUploadTile(IconData icon, String title, File? file, VoidCallback onTap, bool isDark) {
+  Widget _buildUploadTile(
+    IconData icon,
+    String title,
+    File? file,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFC),
+        color: isDark
+            ? Colors.white.withOpacity(0.05)
+            : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: isDark ? Colors.cyanAccent : const Color(0xFF033F78)),
+          Icon(
+            icon,
+            color: isDark ? Colors.cyanAccent : const Color(0xFF033F78),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 Text(
                   file != null ? file.path.split('/').last : "Not uploaded",
-                  style: TextStyle(color: file != null ? Colors.green : Colors.grey, fontSize: 12),
+                  style: TextStyle(
+                    color: file != null ? Colors.green : Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -294,10 +437,16 @@ class _InfopageState extends State<Infopage> {
           ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
-              foregroundColor: isDark ? Colors.cyanAccent : const Color(0xFF033F78),
+              backgroundColor: isDark
+                  ? Colors.white12
+                  : const Color(0xFFE3F2FD),
+              foregroundColor: isDark
+                  ? Colors.cyanAccent
+                  : const Color(0xFF033F78),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(file != null ? "Change" : "Upload"),
           ),
@@ -311,7 +460,10 @@ class _InfopageState extends State<Infopage> {
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
-          style: TextStyle(fontSize: 11, color: isDark ? Colors.white54 : Colors.grey),
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark ? Colors.white54 : Colors.grey,
+          ),
           children: [
             const TextSpan(text: "By completing setup, you agree to Finder's "),
             TextSpan(
@@ -329,42 +481,48 @@ class _InfopageState extends State<Infopage> {
   }
 }
 
-Widget customTextField(String hint, TextEditingController controller, bool isDark) {
+Widget customTextField(
+  String hint,
+  TextEditingController controller,
+  bool isDark,
+) {
   return TextField(
     controller: controller,
     decoration: InputDecoration(
       hintText: hint,
       filled: true,
-      fillColor: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFB),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      fillColor: isDark
+          ? Colors.white.withOpacity(0.05)
+          : const Color(0xFFF8FAFB),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
     ),
   );
 }
 
-Widget portTextField(String hint, TextEditingController controller, bool isDark) {
+Widget portTextField(
+  String hint,
+  TextEditingController controller,
+  bool isDark,
+) {
   return TextField(
     controller: controller,
     decoration: InputDecoration(
       prefixIcon: const Icon(Icons.location_on, color: Colors.lightBlueAccent),
       hintText: hint,
       filled: true,
-      fillColor: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8FAFB),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      fillColor: isDark
+          ? Colors.white.withOpacity(0.05)
+          : const Color(0xFFF8FAFB),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
     ),
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'dart:io';
 // import 'package:flutter/material.dart';
