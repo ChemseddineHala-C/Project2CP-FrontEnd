@@ -18,7 +18,6 @@ class _SetupConpageState extends State<SetupConspage> {
   final _fullNameConsController = TextEditingController();
   final _nationalIdConsController = TextEditingController();
   final _phoneConsController = TextEditingController();
-  final _emailConsController = TextEditingController();
   final _deleveryaddressConsController = TextEditingController();
   final _nearbyPortConsController = TextEditingController();
 
@@ -27,7 +26,6 @@ class _SetupConpageState extends State<SetupConspage> {
     _fullNameConsController.dispose();
     _nationalIdConsController.dispose();
     _phoneConsController.dispose();
-    _emailConsController.dispose();
     _deleveryaddressConsController.dispose();
     _nearbyPortConsController.dispose();
     super.dispose();
@@ -48,7 +46,6 @@ class _SetupConpageState extends State<SetupConspage> {
       fullNameCons: _fullNameConsController.text.trim(),
       nationalIdCons: _nationalIdConsController.text.trim(),
       phoneCons: _phoneConsController.text.trim(),
-      emailCons: _emailConsController.text.trim(),
       delevryAddress: _deleveryaddressConsController.text.trim(),
       nearbyPortCons: _nearbyPortConsController.text.trim(),
     );
@@ -138,9 +135,6 @@ class _SetupConpageState extends State<SetupConspage> {
                       const SizedBox(height: 16),
                       _label("Phone Number"),
                       _buildTextField("+213 674854088", _phoneConsController, isDark),
-                      const SizedBox(height: 16),
-                      _label("Email Address"),
-                      _buildTextField("Projet@esi-sba.dz", _emailConsController, isDark),
                       const SizedBox(height: 16),
                       _label("Delevery Address"),
                       _buildTextField("eg.. Rue El Wiam Sidi Bel Abbes", _deleveryaddressConsController, isDark),

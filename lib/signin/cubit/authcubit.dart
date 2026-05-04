@@ -762,53 +762,89 @@ class AuthCubit extends Cubit<AuthState> {
     required String fullNameVit,
     required String nationalIdVit,
     required String phoneVit,
-    required String emailVit,
-    required String boatNameVit,
+    // required String emailVit,
+    // required String boatNameVit,
+    required String specialization,
     required String registrationNumberVit,
-    required String homePortVit,
+    // required String homePortVit,
     required String licenseNumberVit,
     required String expiryDateVit,
     File? fishingLicenseVit,
-    File? boatRegistrationVit,
+    File? Idcard,
   }) async {
     try {
       emit(SetupLoading());
       String? token = await _getToken();
+      print("TOKEN DANS SUBMITSETUP: $token");
       if (token == null) {
         emit(AuthError("No token found"));
         return;
       }
-      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/api/complete-setup"));
-      request.headers.addAll({
-        "Authorization": "Bearer $token",
-        "Content-Type": "multipart/form-data",
-      });
+      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/veterinarians/setup"));
+      // request.headers.addAll({
+      //   "Authorization": "Bearer $token",
+      //   "Content-Type": "multipart/form-data",
+      // });
+      request.headers['Authorization'] = 'Bearer $token';
 
-      request.fields['fullNameVit'] = fullNameVit;
-      request.fields['nationalIdVit'] = nationalIdVit;
-      request.fields['phoneVit'] = phoneVit;
-      request.fields['emailVit'] = emailVit;
-      request.fields['boatNameVit'] = boatNameVit;
-      request.fields['registrationNumberVit'] = registrationNumberVit;
-      request.fields['homePortVit'] = homePortVit;
-      request.fields['licenseNumberVit'] = licenseNumberVit;
-      request.fields['expiryDateVit'] = expiryDateVit;
+      request.fields['full_name'] = fullNameVit;
+      request.fields['national_id'] = nationalIdVit;
+      request.fields['phone_number'] = phoneVit;
+      request.fields['specialization'] = specialization;
+      request.fields['license_number'] = licenseNumberVit;
+      request.fields['license_expiry'] = expiryDateVit;
 
+      MediaType _getMediaType(File file) {
+      String path = file.path.toLowerCase();
+      if (path.endsWith('.png')) {
+        return MediaType('image', 'png');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        return MediaType('image', 'jpeg');
+      } else if (path.endsWith('.pdf')) {
+        return MediaType('application', 'pdf');
+      } else {
+        return MediaType('application', 'octet-stream');
+      }
+    }
+
+      // if (fishingLicenseVit != null) {
+      //   request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicenseVit.path));
+      // }
       if (fishingLicenseVit != null) {
-        request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicenseVit.path));
-      }
-      if (boatRegistrationVit != null) {
-        request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistrationVit.path));
-      }
+      var file = await http.MultipartFile.fromPath(
+        'fishing_license',
+        fishingLicenseVit.path,
+        contentType: _getMediaType(fishingLicenseVit), // تحديد نوع الملف
+      );
+      request.files.add(file);
+    }
+      // if (boatRegistrationVit != null) {
+      //   request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistrationVit.path));
+      // }
+      if (Idcard != null) {
+      var file = await http.MultipartFile.fromPath(
+        'id_card',
+        Idcard.path,
+        contentType: _getMediaType(Idcard),
+      );
+      request.files.add(file);
+    }
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        emit(SetupSuccess());
-      } else {
-        emit(AuthError("Setup failed: ${response.body}"));
-      }
+      // if (response.statusCode == 200 || response.statusCode == 201) {
+      //   emit(SetupSuccess());
+      // }
+      if (response.statusCode != 200 && response.statusCode != 201) {
+      emit(AuthError("Setup failed: ${response.body}"));
+      return;
+    }
+      // else {
+      //   emit(AuthError("Setup failed: ${response.body}"));
+      // }
     } catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -939,39 +975,42 @@ class AuthCubit extends Cubit<AuthState> {
     required String fullNameCons,
     required String nationalIdCons,
     required String phoneCons,
-    required String emailCons,
     required String delevryAddress,
     required String nearbyPortCons,
   }) async {
     try {
       emit(SetupLoading());
       String? token = await _getToken();
+      print("TOKEN DANS SUBMITSETUP: $token");
       if (token == null) {
         emit(AuthError("No token found"));
         return;
       }
 
-      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/api/complete-setup"));
-      request.headers.addAll({
-        "Authorization": "Bearer $token",
-        "Content-Type": "multipart/form-data",
-      });
+      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/customers/setup"));
+      // request.headers.addAll({
+      //   "Authorization": "Bearer $token",
+      //   "Content-Type": "multipart/form-data",
+      // });
+      request.headers['Authorization'] = 'Bearer $token';
 
-      request.fields['fullNameCons'] = fullNameCons;
-      request.fields['nationalIdCons'] = nationalIdCons;
-      request.fields['phoneCons'] = phoneCons;
-      request.fields['emailCons'] = emailCons;
-      request.fields['delevryAddress'] = delevryAddress;
-      request.fields['nearbyPort'] = nearbyPortCons;
+      request.fields['full_name'] = fullNameCons;
+      request.fields['national_id'] = nationalIdCons;
+      request.fields['phone_number'] = phoneCons;
+      request.fields['delivery_address'] = delevryAddress;
+      request.fields['nearby_port'] = nearbyPortCons;
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        emit(SetupSuccess());
-      } else {
-        emit(AuthError("Setup failed: ${response.body}"));
-      }
+      if (response.statusCode != 200 && response.statusCode != 201) {
+      emit(AuthError("Setup failed: ${response.body}"));
+      return;
+    }
+      // if (response.statusCode == 200 || response.statusCode == 201) {
+      //   emit(SetupSuccess());
+      // } else {
+      //   emit(AuthError("Setup failed: ${response.body}"));
+      // }
     } catch (e) {
       emit(AuthError(e.toString()));
     }
