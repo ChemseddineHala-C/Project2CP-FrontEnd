@@ -344,15 +344,60 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       // ✅ Step 2 — Mettre à jour la photo si sélectionnée
+      // if (profileImage != null) {
+      //   var photoRequest = http.MultipartRequest(
+      //     'PUT',
+      //     Uri.parse("$_baseUrl/fishermen/me/photo"),
+      //   );
+      //   photoRequest.headers['Authorization'] = 'Bearer $token';
+      //   photoRequest.files.add(
+      //     await http.MultipartFile.fromPath('profile_photo', profileImage.path),
+      //   );
+      //
+      //   var photoStreamed = await photoRequest.send();
+      //   var photoResponse = await http.Response.fromStream(photoStreamed);
+      //
+      //   print("PHOTO STATUS: ${photoResponse.statusCode}");
+      //   print("PHOTO RESPONSE: ${photoResponse.body}");
+      //
+      //   if (photoResponse.statusCode != 200) {
+      //     emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+      //     return;
+      //   }
+      // }
+      // ✅ Step 2 — Mettre à jour la photo avec contentType
       if (profileImage != null) {
         var photoRequest = http.MultipartRequest(
           'PUT',
           Uri.parse("$_baseUrl/fishermen/me/photo"),
         );
         photoRequest.headers['Authorization'] = 'Bearer $token';
+
+        // ✅ Détecter le type du fichier
+        MediaType _getMediaType(File file) {
+          String path = file.path.toLowerCase();
+          if (path.endsWith('.png')) {
+            return MediaType('image', 'png');
+          } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+            return MediaType('image', 'jpeg');
+          } else if (path.endsWith('.pdf')) {
+            return MediaType('application', 'pdf');
+          } else {
+            return MediaType('application', 'octet-stream');
+          }
+        }
+
         photoRequest.files.add(
-          await http.MultipartFile.fromPath('profile_photo', profileImage.path),
+          await http.MultipartFile.fromPath(
+            'profile_photo',
+            profileImage.path,
+            contentType: _getMediaType(profileImage), // ← ajouter ça
+          ),
         );
+
+        // 🔍 DEBUG
+        print("PHOTO PATH: ${profileImage.path}");
+        print("PHOTO TYPE: ${_getMediaType(profileImage)}");
 
         var photoStreamed = await photoRequest.send();
         var photoResponse = await http.Response.fromStream(photoStreamed);
