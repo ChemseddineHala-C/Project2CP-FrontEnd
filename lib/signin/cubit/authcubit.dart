@@ -317,9 +317,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String name,
     required String phone,
     required String homePort,
-    required String boatName,
-    required String capacity,
-    File? profileImage
+    File? profileImage,
   }) async {
     try {
       emit(AuthLoading());
@@ -328,41 +326,102 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
+
+      // ✅ Step 1 — Mettre à jour les infos texte
       final response = await _authorizedRequest(
         "PUT",
-        "$_baseUrl/get-Edit-profile-fishmen",
+        "$_baseUrl/fishermen/me",
         body: {
-          "fullName": name,
-          "phone": phone,
-          "homePort": homePort,
-          "boatName": boatName,
-          "capacity": capacity,
+          "full_name":    name,
+          "phone_number": phone,
+          "home_port":    homePort,
         },
       );
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/auth/get-Edit-profile-fishmen"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "fullName": name,
-      //     "phone": phone,
-      //     "homePort": homePort,
-      //     "boatName": boatName,
-      //     "capacity": capacity,
-      //   }),
-      // );
 
-      if (response.statusCode == 200) {
-        emit(ProfileUpdatedSuccess());
-      } else {
-        emit(ProfileError("Update failed"));
+      if (response.statusCode != 200) {
+        emit(ProfileError("Update failed: ${response.body}"));
+        return;
       }
+
+      // ✅ Step 2 — Mettre à jour la photo si sélectionnée
+      if (profileImage != null) {
+        var photoRequest = http.MultipartRequest(
+          'PUT',
+          Uri.parse("$_baseUrl/fishermen/me/photo"),
+        );
+        photoRequest.headers['Authorization'] = 'Bearer $token';
+        photoRequest.files.add(
+          await http.MultipartFile.fromPath('profile_photo', profileImage.path),
+        );
+
+        var photoStreamed = await photoRequest.send();
+        var photoResponse = await http.Response.fromStream(photoStreamed);
+
+        print("PHOTO STATUS: ${photoResponse.statusCode}");
+        print("PHOTO RESPONSE: ${photoResponse.body}");
+
+        if (photoResponse.statusCode != 200) {
+          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+          return;
+        }
+      }
+
+      emit(ProfileUpdatedSuccess());
+
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
+  // Future<void> updateProfile({
+  //   required String name,
+  //   required String phone,
+  //   required String homePort,
+  //   // required String boatName,
+  //   // required String capacity,
+  //   File? profileImage
+  // }) async {
+  //   try {
+  //     emit(AuthLoading());
+  //     String? token = await _getToken();
+  //     if (token == null) {
+  //       emit(AuthError("No token found"));
+  //       return;
+  //     }
+  //     final response = await _authorizedRequest(
+  //       "PUT",
+  //       "$_baseUrl/fishermen/me",
+  //       body: {
+  //         "full_name": name,
+  //         "phone_number": phone,
+  //         "home_port": homePort,
+  //         // "boatName": boatName,
+  //         // "capacity": capacity,
+  //       },
+  //     );
+  //     // final response = await http.put(
+  //     //   Uri.parse("$_baseUrl/auth/get-Edit-profile-fishmen"),
+  //     //   headers: {
+  //     //     "Content-Type": "application/json",
+  //     //     "Authorization": "Bearer $token",
+  //     //   },
+  //     //   body: jsonEncode({
+  //     //     "fullName": name,
+  //     //     "phone": phone,
+  //     //     "homePort": homePort,
+  //     //     "boatName": boatName,
+  //     //     "capacity": capacity,
+  //     //   }),
+  //     // );
+  //
+  //     if (response.statusCode == 200) {
+  //       emit(ProfileUpdatedSuccess());
+  //     } else {
+  //       emit(ProfileError("Update failed"));
+  //     }
+  //   } catch (e) {
+  //     emit(ProfileError(e.toString()));
+  //   }
+  // }
   // --- COMPLETE SETUP+API ---
   Future<void> submitSetup({
     required String fullName,

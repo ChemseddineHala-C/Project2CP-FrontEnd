@@ -133,12 +133,12 @@ class _ProfilePageState extends State<ProfilePage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
-            backgroundImage: user["profilePicture"] != null ? NetworkImage(user["profilePicture"]) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage(user["profilePicture"]) : null,
             child: user["profilePicture"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFF013D73)) : null,
           ),
           const SizedBox(height: 12),
-          Text(user["fullName"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ID: ${user["id"] ?? "N/A"} | LICENSE: ${user["license"] ?? "N/A"}",
+          Text(user["full_name"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text("ID: ${user["national_id"] ?? "N/A"} | LICENSE: ${user["fishing_license_number"] ?? "N/A"}",
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
           Row(
@@ -188,20 +188,20 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          _infoTile(Icons.directions_boat, "Boat Name", user["boatName"] ?? "N/A", isDark, trailing: _statusBadge()),
+          _infoTile(Icons.directions_boat, "Boat Name", user["boat_name"] ?? "N/A", isDark, trailing: _statusBadge()),
           const Divider(),
           Row(
             children: [
-              Expanded(child: _infoTile(null, "Registration", user["registrationNumber"] ?? "N/A", isDark)),
+              Expanded(child: _infoTile(null, "Registration", user["registration_number"] ?? "N/A", isDark)),
               Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.grey.shade300),
               const SizedBox(width: 8),
-              Expanded(child: _infoTile(null, "Home Port", user["homePort"] ?? "N/A", isDark)),
+              Expanded(child: _infoTile(null, "Home Port", user["home_port"] ?? "N/A", isDark)),
             ],
           ),
           const Divider(),
           _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "N/A", isDark),
           const Divider(),
-          _infoTile(Icons.calendar_today_outlined, "License Expiry", user["licenseExpiry"] ?? "N/A", isDark),
+          _infoTile(Icons.calendar_today_outlined, "License Expiry", user["fishing_license_number"] ?? "N/A", isDark),
         ],
       ),
     );
@@ -212,9 +212,9 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          _docTile(Icons.description, "Fishing License", "Valid until ${user["licenseExpiry"] ?? "N/A"}", isDark),
+          _docTile(Icons.description, "Fishing License", "Valid until ${user["license_expiry_date"] ?? "N/A"}", isDark),
           const Divider(height: 1),
-          _docTile(Icons.directions_boat, "Boat Registration", "Verified on ${user["registration_date"] ?? "N/A"}", isDark),
+          _docTile(Icons.directions_boat, "Boat Registration", "Verified on ${user["created_at"] ?? "N/A"}", isDark),
         ],
       ),
     );

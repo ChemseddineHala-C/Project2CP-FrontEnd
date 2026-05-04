@@ -86,11 +86,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is ProfileLoaded && !_isInitialized) {
-            _nameController.text = state.user["fullName"] ?? "";
-            _phoneController.text = state.user["phone"] ?? "";
+            _nameController.text = state.user["full_name"] ?? "";
+            _phoneController.text = state.user["phone_number"] ?? "";
             _emailController.text = state.user["email"] ?? "";
-            _homePortController.text = state.user["homePort"] ?? "";
-            _boatNameController.text = state.user["boatName"] ?? "";
+            _homePortController.text = state.user["home_port"] ?? "";
+            _boatNameController.text = state.user["boat_name"] ?? "";
             _capacityController.text = state.user["capacity"] ?? "";
             _isInitialized = true; // Empêche d'écraser les saisies de l'utilisateur
           }
@@ -140,7 +140,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Widget _buildProfileImage(AuthState state,bool isDark) {
     String? networkImage;
-    if (state is ProfileLoaded) networkImage = state.user["profilePicture"];
+    if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
 
     return Column(
       children: [
@@ -253,8 +253,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
           name: _nameController.text,
           phone: _phoneController.text,
           homePort: _homePortController.text,
-          boatName: _boatNameController.text,
-          capacity:_capacityController.text,
+          profileImage: _imageFile,
+          // boatName: _boatNameController.text,
+          // capacity:_capacityController.text,
         );
       },
       style: ElevatedButton.styleFrom(
