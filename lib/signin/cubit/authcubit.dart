@@ -288,7 +288,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("GET", "$_baseUrl/get-profile-fishmen");
+      final response = await _authorizedRequest("GET", "$_baseUrl/fishermen/me");
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/get-profile-fishmen"),
       //   headers: {
@@ -299,6 +299,8 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print("RESPONSE DATA: $data");
+        print("TOKEN: ${data['token']}");
         emit(ProfileLoaded(data));
       } else {
         emit(ProfileError("Failed to load profile"));
