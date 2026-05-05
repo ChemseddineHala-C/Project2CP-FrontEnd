@@ -21,6 +21,28 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   bool _notifications = true;
 
+  String? _getBoatName(Map<String, dynamic> user) {
+    final boats = user["boats"];
+    if (boats is List && boats.isNotEmpty) {
+      return boats[0]["boat_name"]?.toString();
+    }
+    if (boats is Map) {
+      return boats["boat_name"]?.toString();
+    }
+    return "N/A";
+  }
+
+  String? _getBoatRegistration(Map<String, dynamic> user) {
+    final boats = user["boats"];
+    if (boats is List && boats.isNotEmpty) {
+      return boats[0]["registration_number"]?.toString();
+    }
+    if (boats is Map) {
+      return boats["registration_number"]?.toString();
+    }
+    return "N/A";
+  }
+
   @override
   void initState() {
     super.initState();
@@ -133,8 +155,8 @@ class _ProfilePageState extends State<ProfilePage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
-            backgroundImage: user["profile_photo"] != null ? NetworkImage(user["profilePicture"]) : null,
-            child: user["profilePicture"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFF013D73)) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
+            child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFF013D73)) : null,
           ),
           const SizedBox(height: 12),
           Text(user["full_name"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
@@ -188,11 +210,11 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          _infoTile(Icons.directions_boat, "Boat Name", user["boat_name"] ?? "N/A", isDark, trailing: _statusBadge()),
+          _infoTile(Icons.directions_boat, "Boat Name", _getBoatName(user) ?? "N/A", isDark, trailing: _statusBadge()),
           const Divider(),
           Row(
             children: [
-              Expanded(child: _infoTile(null, "Registration", user["registration_number"] ?? "N/A", isDark)),
+              Expanded(child: _infoTile(null, "Registration", _getBoatRegistration(user) ?? "N/A", isDark)),
               Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.grey.shade300),
               const SizedBox(width: 8),
               Expanded(child: _infoTile(null, "Home Port", user["home_port"] ?? "N/A", isDark)),
