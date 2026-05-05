@@ -23,6 +23,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
 
   File? _imageFile;
   final ImagePicker _pickervit = ImagePicker();
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -78,11 +79,12 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is ProfileLoaded) {
-            _namevitController.text = state.user["name_vit"] ?? "";
-            _phonevitController.text = state.user["phone_vit_number"] ?? "";
-            _emailvitController.text = state.user["email_vit"] ?? "";
-            _homePortvitController.text = state.user["homePort_vit"] ?? "";
-            _boatNamevitController.text = state.user["boatName_vit"] ?? "";
+            _namevitController.text = state.user["full_name"] ?? "";
+            _phonevitController.text = state.user["phone_number"] ?? "";
+            _emailvitController.text = state.user["email"] ?? "";
+            _homePortvitController.text = state.user["home_prot"] ?? "";
+            _boatNamevitController.text = state.user["boat_name"] ?? "";
+            _isInitialized = true;
           }
           if (state is ProfileUpdatedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +99,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           }
         },
         builder: (context, state) {
-          if (state is AuthLoading) {
+          if (state is AuthLoading && !_isInitialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -105,7 +107,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildProfileImage(isDark),
+                _buildProfileImage(state,isDark),
                 const SizedBox(height: 24),
                 _buildPersonalInfoCard(isDark),
                 const SizedBox(height: 20),
@@ -124,7 +126,9 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
     );
   }
 
-  Widget _buildProfileImage(bool isDark) {
+  Widget _buildProfileImage(AuthState state,bool isDark) {
+    String? networkImage;
+    if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
     return Column(
       children: [
         Stack(
@@ -140,9 +144,15 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
                 child: CircleAvatar(
                   radius: 65,
                   backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
-                  backgroundImage: _imageFile != null
+                  backgroundImage:
+                  _imageFile != null
                       ? FileImage(_imageFile!)
-                      : const NetworkImage('https://via.placeholder.com/150') as ImageProvider,
+                      : (networkImage != null
+                      ? NetworkImage(networkImage)
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
+                  // _imageFile != null
+                  //     ? FileImage(_imageFile!)
+                  //     : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo') as ImageProvider,
                 ),
               ),
             ),

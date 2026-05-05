@@ -124,12 +124,12 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: const Color(0xFFE3F2FD),
-            backgroundImage: user["profilePicture_vit"] != null ? NetworkImage(user["profilePicture_vit"]) : null,
-            child: user["profilePicture_vit"] == null ? Icon(Icons.person, size: 60, color: primaryTeal) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
+            child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: primaryTeal) : null,
           ),
           const SizedBox(height: 12),
-          Text(user["name_vit"] ?? "Dr. Mohamed", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ID: ${user["id_vit"] ?? "/"} | LICENSE: ${user["license_vit"] ?? "/"}",
+          Text(user["full_name"] ?? "Dr. Mohamed", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text("ID: ${user["id"] ?? "/"} | LICENSE: ${user["license_number"] ?? "/"}",
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
           Row(
@@ -195,13 +195,13 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          _infoTile(Icons.anchor_outlined, "ASSIGNED PORT", user["homePort_vit"] ?? "Oran Port", trailing: _statusBadge()),
+          _infoTile(Icons.anchor_outlined, "ASSIGNED PORT", user["home_port"] ?? "Oran Port", trailing: _statusBadge()),
           const Divider(height: 32),
-          _infoTile(Icons.medical_services_outlined, "SPECIALIZATION", user["specialization_vit"] ?? "Aquatic Pathology"),
+          _infoTile(Icons.medical_services_outlined, "SPECIALIZATION", user["specialization"] ?? "Aquatic Pathology"),
           const Divider(height: 32),
           _infoTile(Icons.history_edu_outlined, "EXPERIENCE", user["experience_vit"] ?? "12 Years Professional"),
           const Divider(height: 32),
-          _infoTile(Icons.verified_user_outlined, "LICENSE EXPIRY", user["licenseExpiry_vit"] ?? "Dec 31, 2024"),
+          _infoTile(Icons.verified_user_outlined, "LICENSE EXPIRY", user["license_expiry_date"] ?? "Dec 31, 2024"),
         ],
       ),
     );
@@ -213,9 +213,9 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
         children: [
-          _infoTile(Icons.email_outlined, "Email Address", user["email_vit"] ?? "mohamed@mail.com"),
+          _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "mohamed@mail.com"),
           const Divider(height: 32),
-          _infoTile(Icons.phone_outlined, "Phone Number", user["phone_vit_number"] ?? "+213 550515255"),
+          _infoTile(Icons.phone_outlined, "Phone Number", user["phone_number"] ?? "+213 550515255"),
         ],
       ),
     );

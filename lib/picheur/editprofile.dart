@@ -158,7 +158,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage(networkImage)
-                      : const NetworkImage('https://via.placeholder.com/150')) as ImageProvider,
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
                 ),
               ),
             ),
