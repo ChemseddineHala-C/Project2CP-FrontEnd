@@ -1,3 +1,5 @@
+import 'package:fishapp/vitirinaire/failedverfc.dart';
+import 'package:fishapp/vitirinaire/succesverfc.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -763,7 +765,9 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => FailedvetPage(batchId: _inspection.batchId)));
+                          },
                           icon: Icon(Icons.cancel_outlined),
                           label: Text(
                             "Reject",
@@ -789,7 +793,9 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => VetInspectionPage(batchId: _inspection.batchId)));
+                          },
                           icon: Icon(Icons.check_circle_outline),
                           label: Text(
                             "Approve",
