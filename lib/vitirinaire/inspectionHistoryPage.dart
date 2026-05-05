@@ -1,3 +1,4 @@
+import 'package:fishapp/vitirinaire/dashboardVet.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,8 @@ class InspectionHistoryPage extends StatefulWidget {
 }
 
 class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
+  final Color primaryTeal = Color(0xFF00A896);
+
   // Variables
   List<InspectionItem> _inspections = [];
   bool _isLoading = false;
@@ -22,7 +25,29 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
         return item.status.toLowerCase() == _selectedFilter.toLowerCase();
       }).toList();
 
-
+  Widget _buildBottomNavBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      height: 70,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(35),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 5))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => InspectorDashboard()));
+          }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
+          }, icon: const Icon(Icons.access_time, color: Colors.grey)),
+          IconButton(onPressed: () {}, icon: Icon(Icons.person, color: primaryTeal, size: 30)),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -31,6 +56,7 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Color(0xFFF5F7F9),
       appBar: AppBar(
@@ -128,11 +154,10 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
         ],
         ),
       ),
+      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 }
-
-
 class InspectionCard extends StatelessWidget {
   final InspectionItem inspection;
 
