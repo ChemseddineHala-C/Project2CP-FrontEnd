@@ -20,6 +20,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   final TextEditingController _consumeremailController = TextEditingController();
   final TextEditingController _consumerhomePortController = TextEditingController();
   final TextEditingController _consumerboatNameController = TextEditingController();
+  final TextEditingController _consumerdelivery_addressController = TextEditingController();
 
   File? _imageFile;
   final ImagePicker _pickerconsumer = ImagePicker();
@@ -38,6 +39,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     _consumeremailController.dispose();
     _consumerhomePortController.dispose();
     _consumerboatNameController.dispose();
+    _consumerdelivery_addressController.dispose();
     super.dispose();
   }
 
@@ -84,11 +86,11 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is ProfileLoaded && !_isInitialized) {
-            _consumernameController.text = state.user["ConsumerName"] ?? "";
-            _consumerphoneController.text = state.user["Consumerphone"] ?? "";
-            _consumeremailController.text = state.user["Consumeremail"] ?? "";
-            _consumerhomePortController.text = state.user["ConsumerPort"] ?? "";
-            _consumerboatNameController.text = state.user["ConsumerboatName"] ?? "";
+            _consumernameController.text = state.user["full_name"] ?? "";
+            _consumerphoneController.text = state.user["phone_number"] ?? "";
+            _consumeremailController.text = state.user["email"] ?? "";
+            _consumerhomePortController.text = state.user["nearby_port"] ?? "";
+            _consumerdelivery_addressController.text = state.user["delivery_address"] ?? "";
             _isInitialized = true;
           }
           if (state is ProfileUpdatedSuccess) {
@@ -137,7 +139,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
 
   Widget _buildProfileImage(AuthState state,bool isDark) {
     String? networkImage;
-    if (state is ProfileLoaded) networkImage = state.user["ConsumerprofilePicture"];
+    if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
 
     return Column(
       children: [
@@ -155,7 +157,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage(networkImage)
-                      : const NetworkImage('https://via.placeholder.com/150')) as ImageProvider,
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
                 ),
               ),
             ),
@@ -251,6 +253,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
           phone_cons: _consumerphoneController.text,
           homePort_cons: _consumerhomePortController.text,
           boatName_cons: _consumerboatNameController.text,
+          delivery_address: _consumerdelivery_addressController.text ,
         );
       },
       style: ElevatedButton.styleFrom(

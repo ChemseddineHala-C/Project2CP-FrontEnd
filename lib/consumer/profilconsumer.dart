@@ -117,14 +117,14 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
-            backgroundImage: user["profilePictureConsumer"] != null ? NetworkImage(user["profilePicture"]) : null,
-            child: user["profilePicture"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFFD5A439)) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
+            child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFFD5A439)) : null,
           ),
           const SizedBox(height: 12),
-          Text(user["Consumername"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ID: ${user["id"] ?? "N/A"} |  ${user["consumerport"] ?? "N/A"}",
+          Text(user["full_name"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text("ID: ${user["id"] ?? "N/A"} |  ${user["nearby_port"] ?? "N/A"}",
               style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-          Text("SINCE: ${user["consumerdate"] ?? "N/A"}" ,style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+          Text("SINCE: ${user["consumerdate"] ?? "28/5/2026"}" ,style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -188,9 +188,9 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
       ),
       child: Column(
         children: [
-          _infoTile(Icons.email_outlined, "Email Address", user["consumeremail"] ?? "N/A", isDark),
+          _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "N/A", isDark),
           const Divider(),
-          _infoTile(Icons.phone_outlined, "Phone Number", user["consumerphone"] ?? "N/A", isDark),
+          _infoTile(Icons.phone_outlined, "Phone Number", user["phone_number"] ?? "N/A", isDark),
         ],
       ),
     );
