@@ -1,3 +1,7 @@
+import 'package:fishapp/consumer/batchDetails.dart';
+import 'package:fishapp/consumer/myOrderPage.dart';
+import 'package:fishapp/consumer/profilconsumer.dart';
+import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -67,6 +71,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      bottomNavigationBar: _buildBottomNavBar(false),
     );
   }
 
@@ -363,6 +368,33 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+  Widget _buildBottomNavBar(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      height: 70,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(35),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(onPressed: () {
+          }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrdersPage()));
+          }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
+          }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
+          }, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFFD5A439), size: 30)),
         ],
       ),
     );
