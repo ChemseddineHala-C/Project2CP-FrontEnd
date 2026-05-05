@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,65 +43,23 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     super.dispose();
   }
 
-  // Future<void> _pickImage() async {
-  //   try {
-  //     final XFile? pickedFile = await _pickerconsumer.pickImage(
-  //       source: ImageSource.gallery,
-  //       maxWidth: 1000,
-  //       maxHeight: 1000,
-  //       imageQuality: 85,
-  //     );
-  //     if (pickedFile != null) {
-  //       setState(() {
-  //         _imageFile = File(pickedFile.path);
-  //       });
-  //     }
-  //   } catch (e) {
-  //     debugPrint("Error picking image: $e");
-  //   }
-  // }
-  Future<void> _pickFile(String type) async {
+  Future<void> _pickImage() async {
     try {
-      // ✅ الطريقة الصحيحة والمحدثة لاختيار الملفات (بدون .platform)
-      FilePickerResult? result = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      final XFile? pickedFile = await _pickerconsumer.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1000,
+        maxHeight: 1000,
+        imageQuality: 85,
       );
-
-      if (result != null && result.files.single.path != null) {
-        File selectedFile = File(result.files.single.path!);
-
+      if (pickedFile != null) {
         setState(() {
-          switch (type) {
-            case "profile_photo":
-              _imageFile = selectedFile;
-              break;
-          }
+          _imageFile = File(pickedFile.path);
         });
-
-        // رسالة تأكيد اختيار الملف
-        String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf')
-            ? 'PDF'
-            : 'Image';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('OK $fileType: $fileName'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else {
-        print('No file');
       }
     } catch (e) {
-      print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
+      debugPrint("Error picking image: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -180,59 +137,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  // Widget _buildProfileImage(AuthState state,bool isDark) {
-  //   String? networkImage;
-  //   if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
-  //
-  //   return Column(
-  //     children: [
-  //       Stack(
-  //         children: [
-  //           GestureDetector(
-  //             onTap: _pickImage,
-  //             child: Container(
-  //               padding: const EdgeInsets.all(4),
-  //               decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
-  //               child: CircleAvatar(
-  //                 radius: 65,
-  //                 backgroundColor:isDark? Colors.white12: Color(0xFFE3F2FD),
-  //                 backgroundImage: _imageFile != null
-  //                     ? FileImage(_imageFile!)
-  //                     : (networkImage != null
-  //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
-  //               ),
-  //             ),
-  //           ),
-  //           Positioned(
-  //             bottom: 5,
-  //             right: 5,
-  //             child: GestureDetector(
-  //               onTap: _pickImage,
-  //               child: Container(
-  //                 padding: const EdgeInsets.all(4),
-  //                 decoration: const BoxDecoration(
-  //                   color: Color(0xFFD5A439),
-  //                   shape: BoxShape.circle,
-  //                 ),
-  //                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-  //               ),
-  //             ),
-  //           )
-  //         ],
-  //       ),
-  //       const SizedBox(height: 12),
-  //       GestureDetector(
-  //         onTap: _pickImage,
-  //         child: const Text(
-  //           "Change Profile Photo",
-  //           style: TextStyle(color: Color(0xFFD5A439), fontWeight: FontWeight.bold, fontSize: 14),
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
-  Widget _buildProfileImage(AuthState state, bool isDark) {
+  Widget _buildProfileImage(AuthState state,bool isDark) {
     String? networkImage;
     if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
 
@@ -241,19 +146,18 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         Stack(
           children: [
             GestureDetector(
-              onTap: () => _pickFile("profile_photo"),
+              onTap: _pickImage,
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
                 child: CircleAvatar(
                   radius: 65,
-                  backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
+                  backgroundColor:isDark? Colors.white12: Color(0xFFE3F2FD),
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage(networkImage)
-                      : const NetworkImage('https://localhost:3000/uploads/consumer/me/photo'))
-                  as ImageProvider,
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
                 ),
               ),
             ),
@@ -261,11 +165,11 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
               bottom: 5,
               right: 5,
               child: GestureDetector(
-                onTap: () => _pickFile("profile_photo"), // ✅ corrigé
+                onTap: _pickImage,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF013D73),
+                    color: Color(0xFFD5A439),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
@@ -276,10 +180,10 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         ),
         const SizedBox(height: 12),
         GestureDetector(
-          onTap: () => _pickFile("profile_photo"), // ✅ corrigé
+          onTap: _pickImage,
           child: const Text(
             "Change Profile Photo",
-            style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(color: Color(0xFFD5A439), fontWeight: FontWeight.bold, fontSize: 14),
           ),
         )
       ],

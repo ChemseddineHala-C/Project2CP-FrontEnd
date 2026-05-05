@@ -223,7 +223,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const Divider(),
           _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "N/A", isDark),
           const Divider(),
-          _infoTile(Icons.calendar_today_outlined, "License Expiry", user["fishing_license_number"] ?? "N/A", isDark),
+          _infoTile(Icons.calendar_today_outlined, "License Expiry", user["fishing_license_number"].toString().substring(0,10) ?? "N/A", isDark),
         ],
       ),
     );
