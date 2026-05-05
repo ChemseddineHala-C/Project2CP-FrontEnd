@@ -74,7 +74,7 @@ class _SetupConpageState extends State<SetupConspage> {
       );
       return;
     }else{
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePageC()));
     }
 
     // ✅ فقط إرسال البيانات إلى الخادم (بدون تنقل)
