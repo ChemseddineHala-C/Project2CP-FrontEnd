@@ -199,9 +199,7 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
           const Divider(height: 32),
           _infoTile(Icons.medical_services_outlined, "SPECIALIZATION", user["specialization"] ?? "Aquatic Pathology"),
           const Divider(height: 32),
-          _infoTile(Icons.history_edu_outlined, "EXPERIENCE", user["experience_vit"] ?? "12 Years Professional"),
-          const Divider(height: 32),
-          _infoTile(Icons.verified_user_outlined, "LICENSE EXPIRY", user["license_expiry_date"] ?? "Dec 31, 2024"),
+          _infoTile(Icons.verified_user_outlined, "LICENSE EXPIRY", user["license_expiry_date"].toString().substring(0,10) ?? "Dec 31, 2024"),
         ],
       ),
     );

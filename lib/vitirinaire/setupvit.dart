@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:fishapp/vitirinaire/profilevit.dart';
-import 'package:fishapp/vitirinaire/succesverfc.dart';
+import 'profilevit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
@@ -27,10 +26,54 @@ class _SetupVitpageState extends State<SetupVitpage> {
   final _expiryVitController = TextEditingController();
   File? _fishingLicenseFileVit;
   File? _idcardFileVit;
-  final ImagePicker _picker = ImagePicker();
+
+  // ✅ متغيرات نسبة الإكمال
+  double _completionPercent = 0.0;
+  int _filledFields = 0;
+  final int _totalFields = 5;  // عدد الحقول النصية (بدون الملفات)
+  late List<TextEditingController> _textControllers;
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ تهيئة قائمة الحقول النصية
+    _textControllers = [
+      _fullNameVitController,
+      _nationalIdVitController,
+      _phoneVitController,
+      _specializationController,
+      _licenseVitController,
+    ];
+    
+    // ✅ إضافة مستمعين لكل حقل نصي
+    for (var controller in _textControllers) {
+      controller.addListener(_updateCompletionPercent);
+    }
+  }
+
+  // ✅ دالة لحساب نسبة الإكمال تشمل الحقول النصية + الملفات
+  void _updateCompletionPercent() {
+    setState(() {
+      // حساب الحقول النصية المملوءة
+      int filledTextFields = _textControllers.where((c) => c.text.trim().isNotEmpty).length;
+      
+      // حساب الملفات المرفوعة
+      int filledFiles = 0;
+      if (_fishingLicenseFileVit != null) filledFiles++;
+      if (_idcardFileVit != null) filledFiles++;
+      
+      // المجموع: 5 حقول نصية + 2 ملفات = 7 عناصر كاملة
+      _filledFields = filledTextFields + filledFiles;
+      _completionPercent = _filledFields / 7;  // 7 = total items (5 text + 2 files)
+    });
+  }
 
   @override
   void dispose() {
+    // ✅ إزالة المستمعين عند الخروج
+    for (var controller in _textControllers) {
+      controller.removeListener(_updateCompletionPercent);
+    }
     _fullNameVitController.dispose();
     _nationalIdVitController.dispose();
     _phoneVitController.dispose();
@@ -41,9 +84,9 @@ class _SetupVitpageState extends State<SetupVitpage> {
     _expiryVitController.dispose();
     super.dispose();
   }
+
   Future<void> _pickFile(String type) async {
     try {
-      // ✅ الطريقة الصحيحة والمحدثة لاختيار الملفات (بدون .platform)
       FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
@@ -61,13 +104,11 @@ class _SetupVitpageState extends State<SetupVitpage> {
               _idcardFileVit = selectedFile;
               break;
           }
+          _updateCompletionPercent();  // ✅ تحديث النسبة بعد رفع الملف
         });
 
-        // رسالة تأكيد اختيار الملف
         String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf')
-            ? 'PDF'
-            : 'Image';
+        String fileType = fileName.toLowerCase().contains('.pdf') ? 'PDF' : 'Image';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OK $fileType: $fileName'),
@@ -85,30 +126,21 @@ class _SetupVitpageState extends State<SetupVitpage> {
       );
     }
   }
-  // Future<void> _pickFile(bool isLicense) async {
-  //   final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       if (isLicense) {
-  //         _fishingLicenseFileVit = File(pickedFile.path);
-  //       } else {
-  //         _idcardFileVit = File(pickedFile.path);
-  //       }
-  //     });
-  //   }
-  // }
 
   void _submit() {
-    if (_fullNameVitController.text.isEmpty || _specializationController.text.isEmpty || _licenseVitController.text.isEmpty) {
+    // ✅ التحقق من الحقول المطلوبة والملفات
+    if (_fullNameVitController.text.isEmpty || 
+        _specializationController.text.isEmpty || 
+        _licenseVitController.text.isEmpty ||
+        _fishingLicenseFileVit == null ||
+        _idcardFileVit == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all required fields")),
+        const SnackBar(content: Text("Please fill all required fields and upload documents")),
       );
       return;
     }
-    else{
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
-    }
 
+    // ✅ فقط إرسال البيانات إلى الخادم (بدون تنقل)
     context.read<AuthCubit>().submitSetupVit(
       fullNameVit: _fullNameVitController.text.trim(),
       nationalIdVit: _nationalIdVitController.text.trim(),
@@ -124,6 +156,8 @@ class _SetupVitpageState extends State<SetupVitpage> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = const Color(0xFF01A896);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
       appBar: AppBar(
@@ -131,11 +165,16 @@ class _SetupVitpageState extends State<SetupVitpage> {
         elevation: 0,
         title: const Text("Setup", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        ),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is SetupSuccess) {
-            // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => VetInspectionPage(token: widget.token, batchId: "NEW-BATCH")));
+            // ✅ التنقل يحدث هنا بعد نجاح العملية
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
@@ -152,12 +191,51 @@ class _SetupVitpageState extends State<SetupVitpage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 24),
+                // ✅ Profile Completion Card مع نسبة إكمال ديناميكية
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Profile Completion", style: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 14)),
+                          Text(
+                            "${(_completionPercent * 100).toInt()}%",
+                            style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      LinearPercentIndicator(
+                        lineHeight: 8.0,
+                        percent: _completionPercent,
+                        padding: EdgeInsets.zero,
+                        backgroundColor: const Color(0xFFE5EDFF),
+                        progressColor: primaryColor,
+                        barRadius: const Radius.circular(10),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "$_filledFields of 7 fields completed",
+                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Section 1: Personal Information
                 _buildSection(
                   number: "1",
                   title: "Personal Information",
                   children: [
-                    _label("Full Name"),
+                    _label("Full Name *"),
                     customTextField("e.g. Dr Ahmed ..", _fullNameVitController),
                     const SizedBox(height: 16),
                     _label("National ID / Passport"),
@@ -165,47 +243,50 @@ class _SetupVitpageState extends State<SetupVitpage> {
                     const SizedBox(height: 16),
                     _label("Phone Number"),
                     customTextField("+213 674854088", _phoneVitController),
-                    const SizedBox(height: 16),
-                    // _label("Email Address"),
-                    // customTextField("Projet@esi-sba.dz", _emailVitController),
                   ],
                 ),
-                // const SizedBox(height: 20),
-                // _buildSection(
-                //   number: "2",
-                //   title: "Boat Details",
-                //   children: [
-                //     _label("Boat Name"),
-                //     customTextField("Sea's King", _boatNameVitController),
-                //     const SizedBox(height: 16),
-                //     _label("Registration Number"),
-                //     customTextField("REG-8829-X", _registrationVitController),
-                //     const SizedBox(height: 16),
-                //   ],
-                // ),
+
                 const SizedBox(height: 20),
+
+                // Section 2: Licenses & Documents
                 _buildSection(
-                  number: "3",
+                  number: "2",
                   title: "Licenses & Documents",
                   children: [
-                    _label("Specialization #"),
-                    customTextField("LIC-00-1122", _specializationController),
+                    _label("Specialization *"),
+                    customTextField("eg. Aquatic Pathology", _specializationController),
                     const SizedBox(height: 16),
-                    _label("Primary License #"),
+                    _label("Primary License Number *"),
                     customTextField("LIC-00-1122", _licenseVitController),
                     const SizedBox(height: 16),
                     _label("Expiry Date"),
-                    customTextField("mm/dd/yyyy", _expiryVitController),
+                    customTextField("YYYY-MM-DD", _expiryVitController),
                     const SizedBox(height: 24),
-                    const Text("Required Uploads (PDF or JPG)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
+                    const Text(
+                      "Required Uploads (PDF or JPG) *",
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF011A33)),
+                    ),
                     const SizedBox(height: 16),
-                    _buildUploadTile(Icons.description, "Fishing License", _fishingLicenseFileVit, () => _pickFile("license")),
+                    _buildUploadTile(
+                      Icons.description, 
+                      "Fishing License *", 
+                      _fishingLicenseFileVit, 
+                      () => _pickFile("license"),
+                      primaryColor,
+                    ),
                     const SizedBox(height: 12),
-                    _buildUploadTile(Icons.directions_boat, "ID Card", _idcardFileVit, () => _pickFile("idcard")),
+                    _buildUploadTile(
+                      Icons.directions_boat, 
+                      "ID Card *", 
+                      _idcardFileVit, 
+                      () => _pickFile("idcard"),
+                      primaryColor,
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 32),
-                _buildCompleteButton(),
+                _buildCompleteButton(primaryColor),
                 const SizedBox(height: 24),
                 _buildFooterText(),
                 const SizedBox(height: 40),
@@ -230,7 +311,11 @@ class _SetupVitpageState extends State<SetupVitpage> {
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 15, backgroundColor: const Color(0xFF01A896), child: Text(number, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))),
+              CircleAvatar(
+                radius: 15, 
+                backgroundColor: const Color(0xFF01A896), 
+                child: Text(number, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold))
+              ),
               const SizedBox(width: 12),
               Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
             ],
@@ -242,9 +327,12 @@ class _SetupVitpageState extends State<SetupVitpage> {
     );
   }
 
-  Widget _label(String text) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568))));
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8), 
+    child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568)))
+  );
 
-  Widget _buildUploadTile(IconData icon, String title, File? file, VoidCallback onTap) {
+  Widget _buildUploadTile(IconData icon, String title, File? file, VoidCallback onTap, Color primaryColor) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -254,15 +342,17 @@ class _SetupVitpageState extends State<SetupVitpage> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF01A896)),
+          Icon(icon, color: primaryColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF011A33))),
-                Text(file != null ? file.path.split('/').last : "Not uploaded",
-                    style: TextStyle(color: file != null ? Colors.green : Colors.grey, fontSize: 12)),
+                Text(
+                  file != null ? file.path.split('/').last : "Not uploaded",
+                  style: TextStyle(color: file != null ? Colors.green : Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -270,7 +360,7 @@ class _SetupVitpageState extends State<SetupVitpage> {
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE0F2F1),
-              foregroundColor: const Color(0xFF01A896),
+              foregroundColor: primaryColor,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -282,21 +372,27 @@ class _SetupVitpageState extends State<SetupVitpage> {
     );
   }
 
-  Widget _buildCompleteButton() {
+  Widget _buildCompleteButton(Color color) {
+    // ✅ الزر غير نشط حتى يتم ملء جميع الحقول والملفات
+    bool isFormComplete = _filledFields == 7;  // 7 = total items (5 text + 2 files)
+    
     return ElevatedButton(
-      onPressed: _submit,
+      onPressed: isFormComplete ? _submit : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF01A896),
+        backgroundColor: color,
         minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text("Complete Setup", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(width: 8),
-          Icon(Icons.check_circle_outline, color: Colors.white),
+        children: [
+          Text(
+            isFormComplete ? "Complete Setup" : "Complete ${(_completionPercent * 100).toInt()}%",
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 8),
+          Icon(isFormComplete ? Icons.check_circle_outline : Icons.lock_outline, color: Colors.white),
         ],
       ),
     );
@@ -324,6 +420,7 @@ class _SetupVitpageState extends State<SetupVitpage> {
   }
 }
 
+// ✅ دوال مساعدة خارج الكلاس
 Widget customTextField(String hint, TextEditingController controller) {
   return TextField(
     controller: controller,

@@ -707,102 +707,78 @@ class AuthCubit extends Cubit<AuthState> {
   // --- UPDATE VET PROFILE ---
 
   //edite profile de vitirinaire
-  Future<void> updateProfilevit({
-    required String name,
-    required String phone,
-    required String homePort,
-    required String boatName,
-    File? profileImage,
-  }) async {
-    try {
-      emit(AuthLoading());
-      String? token = await _getToken();
-      if (token == null) {
-        emit(AuthError("No token found"));
-        return;
-      }
-      final response = await _authorizedRequest(
-        "PUT",
-        "$_baseUrl/veterinarians/me",
-        body: {
-          "Vname": name,
-          "Vphone": phone,
-          "VhomePort": homePort,
-          "VboatName": boatName,
-        },
-      );
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/api/profile"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "Vname": name,
-      //     "Vphone": phone,
-      //     "VhomePort": homePort,
-      //     "VboatName": boatName,
-      //   }),
-      // );
-      if (response.statusCode != 200) {
-        emit(ProfileError("Update failed: ${response.body}"));
-        return;
-      }
-
-      // if (response.statusCode == 200) {
-      //   emit(ProfileUpdatedSuccess());
-      // } else {
-      //   emit(ProfileError("Update failed"));
-      // }
-      if (profileImage != null) {
-        var photoRequest = http.MultipartRequest(
-          'PUT',
-          Uri.parse("$_baseUrl/veterinarians/me/photo"),
-        );
-        photoRequest.headers['Authorization'] = 'Bearer $token';
-
-        // ✅ Détecter le type du fichier
-        MediaType _getMediaType(File file) {
-          String path = file.path.toLowerCase();
-          if (path.endsWith('.png')) {
-            return MediaType('image', 'png');
-          } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-            return MediaType('image', 'jpeg');
-          } else if (path.endsWith('.pdf')) {
-            return MediaType('application', 'pdf');
-          } else {
-            return MediaType('application', 'octet-stream');
-          }
-        }
-
-        photoRequest.files.add(
-          await http.MultipartFile.fromPath(
-            'profile_photo',
-            profileImage.path,
-            contentType: _getMediaType(profileImage), // ← ajouter ça
-          ),
-        );
-
-        // 🔍 DEBUG
-        print("PHOTO PATH: ${profileImage.path}");
-        print("PHOTO TYPE: ${_getMediaType(profileImage)}");
-
-        var photoStreamed = await photoRequest.send();
-        var photoResponse = await http.Response.fromStream(photoStreamed);
-
-        print("PHOTO STATUS: ${photoResponse.statusCode}");
-        print("PHOTO RESPONSE: ${photoResponse.body}");
-
-        if (photoResponse.statusCode != 200) {
-          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
-          return;
-        }
-      }
-      emit(ProfileUpdatedSuccess());
-    } catch (e) {
-      emit(ProfileError(e.toString()));
+// --- UPDATE VET PROFILE ---
+Future<void> updateProfilevit({
+  required String name,
+  required String phone,
+  required String homePort,
+  required String boatName,
+  File? profileImage,
+}) async {
+  try {
+    emit(AuthLoading());
+    String? token = await _getToken();
+    if (token == null) {
+      emit(AuthError("No token found"));
+      return;
     }
+    
+    // ✅ Step 1 — تحديث المعلومات النصية
+    final response = await _authorizedRequest(
+      "PUT",
+      "$_baseUrl/veterinarians/me",
+      body: {
+        "full_name": name,
+        "phone_number": phone,
+        "home_port": homePort,
+        "boat_name": boatName,
+      },
+    );
+    
+    if (response.statusCode != 200) {
+      emit(ProfileError("Update failed: ${response.body}"));
+      return;
+    }
+    
+    // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
+    if (profileImage != null) {
+      var photoRequest = http.MultipartRequest(
+        'PUT',
+        Uri.parse("$_baseUrl/veterinarians/me/photo"),
+      );
+      photoRequest.headers['Authorization'] = 'Bearer $token';
+      
+      // ✅ إضافة الملف مع تحديد MIME type صحيح
+      photoRequest.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_photo',
+          profileImage.path,
+          contentType: _getMediaType(profileImage), // استخدام الدالة العامة
+        ),
+      );
+      
+      // 🔍 DEBUG
+      print("PHOTO PATH: ${profileImage.path}");
+      print("PHOTO TYPE: ${_getMediaType(profileImage)}");
+      
+      var photoStreamed = await photoRequest.send();
+      var photoResponse = await http.Response.fromStream(photoStreamed);
+      
+      print("PHOTO STATUS: ${photoResponse.statusCode}");
+      print("PHOTO RESPONSE: ${photoResponse.body}");
+      
+      if (photoResponse.statusCode != 200) {
+        emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+        return;
+      }
+    }
+    
+    emit(ProfileUpdatedSuccess());
+    
+  } catch (e) {
+    emit(ProfileError(e.toString()));
   }
+}
   // --- EMAIL & CODE +API---
   Future<void> sendEmail(String email) async {
     try {
@@ -919,44 +895,8 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
-  //Fill information of Vitirinaire
-  Future<void> submitSetupVit({
-    required String fullNameVit,
-    required String nationalIdVit,
-    required String phoneVit,
-    // required String emailVit,
-    // required String boatNameVit,
-    required String specialization,
-    required String registrationNumberVit,
-    // required String homePortVit,
-    required String licenseNumberVit,
-    required String expiryDateVit,
-    File? fishingLicenseVit,
-    File? Idcard,
-  }) async {
-    try {
-      emit(SetupLoading());
-      String? token = await _getToken();
-      print("TOKEN DANS SUBMITSETUP: $token");
-      if (token == null) {
-        emit(AuthError("No token found"));
-        return;
-      }
-      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/veterinarians/setup"));
-      // request.headers.addAll({
-      //   "Authorization": "Bearer $token",
-      //   "Content-Type": "multipart/form-data",
-      // });
-      request.headers['Authorization'] = 'Bearer $token';
 
-      request.fields['full_name'] = fullNameVit;
-      request.fields['national_id'] = nationalIdVit;
-      request.fields['phone_number'] = phoneVit;
-      request.fields['specialization'] = specialization;
-      request.fields['license_number'] = licenseNumberVit;
-      request.fields['license_expiry'] = expiryDateVit;
-
-      MediaType _getMediaType(File file) {
+  MediaType _getMediaType(File file) {
       String path = file.path.toLowerCase();
       if (path.endsWith('.png')) {
         return MediaType('image', 'png');
@@ -968,22 +908,55 @@ class AuthCubit extends Cubit<AuthState> {
         return MediaType('application', 'octet-stream');
       }
     }
+  //Fill information of Vitirinaire
+  Future<void> submitSetupVit({
+  required String fullNameVit,
+  required String nationalIdVit,
+  required String phoneVit,
+  required String specialization,
+  required String registrationNumberVit,
+  required String licenseNumberVit,
+  required String expiryDateVit,
+  File? fishingLicenseVit,
+  File? Idcard,
+}) async {
+  try {
+    emit(SetupLoading());
+    String? token = await _getToken();
+    print("TOKEN DANS SUBMITSETUP: $token");
+    
+    if (token == null) {
+      emit(AuthError("No token found"));
+      return;
+    }
+    
+    var request = http.MultipartRequest(
+      'POST', 
+      Uri.parse("$_baseUrl/veterinarians/setup")
+    );
+    
+    request.headers['Authorization'] = 'Bearer $token';
 
-      // if (fishingLicenseVit != null) {
-      //   request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicenseVit.path));
-      // }
-      if (fishingLicenseVit != null) {
+    // إضافة الحقول النصية
+    request.fields['full_name'] = fullNameVit;
+    request.fields['national_id'] = nationalIdVit;
+    request.fields['phone_number'] = phoneVit;
+    request.fields['specialization'] = specialization;
+    request.fields['license_number'] = licenseNumberVit;
+    request.fields['license_expiry_date'] = expiryDateVit;
+
+    // ✅ إضافة ملف fishing_license مع MIME type
+    if (fishingLicenseVit != null) {
       var file = await http.MultipartFile.fromPath(
-        'fishing_license',
+        'vet_license',
         fishingLicenseVit.path,
-        contentType: _getMediaType(fishingLicenseVit), // تحديد نوع الملف
+        contentType: _getMediaType(fishingLicenseVit),
       );
       request.files.add(file);
     }
-      // if (boatRegistrationVit != null) {
-      //   request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistrationVit.path));
-      // }
-      if (Idcard != null) {
+    
+    // ✅ إضافة ملف id_card مع MIME type
+    if (Idcard != null) {
       var file = await http.MultipartFile.fromPath(
         'id_card',
         Idcard.path,
@@ -992,25 +965,21 @@ class AuthCubit extends Cubit<AuthState> {
       request.files.add(file);
     }
 
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-      print("STATUS: ${response.statusCode}");
-      print("RESPONSE: ${response.body}");
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    
+    print("STATUS: ${response.statusCode}");
+    print("RESPONSE: ${response.body}");
 
-      // if (response.statusCode == 200 || response.statusCode == 201) {
-      //   emit(SetupSuccess());
-      // }
-      if (response.statusCode != 200 && response.statusCode != 201) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      emit(SetupSuccess());
+    } else {
       emit(AuthError("Setup failed: ${response.body}"));
-      return;
     }
-      // else {
-      //   emit(AuthError("Setup failed: ${response.body}"));
-      // }
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+  } catch (e) {
+    emit(AuthError(e.toString()));
   }
+}
   // --- HOME DATA FISHERMAN ---
   // Future<void> fetchHomeData() async {
   //   try {
@@ -1109,7 +1078,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("GET", "$_baseUrl/api/profileConsumer");
+      final response = await _authorizedRequest("GET", "$_baseUrl/customers/me");
       // final response = await http.get(
       //   Uri.parse("https://api.example.com/profileConsumer"),
       //   headers: {
@@ -1135,50 +1104,52 @@ class AuthCubit extends Cubit<AuthState> {
 
   //Fill information of Consumer
   //SUBMIT SETUP CONSUMER
-  Future<void> submitSetupCons({
-    required String fullNameCons,
-    required String nationalIdCons,
-    required String phoneCons,
-    required String delevryAddress,
-    required String nearbyPortCons,
-  }) async {
-    try {
-      emit(SetupLoading());
-      String? token = await _getToken();
-      print("TOKEN DANS SUBMITSETUP: $token");
-      if (token == null) {
-        emit(AuthError("No token found"));
-        return;
-      }
-
-      var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/customers/setup"));
-      // request.headers.addAll({
-      //   "Authorization": "Bearer $token",
-      //   "Content-Type": "multipart/form-data",
-      // });
-      request.headers['Authorization'] = 'Bearer $token';
-
-      request.fields['full_name'] = fullNameCons;
-      request.fields['national_id'] = nationalIdCons;
-      request.fields['phone_number'] = phoneCons;
-      request.fields['delivery_address'] = delevryAddress;
-      request.fields['nearby_port'] = nearbyPortCons;
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-      if (response.statusCode != 200 && response.statusCode != 201) {
-      emit(AuthError("Setup failed: ${response.body}"));
+  //Fill information of Consumer
+//SUBMIT SETUP CONSUMER
+Future<void> submitSetupCons({
+  required String fullNameCons,
+  required String nationalIdCons,
+  required String phoneCons,
+  required String delevryAddress,
+  required String nearbyPortCons,
+}) async {
+  try {
+    emit(SetupLoading());
+    String? token = await _getToken();
+    print("TOKEN DANS SUBMITSETUP: $token");
+    if (token == null) {
+      emit(AuthError("No token found"));
       return;
     }
-      // if (response.statusCode == 200 || response.statusCode == 201) {
-      //   emit(SetupSuccess());
-      // } else {
-      //   emit(AuthError("Setup failed: ${response.body}"));
-      // }
-    } catch (e) {
-      emit(AuthError(e.toString()));
+
+    // ✅ استخدام http.post بدلاً من MultipartRequest (لا يوجد ملفات)
+    final response = await http.post(
+      Uri.parse("$_baseUrl/customers/setup"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "full_name": fullNameCons,
+        "national_id": nationalIdCons,
+        "phone_number": phoneCons,
+        "delivery_address": delevryAddress,
+        "nearby_port": nearbyPortCons,
+      }),
+    );
+
+    print("STATUS: ${response.statusCode}");
+    print("RESPONSE: ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      emit(SetupSuccess());
+    } else {
+      emit(AuthError("Setup failed: ${response.body}"));
     }
+  } catch (e) {
+    emit(AuthError(e.toString()));
   }
+}
   // --- UPDATE PASSWORD FISHERMAN+API ---
   Future<void> updatePassword({
     required String password, required String currentPassword,
@@ -1298,103 +1269,79 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
   //edit profile consumer
-  Future<void> updateProfileConsumer({
-    required String name_cons,
-    required String phone_cons,
-    required String homePort_cons,
-    required String boatName_cons,
-    required String delivery_address,
-    File? profileImage,
-  }) async {
-    try {
-      emit(AuthLoading());
-      String? token = await _getToken();
-      if (token == null) {
-        emit(AuthError("No token found"));
-        return;
-      }
-      final response = await _authorizedRequest(
-          "PUT",
-          "$_baseUrl/customers/me",
-          body: {
-            "full_name": name_cons,
-            "phone_number": phone_cons,
-            "nearby_port": homePort_cons,
-            // "boatName": boatName_cons,
-            "delivery_address": delivery_address,
-          });
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/auth/update-profile"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token_cons",
-      //   },
-      //   body: jsonEncode({
-      //     "fullName": name_cons,
-      //     "phone": phone_cons,
-      //     "homePort": homePort_cons,
-      //     "boatName": boatName_cons,
-      //   }),
-      // );
-      if (response.statusCode != 200) {
-        emit(ProfileError("Update failed: ${response.body}"));
-        return;
-      }
-      // if (response.statusCode == 200) {
-      //   emit(ProfileUpdatedSuccess());
-      // } else {
-      //   emit(ProfileError("Update failed"));
-      // }
-      if (profileImage != null) {
-        var photoRequest = http.MultipartRequest(
-          'PUT',
-          Uri.parse("$_baseUrl/fishermen/me/photo"),
-        );
-        photoRequest.headers['Authorization'] = 'Bearer $token';
-
-        // ✅ Détecter le type du fichier
-        MediaType _getMediaType(File file) {
-          String path = file.path.toLowerCase();
-          if (path.endsWith('.png')) {
-            return MediaType('image', 'png');
-          } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-            return MediaType('image', 'jpeg');
-          } else if (path.endsWith('.pdf')) {
-            return MediaType('application', 'pdf');
-          } else {
-            return MediaType('application', 'octet-stream');
-          }
-        }
-
-        photoRequest.files.add(
-          await http.MultipartFile.fromPath(
-            'profile_photo',
-            profileImage.path,
-            contentType: _getMediaType(profileImage), // ← ajouter ça
-          ),
-        );
-
-        // 🔍 DEBUG
-        print("PHOTO PATH: ${profileImage.path}");
-        print("PHOTO TYPE: ${_getMediaType(profileImage)}");
-
-        var photoStreamed = await photoRequest.send();
-        var photoResponse = await http.Response.fromStream(photoStreamed);
-
-        print("PHOTO STATUS: ${photoResponse.statusCode}");
-        print("PHOTO RESPONSE: ${photoResponse.body}");
-
-        if (photoResponse.statusCode != 200) {
-          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
-          return;
-        }
-      }
-
-      emit(ProfileUpdatedSuccess());
-    } catch (e) {
-      emit(ProfileError(e.toString()));
+//edit profile consumer
+Future<void> updateProfileConsumer({
+  required String name_cons,
+  required String phone_cons,
+  required String homePort_cons,
+  required String boatName_cons,
+  required String delivery_address,
+  File? profileImage,
+}) async {
+  try {
+    emit(AuthLoading());
+    String? token = await _getToken();
+    if (token == null) {
+      emit(AuthError("No token found"));
+      return;
     }
+    
+    // ✅ Step 1 — تحديث المعلومات النصية
+    final response = await _authorizedRequest(
+      "PUT",
+      "$_baseUrl/customers/me",
+      body: {
+        "full_name": name_cons,
+        "phone_number": phone_cons,
+        "nearby_port": homePort_cons,
+        "delivery_address": delivery_address,
+      },
+    );
+    
+    if (response.statusCode != 200) {
+      emit(ProfileError("Update failed: ${response.body}"));
+      return;
+    }
+    
+    // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
+    if (profileImage != null) {
+      var photoRequest = http.MultipartRequest(
+        'PUT',
+        Uri.parse("$_baseUrl/customers/me/photo"),  // ✅ تم التصحيح
+      );
+      photoRequest.headers['Authorization'] = 'Bearer $token';
+      
+      // ✅ إضافة الملف مع تحديد MIME type صحيح (استخدام الدالة العامة)
+      photoRequest.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_photo',
+          profileImage.path,
+          contentType: _getMediaType(profileImage), // استخدام الدالة العامة
+        ),
+      );
+      
+      // 🔍 DEBUG
+      print("PHOTO PATH: ${profileImage.path}");
+      print("PHOTO TYPE: ${_getMediaType(profileImage)}");
+      
+      var photoStreamed = await photoRequest.send();
+      var photoResponse = await http.Response.fromStream(photoStreamed);
+      
+      print("PHOTO STATUS: ${photoResponse.statusCode}");
+      print("PHOTO RESPONSE: ${photoResponse.body}");
+      
+      if (photoResponse.statusCode != 200) {
+        emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+        return;
+      }
+    }
+    
+    emit(ProfileUpdatedSuccess());
+    
+  } catch (e) {
+    emit(ProfileError(e.toString()));
   }
+}
   // --- SÉLECTION DU RÔLE ---
   // Future<void> selectRole(String email,String password,String role) async {
   //   try {
