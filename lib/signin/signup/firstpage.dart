@@ -1,6 +1,8 @@
 import 'package:fishapp/signin/signup/secondpage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fishapp/signin/login.dart';
+
 class Firstpage extends StatefulWidget{
   const Firstpage({super.key});
 
@@ -77,7 +79,9 @@ class _FirstpageState extends State<Firstpage> {
                   Row(
                     children: [
                       Container(padding: EdgeInsets.only(left: 50),child: Text("Already have an account?"),),
-                      TextButton(onPressed: (){}, child: Text("Log in",style: TextStyle(color:Colors.blue,fontWeight: FontWeight.bold),)),
+                      TextButton(onPressed: (){Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => LoginPage()),
+                          );}, child: Text("Log in",style: TextStyle(color:Colors.blue,fontWeight: FontWeight.bold),)),
                     ],
                   ),
                 ],
