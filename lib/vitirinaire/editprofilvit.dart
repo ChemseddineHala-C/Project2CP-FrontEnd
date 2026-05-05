@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';  // ✅ changed from image_picker
@@ -39,6 +38,32 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
     _boatNamevitController.dispose();
     super.dispose();
   }
+  double _completionPercent = 0.0;
+  void _updateCompletionPercent() {
+    int total = 0;
+    int filled = 0;
+
+    final fields = [
+      _namevitController.text,
+      _phonevitController.text,
+      _emailvitController.text,
+      _homePortvitController.text,
+      _boatNamevitController.text,
+    ];
+
+    for (final field in fields) {
+      total++;
+      if (field.trim().isNotEmpty) filled++;
+    }
+
+    // Photo de profil
+    total++;
+    if (_imageFile != null) filled++;
+
+    setState(() {
+      _completionPercent = filled / total;
+    });
+  }
 
   // Future<void> _pickImage() async {
   //   try {
@@ -73,11 +98,11 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
               _imageFile = selectedFile;
               break;
           }
+          _updateCompletionPercent();
         });
+
         String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf')
-            ? 'PDF'
-            : 'Image';
+        String fileType = fileName.toLowerCase().contains('.pdf') ? 'PDF' : 'Image';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OK $fileType: $fileName'),
@@ -241,7 +266,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage(networkImage)
-                      : const NetworkImage('https://localhost:3000/uploads/veterinarians/me/photo'))
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo'))
                   as ImageProvider,
                 ),
               ),
@@ -250,7 +275,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
               bottom: 5,
               right: 5,
               child: GestureDetector(
-                onTap: () => _pickFile("profile_photo"),
+                onTap: () => _pickFile("profile_photo"), // ✅ corrigé
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
@@ -265,7 +290,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         ),
         const SizedBox(height: 12),
         GestureDetector(
-          onTap: () => _pickFile("profile_photo"),
+          onTap: () => _pickFile("profile_photo"), // ✅ corrigé
           child: const Text(
             "Change Profile Photo",
             style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';  // ✅ تغيير من image_picker إلى file_picker
@@ -41,7 +40,34 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     _consumerdelivery_addressController.dispose();
     super.dispose();
   }
+  double _completionPercent = 0.0;
 
+  void _updateCompletionPercent() {
+    int total = 0;
+    int filled = 0;
+
+    // Champs texte
+    final fields = [
+      _consumernameController.text,
+      _consumerphoneController.text,
+      _consumeremailController.text,
+      _consumerhomePortController.text,
+      _consumerdelivery_addressController.text,
+    ];
+
+    for (final field in fields) {
+      total++;
+      if (field.trim().isNotEmpty) filled++;
+    }
+
+    // Photo de profil
+    total++;
+    if (_imageFile != null) filled++;
+
+    setState(() {
+      _completionPercent = filled / total;
+    });
+  }
   // Future<void> _pickImage() async {
   //   try {
   //     final XFile? pickedFile = await _pickerconsumer.pickImage(
@@ -61,7 +87,6 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   // }
   Future<void> _pickFile(String type) async {
     try {
-      // ✅ الطريقة الصحيحة والمحدثة لاختيار الملفات (بدون .platform)
       FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
@@ -76,13 +101,11 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
               _imageFile = selectedFile;
               break;
           }
+          _updateCompletionPercent();
         });
 
-        // رسالة تأكيد اختيار الملف
         String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf')
-            ? 'PDF'
-            : 'Image';
+        String fileType = fileName.toLowerCase().contains('.pdf') ? 'PDF' : 'Image';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OK $fileType: $fileName'),
@@ -100,7 +123,6 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +251,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         Stack(
           children: [
             GestureDetector(
-              onTap: () => _pickFile("profile_photo"),
+              onTap: () => _pickFile("profile_photo"), // ✅ corrigé
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
@@ -240,7 +262,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage(networkImage)
-                      : const NetworkImage('https://localhost:3000/uploads/consumer/me/photo'))
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo'))
                   as ImageProvider,
                 ),
               ),
