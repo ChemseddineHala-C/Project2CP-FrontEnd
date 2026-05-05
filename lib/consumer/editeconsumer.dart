@@ -1,14 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';  // ✅ تغيير من image_picker إلى file_picker
 
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
-class  EditConsumerProfilePage extends StatefulWidget {
-
-  const EditConsumerProfilePage({super.key, });
+class EditConsumerProfilePage extends StatefulWidget {
+  const EditConsumerProfilePage({super.key});
 
   @override
   State<EditConsumerProfilePage> createState() => _EditConsumerProfilePageState();
@@ -23,8 +22,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   final TextEditingController _consumerdelivery_addressController = TextEditingController();
 
   File? _imageFile;
-  final ImagePicker _pickerconsumer = ImagePicker();
-  bool _isInitialized = false;
+  bool _isInitialized = false;  // ✅ حذف ImagePicker
 
   @override
   void initState() {
@@ -65,22 +63,16 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      // backgroundColor: const Color(0xFFF5F7F9),
       appBar: AppBar(
-        // backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           "Edit Profile",
-          style: TextStyle(
-            // color: Color(0xFF011A33),
-              fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back,
-            // color: Colors.black
-          ),
+          icon: const Icon(Icons.arrow_back),
         ),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
@@ -95,17 +87,13 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
           }
           if (state is ProfileUpdatedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully"),
-                // backgroundColor: Colors.green
-              ),
+              const SnackBar(content: Text("Profile updated successfully")),
             );
             Navigator.pop(context);
           }
           if (state is ProfileError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message),
-                // backgroundColor: Colors.red
-              ),
+              SnackBar(content: Text(state.message)),
             );
           }
         },
@@ -118,7 +106,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildProfileImage(state,isDark),
+                _buildProfileImage(state, isDark),
                 const SizedBox(height: 24),
                 _buildPersonalInfoCard(isDark),
                 const SizedBox(height: 20),
@@ -126,7 +114,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                 const SizedBox(height: 24),
                 _buildDeactivateButton(),
                 const SizedBox(height: 16),
-                _buildSaveButton(state,isDark),
+                _buildSaveButton(state, isDark),
                 const SizedBox(height: 12),
                 _buildCancelButton(),
               ],
@@ -195,9 +183,9 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       isDark: isDark,
       title: "PERSONAL INFORMATION",
       children: [
-        _buildTextField("Full Name", _consumernameController,isDark),
+        _buildTextField("Full Name", _consumernameController, isDark),
         const SizedBox(height: 16),
-        _buildTextField("Phone Number", _consumerphoneController,isDark),
+        _buildTextField("Phone Number", _consumerphoneController, isDark),
         const SizedBox(height: 16),
         _buildTextField(
           "Email Address",
@@ -220,9 +208,9 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       isDark: isDark,
       title: "ADDITIONAL INFORMATION",
       children: [
-        _buildTextField("Home Port", _consumerhomePortController,isDark, prefixIcon: Icons.location_on_outlined),
+        _buildTextField("Home Port", _consumerhomePortController, isDark, prefixIcon: Icons.location_on_outlined),
         const SizedBox(height: 16),
-        _buildTextField("Boat Name", _consumerboatNameController,isDark, prefixIcon: Icons.directions_boat_outlined),
+        _buildTextField("Delivery Address", _consumerdelivery_addressController, isDark, prefixIcon: Icons.location_on_outlined),
       ],
     );
   }
@@ -233,9 +221,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       children: [
         const Icon(Icons.delete_outline, color: Color(0xFFFF5252), size: 20),
         TextButton(
-          onPressed: () {
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => DeactivateAccountPage(token: widget.token)));
-          },
+          onPressed: () {},
           child: const Text(
             "Deactivate Account",
             style: TextStyle(color: Color(0xFFFF5252), fontWeight: FontWeight.w600),
@@ -245,15 +231,17 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  Widget _buildSaveButton(AuthState state,bool isDark) {
+  Widget _buildSaveButton(AuthState state, bool isDark) {
     return ElevatedButton(
       onPressed: state is AuthLoading ? null : () {
+        // ✅ إضافة profileImage إلى الدالة
         context.read<AuthCubit>().updateProfileConsumer(
           name_cons: _consumernameController.text,
           phone_cons: _consumerphoneController.text,
           homePort_cons: _consumerhomePortController.text,
           boatName_cons: _consumerboatNameController.text,
-          delivery_address: _consumerdelivery_addressController.text ,
+          delivery_address: _consumerdelivery_addressController.text,
+          profileImage: _imageFile,  // ✅ إضافة الصورة
         );
       },
       style: ElevatedButton.styleFrom(
@@ -265,16 +253,16 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       child: state is AuthLoading
           ? const CircularProgressIndicator(color: Colors.white)
           : const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle_outline, color: Colors.white),
-          SizedBox(width: 8),
-          Text(
-            "Save Changes",
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  "Save Changes",
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
     );
   }
 
@@ -288,21 +276,21 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,bool isDark, {bool enabled = true, IconData? prefixIcon, IconData? suffixIcon}) {
+  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool enabled = true, IconData? prefixIcon, IconData? suffixIcon}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color:isDark?Colors.white70: const Color(0xFF4A5568), fontSize: 13)),
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF4A5568), fontSize: 13)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: enabled,
-          style: TextStyle(color:isDark? Colors.white:(enabled ? Colors.black : const Color(0xFF7B8D9E))),
+          style: TextStyle(color: isDark ? Colors.white : (enabled ? Colors.black : const Color(0xFF7B8D9E))),
           decoration: InputDecoration(
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: const Color(0xFFD5A439)) : null,
             suffixIcon: suffixIcon != null ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18) : null,
             filled: true,
-            fillColor:isDark? Colors.white12:( enabled ? Colors.white : const Color(0xFFF8FAFB)),
+            fillColor: isDark ? Colors.white12 : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -318,7 +306,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  Widget _cardContainer({required String title, required List<Widget> children,required bool isDark}) {
+  Widget _cardContainer({required String title, required List<Widget> children, required bool isDark}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -327,7 +315,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04), // Correction withValues -> withOpacity
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -338,7 +326,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, color:isDark?Colors.white54: const Color(0xFF718096), fontSize: 14, letterSpacing: 0.5),
+            style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white54 : const Color(0xFF718096), fontSize: 14, letterSpacing: 0.5),
           ),
           const SizedBox(height: 20),
           ...children,

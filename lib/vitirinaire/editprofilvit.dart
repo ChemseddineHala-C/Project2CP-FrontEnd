@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';  // ✅ changed from image_picker
 
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
 class EditProfilevitPage extends StatefulWidget {
-
   const EditProfilevitPage({super.key});
 
   @override
@@ -22,8 +21,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
   final TextEditingController _boatNamevitController = TextEditingController();
 
   File? _imageFile;
-  final ImagePicker _pickervit = ImagePicker();
-  bool _isInitialized = false;
+  bool _isInitialized = false;  // ✅ removed ImagePicker
 
   @override
   void initState() {
@@ -82,7 +80,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
             _namevitController.text = state.user["full_name"] ?? "";
             _phonevitController.text = state.user["phone_number"] ?? "";
             _emailvitController.text = state.user["email"] ?? "";
-            _homePortvitController.text = state.user["home_prot"] ?? "";
+            _homePortvitController.text = state.user["home_port"] ?? "";
             _boatNamevitController.text = state.user["boat_name"] ?? "";
             _isInitialized = true;
           }
@@ -107,7 +105,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildProfileImage(state,isDark),
+                _buildProfileImage(state, isDark),
                 const SizedBox(height: 24),
                 _buildPersonalInfoCard(isDark),
                 const SizedBox(height: 20),
@@ -195,7 +193,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         _buildTextField("Phone Number", _phonevitController, isDark),
         const SizedBox(height: 16),
         _buildTextField(
-          "Email Address(just for contact)",
+          "Email Address (just for contact)",
           _emailvitController,
           isDark,
           enabled: false,
@@ -215,7 +213,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       isDark: isDark,
       title: "ADDITIONAL INFORMATION",
       children: [
-        _buildTextField("Assigned Port", _homePortvitController, isDark,prefixIcon: Icons.location_on_outlined),
+        _buildTextField("Assigned Port", _homePortvitController, isDark, prefixIcon: Icons.location_on_outlined),
         const SizedBox(height: 16),
         _buildTextField("Boat Name", _boatNamevitController, isDark, prefixIcon: Icons.directions_boat_outlined),
       ],
@@ -246,6 +244,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           phone: _phonevitController.text,
           homePort: _homePortvitController.text,
           boatName: _boatNamevitController.text,
+          profileImage: _imageFile,  // ✅ added profileImage
         );
       },
       style: ElevatedButton.styleFrom(
@@ -317,7 +316,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
