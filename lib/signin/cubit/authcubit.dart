@@ -219,7 +219,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       emit(AuthLoading());
       final response = await http.post(
-        Uri.parse("$_baseUrl/login-fishmen"),
+        Uri.parse("$_baseUrl/auth/login"),
         headers: {
           "Content-Type": "application/json",
         },
