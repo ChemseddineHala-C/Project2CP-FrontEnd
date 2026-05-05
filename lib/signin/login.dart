@@ -6,7 +6,7 @@ import '../picheur/homepage.dart';
 import '../admin/homepageadmin.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
-import '../vitirinaire/interfacevit.dart';
+import '../vitirinaire/dashboardVet.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
             } else if (role == "veterinarian") {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => Interfacevitpage()),
+                MaterialPageRoute(builder: (_) => InspectorDashboard()),
               );
             } else if (role == "customer") {
               Navigator.pushReplacement(
