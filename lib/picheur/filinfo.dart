@@ -200,7 +200,7 @@ class _InfopageState extends State<Infopage> {
             // ✅ التنقل يحدث هنا بعد نجاح العملية
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => HomePage()),
+              MaterialPageRoute(builder: (_) => HomePageP()),
             );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(

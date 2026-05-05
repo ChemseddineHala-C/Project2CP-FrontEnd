@@ -1,7 +1,9 @@
+import 'package:fishapp/consumer/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../consumer/interfaceconsumer.dart';
-import '../picheur/interfacepage.dart';
+import '../consumer/homePage.dart';
+import '../picheur/homepage.dart';
+import '../admin/homepageadmin.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import '../vitirinaire/interfacevit.dart';
@@ -58,12 +60,12 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            final role = state.user['role'];
+            final role = state.user['user']['role'];
 
             if (role == "fisherman") {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => Interfacepage()),
+                MaterialPageRoute(builder: (_) => HomePageP()),
               );
             } else if (role == "veterinarian") {
               Navigator.pushReplacement(
@@ -73,7 +75,12 @@ class _LoginPageState extends State<LoginPage> {
             } else if (role == "customer") {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => Interfaceconsumerpage()),
+                MaterialPageRoute(builder: (_) => HomePageC()),
+              );
+            } else if (role == "super_admin" || role == "admin"){
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => HomepageadminPage()),
               );
             }
           }
@@ -104,13 +111,13 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      "Log into account",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    // //const Text(
+                    //   "Log into account",
+                    //   style: TextStyle(
+                    //     fontWeight: FontWeight.bold,
+                    //     fontSize: 20,
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 30),
 

@@ -10,16 +10,16 @@ import 'batchDetailsPage.dart';
 import 'myBatches.dart';
 import 'objects.dart';
 
-class HomePage extends StatefulWidget {
+class HomePageP extends StatefulWidget {
 
 
-  const HomePage({super.key});
+  const HomePageP({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageP> createState() => _HomePagePState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePagePState extends State<HomePageP> {
   @override
   void initState() {
     super.initState();

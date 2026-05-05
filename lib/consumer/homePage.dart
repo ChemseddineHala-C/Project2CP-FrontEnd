@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import './batchDetails.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../signin/cubit/themecubit.dart';
+import '../signin/cubit/authstate.dart';
+import '../signin/cubit/authcubit.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePageC extends StatefulWidget {
+  const HomePageC({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageC> createState() => _HomePageCState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageCState extends State<HomePageC> {
   final TextEditingController _searchController = TextEditingController();
   // Place this with your other variables (like _isLoading)
   String _selectedCategory = "All";
@@ -27,12 +32,12 @@ class _HomePageState extends State<HomePage> {
       // 1. Check Category Match
       bool matchesCategory =
           _selectedCategory == "All" ||
-              product.category.toLowerCase() == _selectedCategory.toLowerCase();
+          product.category.toLowerCase() == _selectedCategory.toLowerCase();
 
       // 2. Check Search Match (Fish Name or Fisher Name)
       bool matchesSearch =
           product.name.toLowerCase().contains(query) ||
-              product.fisher.toLowerCase().contains(query);
+          product.fisher.toLowerCase().contains(query);
 
       return matchesCategory && matchesSearch;
     }).toList();
@@ -134,12 +139,12 @@ class _HomePageState extends State<HomePage> {
         // Optional: Add a clear button when typing
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
-          icon: const Icon(Icons.clear, size: 20),
-          onPressed: () {
-            _searchController.clear();
-            _onSearchChanged("");
-          },
-        )
+                icon: const Icon(Icons.clear, size: 20),
+                onPressed: () {
+                  _searchController.clear();
+                  _onSearchChanged("");
+                },
+              )
             : null,
       ),
     );
