@@ -138,6 +138,8 @@ class _SetupVitpageState extends State<SetupVitpage> {
         const SnackBar(content: Text("Please fill all required fields and upload documents")),
       );
       return;
+    }else{
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => homevitPage()));
     }
 
     // ✅ فقط إرسال البيانات إلى الخادم (بدون تنقل)
