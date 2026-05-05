@@ -3,6 +3,7 @@ import 'package:fishapp/signin/cubit/themecubit.dart';
 import 'package:fishapp/signin/signup/splage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fishapp/vitirinaire/dashboardVet.dart';
 
 void main() {
   runApp(
@@ -82,7 +83,8 @@ class MyApp extends StatelessWidget {
             ),
             dividerTheme: const DividerThemeData(color: Colors.white12),
           ),
-          home: const SplashPage(),
+          home: const InspectorDashboard(), 
+          //SplashPage(),
           // RoleSelectionPage()
           // SplashPage(),
           // Fivepage( email: 'hakoben@gmail.com',)
