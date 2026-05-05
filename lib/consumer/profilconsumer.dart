@@ -1,4 +1,7 @@
+import 'package:fishapp/consumer/homePage.dart';
+import 'package:fishapp/consumer/myOrderPage.dart';
 import 'package:fishapp/consumer/passwordchange.dart';
+import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
@@ -259,12 +262,14 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(onPressed: () {
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => HomeConsumerPage(token: widget.token)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
           }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Colors.grey)),
           IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BatchDetails()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrdersPage()));
           }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
+          }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
           IconButton(onPressed: () {}, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFFD5A439), size: 30)),
         ],
       ),

@@ -73,6 +73,8 @@ class _SetupConpageState extends State<SetupConspage> {
         const SnackBar(content: Text("Please fill all required fields")),
       );
       return;
+    }else{
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
     }
 
     // ✅ فقط إرسال البيانات إلى الخادم (بدون تنقل)
