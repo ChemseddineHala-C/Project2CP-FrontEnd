@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'dashboardVet.dart';
 import 'editprofilvit.dart';
+import 'inspectionHistoryPage.dart';
 
 class ProfilevitPage extends StatefulWidget {
 
@@ -296,9 +298,11 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => InspectorDashboard()));
           }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.access_time, color: Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
+          }, icon: const Icon(Icons.access_time, color: Colors.grey)),
           IconButton(onPressed: () {}, icon: Icon(Icons.person, color: primaryTeal, size: 30)),
         ],
       ),

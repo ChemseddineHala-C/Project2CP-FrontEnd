@@ -333,7 +333,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePageC()));
           }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Colors.grey)),
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrdersPage()));

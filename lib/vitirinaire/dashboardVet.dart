@@ -1,3 +1,5 @@
+import 'package:fishapp/vitirinaire/inspectionHistoryPage.dart';
+import 'package:fishapp/vitirinaire/profilevit.dart';
 import 'package:flutter/material.dart';
 import './PendingBatchesPage.dart';
 
@@ -9,6 +11,8 @@ class InspectorDashboard extends StatefulWidget {
 }
 
 class _InspectorDashboardState extends State<InspectorDashboard> {
+  final Color primaryTeal = const Color(0xFF00A896);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,7 +97,7 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
           ],
         ),
       ),
-      //bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
@@ -284,21 +288,28 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
     );
   }
 
+
   Widget _buildBottomNavBar() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 5))],
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Icon(Icons.home, color: Color(0xFF01A896), size: 28),
-          Icon(Icons.history, color: Colors.grey, size: 24),
-          Icon(Icons.person_outline, color: Colors.grey, size: 24),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
+          }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
+          }, icon: const Icon(Icons.access_time, color: Colors.grey)),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
+          }, icon: Icon(Icons.person, color: primaryTeal, size: 30)),
         ],
       ),
     );
