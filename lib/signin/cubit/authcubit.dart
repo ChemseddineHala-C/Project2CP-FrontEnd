@@ -317,6 +317,8 @@ class AuthCubit extends Cubit<AuthState> {
     required String name,
     required String phone,
     required String homePort,
+    required String boatName,
+    required String fuel,
     File? profileImage,
   }) async {
     try {
@@ -335,6 +337,8 @@ class AuthCubit extends Cubit<AuthState> {
           "full_name":    name,
           "phone_number": phone,
           "home_port":    homePort,
+          "boat_name": boatName,
+          "fuel_tank_capacity": fuel,
         },
       );
 

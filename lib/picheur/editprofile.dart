@@ -254,8 +254,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           phone: _phoneController.text,
           homePort: _homePortController.text,
           profileImage: _imageFile,
-          // boatName: _boatNameController.text,
-          // capacity:_capacityController.text,
+          boatName: _boatNameController.text,
+          fuel:_capacityController.text,
         );
       },
       style: ElevatedButton.styleFrom(
