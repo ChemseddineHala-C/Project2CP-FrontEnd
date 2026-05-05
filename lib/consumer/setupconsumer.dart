@@ -106,7 +106,7 @@ class _SetupConpageState extends State<SetupConspage> {
         listener: (context, state) {
           if (state is SetupSuccess) {
             // ✅ التنقل يحدث هنا بعد نجاح العملية
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePageC()));
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
           }

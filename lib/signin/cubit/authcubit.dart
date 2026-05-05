@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http_parser/http_parser.dart'; 
+import 'package:http_parser/http_parser.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -16,7 +16,8 @@ class AuthCubit extends Cubit<AuthState> {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId: "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
+    serverClientId:
+        "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
   );
 
   // Sauvegarde token ET role ensemble
@@ -30,7 +31,11 @@ class AuthCubit extends Cubit<AuthState> {
   //   // }
   // }
   // Dans _saveTokenAndRole — ajouter print pour vérifier
-  Future<void> _saveTokenAndRole(String token, String role, {String? refreshToken}) async {
+  Future<void> _saveTokenAndRole(
+    String token,
+    String role, {
+    String? refreshToken,
+  }) async {
     await storage.write(key: "token", value: token);
     await storage.write(key: "role", value: role);
 
@@ -71,10 +76,10 @@ class AuthCubit extends Cubit<AuthState> {
 
   //---Remplace http---
   Future<http.Response> _authorizedRequest(
-      String method,
-      String url, {
-        Map<String, dynamic>? body,
-      }) async {
+    String method,
+    String url, {
+    Map<String, dynamic>? body,
+  }) async {
     String? token = await _getToken();
 
     Future<http.Response> makeRequest(String t) {
@@ -86,14 +91,17 @@ class AuthCubit extends Cubit<AuthState> {
       // if (method == "GET") return http.get(uri, headers: headers);
       // if (method == "PUT") return http.put(uri, headers: headers, body: jsonEncode(body));
       // return http.post(uri, headers: headers, body: jsonEncode(body));
-      if (method == "GET")    return http.get(uri, headers: headers);
-      if (method == "PUT")    return http.put(uri, headers: headers, body: jsonEncode(body));
-      if (method == "POST")   return http.post(uri, headers: headers, body: jsonEncode(body));
+      if (method == "GET") return http.get(uri, headers: headers);
+      if (method == "PUT")
+        return http.put(uri, headers: headers, body: jsonEncode(body));
+      if (method == "POST")
+        return http.post(uri, headers: headers, body: jsonEncode(body));
       if (method == "DELETE") return http.delete(uri, headers: headers);
 
       // Méthode inconnue → exception claire
       throw UnsupportedError("Méthode HTTP non supportée : $method");
     }
+
     if (token == null) {
       emit(AuthInitial()); // redirige vers login
       throw Exception("No token found");
@@ -220,15 +228,16 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthLoading());
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        await _saveTokenAndRole(data['token'], data['role'],
+        print(data);
+        await _saveTokenAndRole(
+          data['token'],
+          data['user']['role'],
           // refreshToken: data['refresh_token'],
         );
         emit(AuthAuthenticated(data));
@@ -278,7 +287,6 @@ class AuthCubit extends Cubit<AuthState> {
   //   }));
   // }
 
-
   // --- PROFIL FISHERMAN+API ---
   Future<void> fetchProfile() async {
     try {
@@ -288,7 +296,10 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("GET", "$_baseUrl/fishermen/me");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/fishermen/me",
+      );
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/get-profile-fishmen"),
       //   headers: {
@@ -309,8 +320,6 @@ class AuthCubit extends Cubit<AuthState> {
       emit(ProfileError(e.toString()));
     }
   }
-
-
 
   //---Edit profil FISHERMAN+API---
   Future<void> updateProfile({
@@ -334,9 +343,9 @@ class AuthCubit extends Cubit<AuthState> {
         "PUT",
         "$_baseUrl/fishermen/me",
         body: {
-          "full_name":    name,
+          "full_name": name,
           "phone_number": phone,
-          "home_port":    homePort,
+          "home_port": homePort,
           "boat_name": boatName,
           "fuel_tank_capacity": fuel,
         },
@@ -416,11 +425,11 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       emit(ProfileUpdatedSuccess());
-
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
+
   // Future<void> updateProfile({
   //   required String name,
   //   required String phone,
@@ -502,15 +511,15 @@ class AuthCubit extends Cubit<AuthState> {
       request.headers['Authorization'] = 'Bearer $token';
 
       // ✅ Field names corrigés selon backend
-      request.fields['full_name']              = fullName;
-      request.fields['national_id']            = nationalId;
-      request.fields['phone_number']           = phone;
-      request.fields['home_port']              = homePort;
+      request.fields['full_name'] = fullName;
+      request.fields['national_id'] = nationalId;
+      request.fields['phone_number'] = phone;
+      request.fields['home_port'] = homePort;
       request.fields['fishing_license_number'] = licenseNumber;
-      request.fields['license_expiry_date']    = expiryDate;
+      request.fields['license_expiry_date'] = expiryDate;
 
       // ✅ File names corrigés selon backend
-            MediaType _getMediaType(File file) {
+      MediaType _getMediaType(File file) {
         String path = file.path.toLowerCase();
         if (path.endsWith('.png')) {
           return MediaType('image', 'png');
@@ -525,30 +534,30 @@ class AuthCubit extends Cubit<AuthState> {
 
       // ✅ إضافة الملفات مع تحديد MIME type صحيح
       if (fishingLicense != null) {
-          var file = await http.MultipartFile.fromPath(
-              'fishing_license', 
-              fishingLicense.path,
-              contentType: _getMediaType(fishingLicense), // تحديد نوع الملف
-          );
-          request.files.add(file);
+        var file = await http.MultipartFile.fromPath(
+          'fishing_license',
+          fishingLicense.path,
+          contentType: _getMediaType(fishingLicense), // تحديد نوع الملف
+        );
+        request.files.add(file);
       }
 
       if (boatRegistration != null) {
-          var file = await http.MultipartFile.fromPath(
-              'boat_registration', 
-              boatRegistration.path,
-              contentType: _getMediaType(boatRegistration),
-          );
-          request.files.add(file);
+        var file = await http.MultipartFile.fromPath(
+          'boat_registration',
+          boatRegistration.path,
+          contentType: _getMediaType(boatRegistration),
+        );
+        request.files.add(file);
       }
 
       if (Idcard != null) {
-          var file = await http.MultipartFile.fromPath(
-              'id_card', 
-              Idcard.path,
-              contentType: _getMediaType(Idcard),
-          );
-          request.files.add(file);
+        var file = await http.MultipartFile.fromPath(
+          'id_card',
+          Idcard.path,
+          contentType: _getMediaType(Idcard),
+        );
+        request.files.add(file);
       }
 
       var streamedResponse = await request.send();
@@ -562,13 +571,14 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       // ✅ Step 2 — Créer le bateau séparément
-      final boatResponse = await _authorizedRequest(//send information of boat
+      final boatResponse = await _authorizedRequest(
+        //send information of boat
         "POST",
         "$_baseUrl/boats",
         body: {
-          "boat_name":            boatName,
-          "registration_number":  registrationNumber,
-          "home_port":            homePort,
+          "boat_name": boatName,
+          "registration_number": registrationNumber,
+          "home_port": homePort,
         },
       );
 
@@ -577,7 +587,6 @@ class AuthCubit extends Cubit<AuthState> {
       } else {
         emit(AuthError("Boat creation failed: ${boatResponse.body}"));
       }
-
     } catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -682,7 +691,10 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-         final response= await _authorizedRequest("GET", "$_baseUrl/veterinarians/me");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/veterinarians/me",
+      );
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/profile-vit"),
       //   headers: {
@@ -697,7 +709,9 @@ class AuthCubit extends Cubit<AuthState> {
         print("TOKEN: ${data['token']}");
         emit(ProfileLoaded(data));
       } else {
-        emit(ProfileError("Failed to load vet profile: ${response.statusCode}"));
+        emit(
+          ProfileError("Failed to load vet profile: ${response.statusCode}"),
+        );
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -707,78 +721,78 @@ class AuthCubit extends Cubit<AuthState> {
   // --- UPDATE VET PROFILE ---
 
   //edite profile de vitirinaire
-// --- UPDATE VET PROFILE ---
-Future<void> updateProfilevit({
-  required String name,
-  required String phone,
-  required String homePort,
-  required String boatName,
-  File? profileImage,
-}) async {
-  try {
-    emit(AuthLoading());
-    String? token = await _getToken();
-    if (token == null) {
-      emit(AuthError("No token found"));
-      return;
-    }
-    
-    // ✅ Step 1 — تحديث المعلومات النصية
-    final response = await _authorizedRequest(
-      "PUT",
-      "$_baseUrl/veterinarians/me",
-      body: {
-        "full_name": name,
-        "phone_number": phone,
-        "home_port": homePort,
-        "boat_name": boatName,
-      },
-    );
-    
-    if (response.statusCode != 200) {
-      emit(ProfileError("Update failed: ${response.body}"));
-      return;
-    }
-    
-    // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
-    if (profileImage != null) {
-      var photoRequest = http.MultipartRequest(
-        'PUT',
-        Uri.parse("$_baseUrl/veterinarians/me/photo"),
-      );
-      photoRequest.headers['Authorization'] = 'Bearer $token';
-      
-      // ✅ إضافة الملف مع تحديد MIME type صحيح
-      photoRequest.files.add(
-        await http.MultipartFile.fromPath(
-          'profile_photo',
-          profileImage.path,
-          contentType: _getMediaType(profileImage), // استخدام الدالة العامة
-        ),
-      );
-      
-      // 🔍 DEBUG
-      print("PHOTO PATH: ${profileImage.path}");
-      print("PHOTO TYPE: ${_getMediaType(profileImage)}");
-      
-      var photoStreamed = await photoRequest.send();
-      var photoResponse = await http.Response.fromStream(photoStreamed);
-      
-      print("PHOTO STATUS: ${photoResponse.statusCode}");
-      print("PHOTO RESPONSE: ${photoResponse.body}");
-      
-      if (photoResponse.statusCode != 200) {
-        emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+  // --- UPDATE VET PROFILE ---
+  Future<void> updateProfilevit({
+    required String name,
+    required String phone,
+    required String homePort,
+    required String boatName,
+    File? profileImage,
+  }) async {
+    try {
+      emit(AuthLoading());
+      String? token = await _getToken();
+      if (token == null) {
+        emit(AuthError("No token found"));
         return;
       }
+
+      // ✅ Step 1 — تحديث المعلومات النصية
+      final response = await _authorizedRequest(
+        "PUT",
+        "$_baseUrl/veterinarians/me",
+        body: {
+          "full_name": name,
+          "phone_number": phone,
+          "home_port": homePort,
+          "boat_name": boatName,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        emit(ProfileError("Update failed: ${response.body}"));
+        return;
+      }
+
+      // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
+      if (profileImage != null) {
+        var photoRequest = http.MultipartRequest(
+          'PUT',
+          Uri.parse("$_baseUrl/veterinarians/me/photo"),
+        );
+        photoRequest.headers['Authorization'] = 'Bearer $token';
+
+        // ✅ إضافة الملف مع تحديد MIME type صحيح
+        photoRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_photo',
+            profileImage.path,
+            contentType: _getMediaType(profileImage), // استخدام الدالة العامة
+          ),
+        );
+
+        // 🔍 DEBUG
+        print("PHOTO PATH: ${profileImage.path}");
+        print("PHOTO TYPE: ${_getMediaType(profileImage)}");
+
+        var photoStreamed = await photoRequest.send();
+        var photoResponse = await http.Response.fromStream(photoStreamed);
+
+        print("PHOTO STATUS: ${photoResponse.statusCode}");
+        print("PHOTO RESPONSE: ${photoResponse.body}");
+
+        if (photoResponse.statusCode != 200) {
+          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+          return;
+        }
+      }
+
+      emit(ProfileUpdatedSuccess());
+    } catch (e) {
+      emit(ProfileError(e.toString()));
     }
-    
-    emit(ProfileUpdatedSuccess());
-    
-  } catch (e) {
-    emit(ProfileError(e.toString()));
   }
-}
+
   // --- EMAIL & CODE +API---
   Future<void> sendEmail(String email) async {
     try {
@@ -797,6 +811,7 @@ Future<void> updateProfilevit({
       emit(AuthError(e.toString()));
     }
   }
+
   Future<void> sendRejectionReason({
     required String batchId,
     required String reason,
@@ -811,10 +826,7 @@ Future<void> updateProfilevit({
       final response = await _authorizedRequest(
         "POST",
         "$_baseUrl/api/reject-batch",
-        body: {
-          "batchId": batchId,
-          "reason": reason,
-        },
+        body: {"batchId": batchId, "reason": reason},
       );
       // final response = await http.post(
       //   Uri.parse("$_baseUrl/api/reject-batch"),
@@ -839,147 +851,151 @@ Future<void> updateProfilevit({
     }
   }
 
-// --- VET INSPECTION DATA ---par simulation
+  // --- VET INSPECTION DATA ---par simulation
   //   Future<void> fetchInspectionDetails(String batchId) async {
-//     try {
-//       emit(AuthLoading());
-//   String? token = await _getToken();
-//   if (token == null) {
-//   emit(AuthError("No token found"));
-//   return;
-//   }
+  //     try {
+  //       emit(AuthLoading());
+  //   String? token = await _getToken();
+  //   if (token == null) {
+  //   emit(AuthError("No token found"));
+  //   return;
+  //   }
 
-//       final response await _authorizedRequest("GET", "$_baseUrl/api/inspection/$batchId");
-//
-//       final response = await http.get(
-//         Uri.parse("https://yourbackend.com/api/inspection/$batchId"),
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization": "Bearer $token", // 🔐 important
-//         },
-//       );
-//
-//       if (response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-//
-//         emit(InspectionDataLoaded({
-//           "status": data["status"],
-//           "batchId": data["batchId"],
-//           "fisherName": data["fisherName"],
-//           "fishType": data["fishType"],
-//           "expiryDate": data["expiryDate"],
-//           "timeLeft": data["timeLeft"],
-//         }));
-//       } else {
-//         emit(AuthError("Failed to load inspection data"));
-//       }
-//     } catch (e) {
-//       emit(AuthError(e.toString()));
-//     }
-//   }
+  //       final response await _authorizedRequest("GET", "$_baseUrl/api/inspection/$batchId");
+  //
+  //       final response = await http.get(
+  //         Uri.parse("https://yourbackend.com/api/inspection/$batchId"),
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": "Bearer $token", // 🔐 important
+  //         },
+  //       );
+  //
+  //       if (response.statusCode == 200) {
+  //         final data = jsonDecode(response.body);
+  //
+  //         emit(InspectionDataLoaded({
+  //           "status": data["status"],
+  //           "batchId": data["batchId"],
+  //           "fisherName": data["fisherName"],
+  //           "fishType": data["fishType"],
+  //           "expiryDate": data["expiryDate"],
+  //           "timeLeft": data["timeLeft"],
+  //         }));
+  //       } else {
+  //         emit(AuthError("Failed to load inspection data"));
+  //       }
+  //     } catch (e) {
+  //       emit(AuthError(e.toString()));
+  //     }
+  //   }
   Future<void> fetchInspectionDetails(String batchId) async {
     try {
       emit(AuthLoading());
       // Simulation d'un appel API avec délai
       await Future.delayed(const Duration(milliseconds: 800));
 
-      emit(InspectionDataLoaded({
-        "status": "Approved",
-        "batchId": "#FSH-99283",
-        "fisherName": "Captain Elias",
-        "fishType": "Sardin",
-        "expiryDate": "Mar 21, 2026",
-        "timeLeft": "01 Day, 23 hours restants",
-      }));
+      emit(
+        InspectionDataLoaded({
+          "status": "Approved",
+          "batchId": "#FSH-99283",
+          "fisherName": "Captain Elias",
+          "fishType": "Sardin",
+          "expiryDate": "Mar 21, 2026",
+          "timeLeft": "01 Day, 23 hours restants",
+        }),
+      );
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
 
   MediaType _getMediaType(File file) {
-      String path = file.path.toLowerCase();
-      if (path.endsWith('.png')) {
-        return MediaType('image', 'png');
-      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-        return MediaType('image', 'jpeg');
-      } else if (path.endsWith('.pdf')) {
-        return MediaType('application', 'pdf');
-      } else {
-        return MediaType('application', 'octet-stream');
-      }
+    String path = file.path.toLowerCase();
+    if (path.endsWith('.png')) {
+      return MediaType('image', 'png');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      return MediaType('image', 'jpeg');
+    } else if (path.endsWith('.pdf')) {
+      return MediaType('application', 'pdf');
+    } else {
+      return MediaType('application', 'octet-stream');
     }
+  }
+
   //Fill information of Vitirinaire
   Future<void> submitSetupVit({
-  required String fullNameVit,
-  required String nationalIdVit,
-  required String phoneVit,
-  required String specialization,
-  required String registrationNumberVit,
-  required String licenseNumberVit,
-  required String expiryDateVit,
-  File? fishingLicenseVit,
-  File? Idcard,
-}) async {
-  try {
-    emit(SetupLoading());
-    String? token = await _getToken();
-    print("TOKEN DANS SUBMITSETUP: $token");
-    
-    if (token == null) {
-      emit(AuthError("No token found"));
-      return;
-    }
-    
-    var request = http.MultipartRequest(
-      'POST', 
-      Uri.parse("$_baseUrl/veterinarians/setup")
-    );
-    
-    request.headers['Authorization'] = 'Bearer $token';
+    required String fullNameVit,
+    required String nationalIdVit,
+    required String phoneVit,
+    required String specialization,
+    required String registrationNumberVit,
+    required String licenseNumberVit,
+    required String expiryDateVit,
+    File? fishingLicenseVit,
+    File? Idcard,
+  }) async {
+    try {
+      emit(SetupLoading());
+      String? token = await _getToken();
+      print("TOKEN DANS SUBMITSETUP: $token");
 
-    // إضافة الحقول النصية
-    request.fields['full_name'] = fullNameVit;
-    request.fields['national_id'] = nationalIdVit;
-    request.fields['phone_number'] = phoneVit;
-    request.fields['specialization'] = specialization;
-    request.fields['license_number'] = licenseNumberVit;
-    request.fields['license_expiry_date'] = expiryDateVit;
+      if (token == null) {
+        emit(AuthError("No token found"));
+        return;
+      }
 
-    // ✅ إضافة ملف fishing_license مع MIME type
-    if (fishingLicenseVit != null) {
-      var file = await http.MultipartFile.fromPath(
-        'vet_license',
-        fishingLicenseVit.path,
-        contentType: _getMediaType(fishingLicenseVit),
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse("$_baseUrl/veterinarians/setup"),
       );
-      request.files.add(file);
-    }
-    
-    // ✅ إضافة ملف id_card مع MIME type
-    if (Idcard != null) {
-      var file = await http.MultipartFile.fromPath(
-        'id_card',
-        Idcard.path,
-        contentType: _getMediaType(Idcard),
-      );
-      request.files.add(file);
-    }
 
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
-    
-    print("STATUS: ${response.statusCode}");
-    print("RESPONSE: ${response.body}");
+      request.headers['Authorization'] = 'Bearer $token';
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      emit(SetupSuccess());
-    } else {
-      emit(AuthError("Setup failed: ${response.body}"));
+      // إضافة الحقول النصية
+      request.fields['full_name'] = fullNameVit;
+      request.fields['national_id'] = nationalIdVit;
+      request.fields['phone_number'] = phoneVit;
+      request.fields['specialization'] = specialization;
+      request.fields['license_number'] = licenseNumberVit;
+      request.fields['license_expiry_date'] = expiryDateVit;
+
+      // ✅ إضافة ملف fishing_license مع MIME type
+      if (fishingLicenseVit != null) {
+        var file = await http.MultipartFile.fromPath(
+          'vet_license',
+          fishingLicenseVit.path,
+          contentType: _getMediaType(fishingLicenseVit),
+        );
+        request.files.add(file);
+      }
+
+      // ✅ إضافة ملف id_card مع MIME type
+      if (Idcard != null) {
+        var file = await http.MultipartFile.fromPath(
+          'id_card',
+          Idcard.path,
+          contentType: _getMediaType(Idcard),
+        );
+        request.files.add(file);
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        emit(SetupSuccess());
+      } else {
+        emit(AuthError("Setup failed: ${response.body}"));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
-  } catch (e) {
-    emit(AuthError(e.toString()));
   }
-}
+
   // --- HOME DATA FISHERMAN ---
   // Future<void> fetchHomeData() async {
   //   try {
@@ -1040,7 +1056,10 @@ Future<void> updateProfilevit({
       }
       // Simulation d'un appel API
       await Future.delayed(const Duration(seconds: 1));
-      final response = await _authorizedRequest("GET", "$_baseUrl/get-profile-fishmen");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/get-profile-fishmen",
+      );
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/get-profile-fishmen"),
       //   headers: {
@@ -1078,7 +1097,10 @@ Future<void> updateProfilevit({
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("GET", "$_baseUrl/customers/me");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/customers/me",
+      );
       // final response = await http.get(
       //   Uri.parse("https://api.example.com/profileConsumer"),
       //   headers: {
@@ -1100,59 +1122,59 @@ Future<void> updateProfilevit({
     }
   }
 
-
-
   //Fill information of Consumer
   //SUBMIT SETUP CONSUMER
   //Fill information of Consumer
-//SUBMIT SETUP CONSUMER
-Future<void> submitSetupCons({
-  required String fullNameCons,
-  required String nationalIdCons,
-  required String phoneCons,
-  required String delevryAddress,
-  required String nearbyPortCons,
-}) async {
-  try {
-    emit(SetupLoading());
-    String? token = await _getToken();
-    print("TOKEN DANS SUBMITSETUP: $token");
-    if (token == null) {
-      emit(AuthError("No token found"));
-      return;
+  //SUBMIT SETUP CONSUMER
+  Future<void> submitSetupCons({
+    required String fullNameCons,
+    required String nationalIdCons,
+    required String phoneCons,
+    required String delevryAddress,
+    required String nearbyPortCons,
+  }) async {
+    try {
+      emit(SetupLoading());
+      String? token = await _getToken();
+      print("TOKEN DANS SUBMITSETUP: $token");
+      if (token == null) {
+        emit(AuthError("No token found"));
+        return;
+      }
+
+      // ✅ استخدام http.post بدلاً من MultipartRequest (لا يوجد ملفات)
+      final response = await http.post(
+        Uri.parse("$_baseUrl/customers/setup"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "full_name": fullNameCons,
+          "national_id": nationalIdCons,
+          "phone_number": phoneCons,
+          "delivery_address": delevryAddress,
+          "nearby_port": nearbyPortCons,
+        }),
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        emit(SetupSuccess());
+      } else {
+        emit(AuthError("Setup failed: ${response.body}"));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
-
-    // ✅ استخدام http.post بدلاً من MultipartRequest (لا يوجد ملفات)
-    final response = await http.post(
-      Uri.parse("$_baseUrl/customers/setup"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({
-        "full_name": fullNameCons,
-        "national_id": nationalIdCons,
-        "phone_number": phoneCons,
-        "delivery_address": delevryAddress,
-        "nearby_port": nearbyPortCons,
-      }),
-    );
-
-    print("STATUS: ${response.statusCode}");
-    print("RESPONSE: ${response.body}");
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      emit(SetupSuccess());
-    } else {
-      emit(AuthError("Setup failed: ${response.body}"));
-    }
-  } catch (e) {
-    emit(AuthError(e.toString()));
   }
-}
+
   // --- UPDATE PASSWORD FISHERMAN+API ---
   Future<void> updatePassword({
-    required String password, required String currentPassword,
+    required String password,
+    required String currentPassword,
   }) async {
     try {
       emit(AuthLoading());
@@ -1164,10 +1186,7 @@ Future<void> submitSetupCons({
       final response = await _authorizedRequest(
         "PUT",
         "$_baseUrl/change-password",
-        body: {
-          "currentPassword": currentPassword,
-          "password": password,
-        },
+        body: {"currentPassword": currentPassword, "password": password},
       );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/change-password"),
@@ -1191,8 +1210,7 @@ Future<void> submitSetupCons({
     }
   }
 
-
-// --- UPDATE PASSWORD VET ---
+  // --- UPDATE PASSWORD VET ---
   Future<void> updatePasswordVit({
     required String passwordVit,
     required String currentpasswordVit,
@@ -1204,11 +1222,14 @@ Future<void> submitSetupCons({
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("PUT", "$_baseUrl/auth/update-profile",
-          body:{
-            "currentpasswordVit":currentpasswordVit,
-            "passwordVit": passwordVit,
-          });
+      final response = await _authorizedRequest(
+        "PUT",
+        "$_baseUrl/auth/update-profile",
+        body: {
+          "currentpasswordVit": currentpasswordVit,
+          "passwordVit": passwordVit,
+        },
+      );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/update-profile"),
       //   headers: {
@@ -1230,6 +1251,7 @@ Future<void> submitSetupCons({
       emit(ProfileError(e.toString()));
     }
   }
+
   // --- UPDATE PASSWORD CONSUMER ---
   Future<void> updatePasswordCons({
     required String passwordCons,
@@ -1242,11 +1264,14 @@ Future<void> submitSetupCons({
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("PUT", "$_baseUrl/auth/update-profile",
-          body:{
-            "currentpaaswordCons":currentpasswordCons,
-            "passwordCons": passwordCons,
-          });
+      final response = await _authorizedRequest(
+        "PUT",
+        "$_baseUrl/auth/update-profile",
+        body: {
+          "currentpaaswordCons": currentpasswordCons,
+          "passwordCons": passwordCons,
+        },
+      );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/update-profile"),
       //   headers: {
@@ -1268,80 +1293,81 @@ Future<void> submitSetupCons({
       emit(ProfileError(e.toString()));
     }
   }
+
   //edit profile consumer
-//edit profile consumer
-Future<void> updateProfileConsumer({
-  required String name_cons,
-  required String phone_cons,
-  required String homePort_cons,
-  required String boatName_cons,
-  required String delivery_address,
-  File? profileImage,
-}) async {
-  try {
-    emit(AuthLoading());
-    String? token = await _getToken();
-    if (token == null) {
-      emit(AuthError("No token found"));
-      return;
-    }
-    
-    // ✅ Step 1 — تحديث المعلومات النصية
-    final response = await _authorizedRequest(
-      "PUT",
-      "$_baseUrl/customers/me",
-      body: {
-        "full_name": name_cons,
-        "phone_number": phone_cons,
-        "nearby_port": homePort_cons,
-        "delivery_address": delivery_address,
-      },
-    );
-    
-    if (response.statusCode != 200) {
-      emit(ProfileError("Update failed: ${response.body}"));
-      return;
-    }
-    
-    // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
-    if (profileImage != null) {
-      var photoRequest = http.MultipartRequest(
-        'PUT',
-        Uri.parse("$_baseUrl/customers/me/photo"),  // ✅ تم التصحيح
-      );
-      photoRequest.headers['Authorization'] = 'Bearer $token';
-      
-      // ✅ إضافة الملف مع تحديد MIME type صحيح (استخدام الدالة العامة)
-      photoRequest.files.add(
-        await http.MultipartFile.fromPath(
-          'profile_photo',
-          profileImage.path,
-          contentType: _getMediaType(profileImage), // استخدام الدالة العامة
-        ),
-      );
-      
-      // 🔍 DEBUG
-      print("PHOTO PATH: ${profileImage.path}");
-      print("PHOTO TYPE: ${_getMediaType(profileImage)}");
-      
-      var photoStreamed = await photoRequest.send();
-      var photoResponse = await http.Response.fromStream(photoStreamed);
-      
-      print("PHOTO STATUS: ${photoResponse.statusCode}");
-      print("PHOTO RESPONSE: ${photoResponse.body}");
-      
-      if (photoResponse.statusCode != 200) {
-        emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+  //edit profile consumer
+  Future<void> updateProfileConsumer({
+    required String name_cons,
+    required String phone_cons,
+    required String homePort_cons,
+    required String boatName_cons,
+    required String delivery_address,
+    File? profileImage,
+  }) async {
+    try {
+      emit(AuthLoading());
+      String? token = await _getToken();
+      if (token == null) {
+        emit(AuthError("No token found"));
         return;
       }
+
+      // ✅ Step 1 — تحديث المعلومات النصية
+      final response = await _authorizedRequest(
+        "PUT",
+        "$_baseUrl/customers/me",
+        body: {
+          "full_name": name_cons,
+          "phone_number": phone_cons,
+          "nearby_port": homePort_cons,
+          "delivery_address": delivery_address,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        emit(ProfileError("Update failed: ${response.body}"));
+        return;
+      }
+
+      // ✅ Step 2 — تحديث الصورة إذا تم اختيار صورة جديدة
+      if (profileImage != null) {
+        var photoRequest = http.MultipartRequest(
+          'PUT',
+          Uri.parse("$_baseUrl/customers/me/photo"), // ✅ تم التصحيح
+        );
+        photoRequest.headers['Authorization'] = 'Bearer $token';
+
+        // ✅ إضافة الملف مع تحديد MIME type صحيح (استخدام الدالة العامة)
+        photoRequest.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_photo',
+            profileImage.path,
+            contentType: _getMediaType(profileImage), // استخدام الدالة العامة
+          ),
+        );
+
+        // 🔍 DEBUG
+        print("PHOTO PATH: ${profileImage.path}");
+        print("PHOTO TYPE: ${_getMediaType(profileImage)}");
+
+        var photoStreamed = await photoRequest.send();
+        var photoResponse = await http.Response.fromStream(photoStreamed);
+
+        print("PHOTO STATUS: ${photoResponse.statusCode}");
+        print("PHOTO RESPONSE: ${photoResponse.body}");
+
+        if (photoResponse.statusCode != 200) {
+          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+          return;
+        }
+      }
+
+      emit(ProfileUpdatedSuccess());
+    } catch (e) {
+      emit(ProfileError(e.toString()));
     }
-    
-    emit(ProfileUpdatedSuccess());
-    
-  } catch (e) {
-    emit(ProfileError(e.toString()));
   }
-}
+
   // --- SÉLECTION DU RÔLE ---
   // Future<void> selectRole(String email,String password,String role) async {
   //   try {
@@ -1393,11 +1419,7 @@ Future<void> updateProfileConsumer({
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/register"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-          "role": role,
-        }),
+        body: jsonEncode({"email": email, "password": password, "role": role}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -1413,10 +1435,7 @@ Future<void> updateProfileConsumer({
         }
 
         // ✅ Sauvegarde token + role reçus du backend
-        await _saveTokenAndRole(
-          data['token'],
-          role,
-        );
+        await _saveTokenAndRole(data['token'], role);
 
         emit(RoleSelectedSuccess(role));
       } else {
@@ -1426,27 +1445,26 @@ Future<void> updateProfileConsumer({
       emit(AuthError(e.toString()));
     }
   }
+
   // --- VÉRIFICATION CODE+API ---
   Future<void> verifyCode(String email, String code) async {
     try {
       emit(AuthLoading());
       final response = await http.post(
-          Uri.parse("$_baseUrl/auth/verify-email"),
-          headers:
-          {
-            "Content-Type": "application/json",
-          },
-          body: jsonEncode({"email": email, "code": code,}));
+        Uri.parse("$_baseUrl/auth/verify-email"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "code": code}),
+      );
       if (response.statusCode == 200) {
         emit(CodeVerifiedSuccess());
       } else {
         emit(AuthError("Server error: ${response.statusCode}"));
       }
-    }catch(e){
+    } catch (e) {
       emit(AuthError(e.toString()));
-
     }
   }
+
   // --- ADMIN AUTHENTICATION ---
   Future<void> submitAdmin({
     required String emailvet,
@@ -1461,13 +1479,14 @@ Future<void> updateProfileConsumer({
         return;
       }
       final response = await _authorizedRequest(
-          "POST",
-          "$_baseUrl/auth/code_verification",
-          body: {
-            "emailvet": emailvet,
-            "passwordvet": passwordvet,
-            "homePortvet": homePortvet,
-          });
+        "POST",
+        "$_baseUrl/auth/code_verification",
+        body: {
+          "emailvet": emailvet,
+          "passwordvet": passwordvet,
+          "homePortvet": homePortvet,
+        },
+      );
       // final response = await http.post(
       //     Uri.parse("$_baseUrl/auth/code_verification"),
       //     headers:
@@ -1486,6 +1505,7 @@ Future<void> updateProfileConsumer({
       emit(AuthError(e.toString()));
     }
   }
+
   //---FETCH ADMIN---
   Future<void> fetchadmin() async {
     try {
@@ -1515,7 +1535,8 @@ Future<void> updateProfileConsumer({
       emit(AuthError(e.toString()));
     }
   }
-//---Reset password+API---
+
+  //---Reset password+API---
   Future<void> resetPassword(String email) async {
     try {
       emit(AuthLoading());
@@ -1535,6 +1556,7 @@ Future<void> updateProfileConsumer({
       emit(AuthError(e.toString()));
     }
   }
+
   Future<void> fetchAdminvet() async {
     try {
       emit(AuthLoading());
@@ -1565,6 +1587,7 @@ Future<void> updateProfileConsumer({
       emit(AuthError(e.toString()));
     }
   }
+
   Future<void> fetchAdminpecheur() async {
     try {
       emit(AuthLoading());
