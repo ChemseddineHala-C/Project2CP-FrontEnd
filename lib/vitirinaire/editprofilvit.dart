@@ -265,7 +265,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage(networkImage)
+                      ? NetworkImage('http://localhost:3000'+networkImage.toString().replaceFirst('src',''))
                       : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo'))
                   as ImageProvider,
                 ),
