@@ -261,8 +261,8 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage(networkImage)
-                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo'))
+                      ? NetworkImage('http://localhost:3000'+networkImage.toString().replaceFirst('src',''))
+                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) 
                   as ImageProvider,
                 ),
               ),

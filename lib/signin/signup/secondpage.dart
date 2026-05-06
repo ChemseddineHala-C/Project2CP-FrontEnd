@@ -43,7 +43,7 @@ class _SecondpageState extends State<Secondpage> {
         builder: (context, state) {
           final isLoading = state is AuthLoading;
 
-          return Padding(
+          return Center(child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
@@ -78,7 +78,7 @@ class _SecondpageState extends State<Secondpage> {
                 const SizedBox(height: 20),
               ],
             ),
-          );
+          ));
         },
       ),
     );

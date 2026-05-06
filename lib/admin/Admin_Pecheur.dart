@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
@@ -64,13 +64,13 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                       title: "Personal Information",
                       children: [
                         _label("Full Name", isDark),
-                        _readOnlyField(user["fullName"] ?? "Amine", isDark),
+                        _readOnlyField(user["full_name"] ?? "Amine", isDark),
                         const SizedBox(height: 16),
                         _label("National ID / Passport", isDark),
-                        _readOnlyField(user["nationalid"] ?? "10002651", isDark),
+                        _readOnlyField(user["national_id"] ?? "10002651", isDark),
                         const SizedBox(height: 16),
                         _label("Phone Number", isDark),
-                        _readOnlyField(user["phone"] ?? "+213 674854088", isDark),
+                        _readOnlyField(user["phone_number"] ?? "+213 674854088", isDark),
                         const SizedBox(height: 16),
                         _label("Email Address", isDark),
                         _readOnlyField(user["email"] ?? "Projet@esi-sba.dz", isDark),
@@ -83,13 +83,13 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                       title: "Boat Details",
                       children: [
                         _label("Boat Name", isDark),
-                        _readOnlyField(user["Boat_name"] ?? "king", isDark),
+                        _readOnlyField(user["boats"]["boat_name"] ?? "king", isDark),
                         const SizedBox(height: 16),
                         _label("Registration Number", isDark),
-                        _readOnlyField(user["registration_number"] ?? "LIC-00-1122", isDark),
+                        _readOnlyField(user["boats"]["registration_number"] ?? "LIC-00-1122", isDark),
                         const SizedBox(height: 16),
                         _label("Home Port", isDark),
-                        _readOnlyField(user["home_port"] ?? "oran", isDark),
+                        _readOnlyField(user["boats"]["home_port"] ?? "oran", isDark),
                       ],
                     ),
                     const SizedBox(height: 20,),
@@ -99,19 +99,19 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                       title: "Licenses & Documents",
                       children: [
                         _label("Primary License #", isDark),
-                        _readOnlyField(user["license"] ?? "LIC-00-1122", isDark),
+                        _readOnlyField(user["fishing_license_number"] ?? "LIC-00-1122", isDark),
                         const SizedBox(height: 16),
                         _label("Expiry Date", isDark),
-                        _readOnlyField(user["expiry_date"] ?? "Sep/17 /2026", isDark),
+                        _readOnlyField(user["license_expiry_date"] ?? "Sep/17 /2026", isDark),
                         const SizedBox(height: 24),
                         Text("Required Uploads (PDF or JPG)",
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF475569))),
                         const SizedBox(height: 16),
-                        _buildDownloadTile(Icons.description, "License", "License.pdf", isDark),
+                        _buildDownloadTile(Icons.description, "License", 'http://localhost:3000'+user["documents"][0]["file_path"].toString().replaceFirst('src',''), isDark),
                         const SizedBox(height: 12),
-                        _buildDownloadTile(Icons.directions_boat, "Boat Registration", "Boat.pdf", isDark),
+                        _buildDownloadTile(Icons.directions_boat, "Boat Registration", 'http://localhost:3000'+user["documents"][1]["file_path"].toString().replaceFirst('src',''), isDark),
                         const SizedBox(height: 12),
-                        _buildDownloadTile(Icons.badge_outlined, "ID Card", "ID.pdf", isDark),
+                        _buildDownloadTile(Icons.badge_outlined, "ID Card", 'http://localhost:3000'+user["documents"][2]["file_path"].toString().replaceFirst('src',''), isDark),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -144,8 +144,8 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
             child: Container(
               width: 65, height: 65,
               color: Colors.grey[200],
-              child: user["photo_profilevit"] != null
-                  ? Image.network(user["photo_profilevit"], fit: BoxFit.cover)
+              child: user["photo_profile"] != null
+                  ? Image.network(user["photo_profile"], fit: BoxFit.cover)
                   : const Icon(Icons.person, size: 35, color: Colors.grey),
             ),
           ),
@@ -154,9 +154,9 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user["fullName"] ?? "Dr, Elias Khaled",
+                Text(user["full_name"] ?? "Dr, Elias Khaled",
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("Fisherman ID: ${user["fisher_id"] ?? "#F-9281"}",
+                Text("Fisherman ID: ${user["id"] ?? "#F-9281"}",
                     style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
@@ -299,3 +299,36 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
     );
   }
 }
+
+void openFile(BuildContext context, String url) {
+      final isPdf = url.toLowerCase().endsWith('.pdf');
+      final isImage =
+          url.toLowerCase().endsWith('.jpeg') ||
+          url.toLowerCase().endsWith('.png');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: Text(isPdf ? 'PDF' : 'Image'),
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            body: isPdf
+                ? SfPdfViewer.network(url)
+                : isImage
+                ? InteractiveViewer(
+                    child: Image.network(url, fit: BoxFit.contain),
+                  )
+                : const Center(child: Text('Type of file is not supported')),
+          ),
+        ),
+      );
+    }
+
