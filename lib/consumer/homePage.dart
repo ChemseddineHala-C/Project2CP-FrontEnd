@@ -50,7 +50,60 @@ class _HomePageCState extends State<HomePageC> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFFF5F7F9),
+      // Implementing the Header as an AppBar to match your style
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 80,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            const CircleAvatar(
+              radius: 22,
+              backgroundColor: Color(0xFFF1F5F9),
+              child: Icon(Icons.waves, color: Color(0xFF023E77)), // Logo placeholder
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Welcome back,", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  "Mr. Ahmed",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                    fontFamily: "Inter",
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.6,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            // Notification Icon with Red Badge
+            Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.notifications, color: Colors.black, size: 22),
+                ),
+                const Positioned(
+                  right: 8,
+                  top: 8,
+                  child: CircleAvatar(radius: 4, backgroundColor: Colors.red),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

@@ -2,11 +2,19 @@ import 'dart:io';
 import 'package:fishapp/picheur/picheur_Api.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
+
 class Addbatchpage extends StatefulWidget {
   const Addbatchpage({super.key});
 
@@ -15,64 +23,44 @@ class Addbatchpage extends StatefulWidget {
 }
 
 class _AddBatchPageState extends State<Addbatchpage> {
-  BatchModel? _batch;
   bool _isLoading = false;
-  String _error = "";
+  //String _error = "";
 
-  Future<void> _getBatchDetails() async {
-    setState(() => _isLoading = true);
+  // Future<void> _submitBatch() async {
+  //   setState(() => _isLoading = true);
+  //   try {
+  //     final fishName = _isOtherFish
+  //         ? _otherFishController.text
+  //         : _selectedFish ?? "";
 
-    try {
-      final data = await ApiService.get("/api/batches/widget.batchId"); //${widget.batchId}
-      setState(() {
-        _batch = BatchModel.fromJson(data);
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
+  //     await ApiService.postMultipart(
+  //       "/api/batches",
+  //       {
+  //         "category": _selectedCategory ?? "",
+  //         "fish_name": fishName,
+  //         "catch_method": _selectedCatchMethod ?? "",
+  //         "quantity": _quantityController.text,
+  //         "price": _priceController.text,
+  //         "latitude": _currentPosition?.latitude.toString() ?? "",
+  //         "longitude": _currentPosition?.longitude.toString() ?? "",
+  //         "notes": _notesController.text,
+  //       },
+  //       _photos,
+  //       "photos",
+  //     );
 
-  Future<void> _submitBatch() async {
-    setState(() => _isLoading = true);
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text("Batch submitted successfully!")));
+  //     Navigator.pop(context);
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text(e.toString())));
+  //   }
 
-    try {
-      final fishName = _isOtherFish
-          ? _otherFishController.text
-          : _selectedFish ?? "";
-
-      await ApiService.postMultipart(
-        "/api/batches",
-        {
-          "category"     : _selectedCategory ?? "",
-          "fish_name"    : fishName,
-          "catch_method" : _selectedCatchMethod ?? "",
-          "quantity"     : _quantityController.text,
-          "price"        : _priceController.text,
-          "latitude"     : _currentPosition?.latitude.toString() ?? "",
-          "longitude"    : _currentPosition?.longitude.toString() ?? "",
-          "notes"        : _notesController.text,
-        },
-        _photos,
-        "photos",
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Batch submitted successfully!")),
-      );
-      Navigator.pop(context);
-
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    }
-
-    setState(() => _isLoading = false);
-  }
+  //   setState(() => _isLoading = false);
+  // }
 
   //
   final Map<String, List<String>> _fishByCategory = {
@@ -121,58 +109,185 @@ class _AddBatchPageState extends State<Addbatchpage> {
   bool _locationLoaded = false;
 
   //
-  Future<void> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+  // Future<void> _getCurrentLocation() async {
+  //   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!serviceEnabled) return;
 
-    LocationPermission permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever)
-      return;
+  //   LocationPermission permission = await Geolocator.requestPermission();
+  //   if (permission == LocationPermission.denied ||
+  //       permission == LocationPermission.deniedForever)
+  //     return;
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+  //   Position position = await Geolocator.getCurrentPosition(
+  //     desiredAccuracy: LocationAccuracy.high,
+  //   );
 
-    setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
-      _locationLoaded = true;
-    });
-  }
+  //   setState(() {
+  //     _currentPosition = LatLng(position.latitude, position.longitude);
+  //     _locationLoaded = true;
+  //   });
+  // }
 
   //image
   List<File> _photos = [];
-  final ImagePicker _picker = ImagePicker();
   //
   Future<void> _addPhoto() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
-    if (image != null) {
-      setState(() {
-        _photos.add(File(image.path));
-      });
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png'],
+        allowMultiple: false,
+      );
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _photos.add(File(result.files.single.path!));
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Photo added successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  static MediaType _getMediaType(File file) {
+    String path = file.path.toLowerCase();
+    if (path.endsWith('.png')) {
+      return MediaType('image', 'png');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      return MediaType('image', 'jpeg');
+    } else if (path.endsWith('.pdf')) {
+      return MediaType('application', 'pdf');
+    } else {
+      return MediaType('application', 'octet-stream');
+    }
+  }
+
+  Future<void> _addBatch() async {
+    // التحقق من صحة البيانات قبل الإرسال
+    if (_selectedCategory == null ||
+        (_selectedFish == null && !_isOtherFish) ||
+        _selectedCatchMethod == null ||
+        _quantityController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _photos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please fill all required fields and add at least one photo",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        throw Exception("No token found. Please login again.");
+      }
+
+      final fishName = _isOtherFish
+          ? _otherFishController.text
+          : _selectedFish ?? "";
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse("http://localhost:3000/api/batches"),
+      );
+
+      // ✅ إضافة التوكن في الـ Header
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // ✅ إضافة الحقول النصية
+      request.fields['category'] = _selectedCategory ?? "";
+      request.fields['fish_name'] = fishName;
+      request.fields['catch_method'] = _selectedCatchMethod ?? "";
+      request.fields['quantity_kg'] = _quantityController.text;
+      request.fields['price_per_kg'] = _priceController.text;
+      request.fields['latitude'] = "0";
+      request.fields['longitude'] = "0";
+      request.fields['additional_notes'] = _notesController.text;
+      request.fields['date_caught'] = DateTime.now().toString().split(' ')[0];
+
+      for (File photo in _photos) {
+        if (await photo.exists()) {
+          var multipartFile = await http.MultipartFile.fromPath(
+            'batch_photo',
+            photo.path,
+            contentType: _getMediaType(photo),
+          );
+          request.files.add(multipartFile);
+        }
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Batch submitted successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pop(context);
+      } else {
+        throw Exception("Failed to submit: ${response.body}");
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
-    _getBatchDetails();
+  }
+
+  @override
+  void dispose() {
+    _otherFishController.dispose();
+    _quantityController.dispose();
+    _priceController.dispose();
+    _notesController.dispose();
+    _photos.clear();
+    super.dispose();
   }
 
   //
   Widget build(BuildContext context) {
-    if (_isLoading) return Center(child: CircularProgressIndicator());
-    if (_error.isNotEmpty) return Center(child: Text(_error));
-    if (_batch == null) return SizedBox();
     return Scaffold(
       backgroundColor: Color(0xFFF5F7F9),
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () => Navigator.pop(context),
           icon: Icon(Icons.arrow_back),
           color: Color(0xFF0F172A),
         ),
@@ -192,504 +307,533 @@ class _AddBatchPageState extends State<Addbatchpage> {
         shadowColor: Colors.black,
         elevation: 3,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SubTitle(subTitle: "BATCH DETAILS", icon: Icons.sailing_outlined),
-            SizedBox(height: 20),
-            Text(
-              "Category",
-              style: TextStyle(
-                color: Color(0xFF334155),
-                fontFamily: "Inter",
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
-            ),
-            SizedBox(height: 7),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              items: _fishByCategory.keys
-                  .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value;
-                  _selectedFish = null;
-                  _isOtherFish = false;
-                });
-              },
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFFFFFFF),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: BorderSide(width: 1.5, color: Color(0xFFE2E8F0)),
-                ),
-              ),
-              hint: Text(
-                "Select Category",
-                style: TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontFamily: "Inter",
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ),
-              ),
-              icon: Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            Block(),
-            Text(
-              "Fish name",
-              style: TextStyle(
-                color: Color(0xFF334155),
-                fontFamily: "Inter",
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
-            ),
-            SizedBox(height: 7),
-            DropdownButtonFormField<String>(
-              value: _selectedFish,
-              items: [
-                ...?_fishByCategory[_selectedCategory]
-                    ?.map(
-                      (fish) =>
-                      DropdownMenuItem(value: fish, child: Text(fish)),
-                )
-                    .toList(),
-                DropdownMenuItem(
-                  value: "Other",
-                  child: Text(
-                    "Other - Enter the name ..",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedFish = value;
-                  _isOtherFish = value == "Other";
-                });
-              },
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                filled: true,
-                fillColor: Color(0xFFFFFFFF),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: BorderSide(width: 1.5, color: Color(0xFFE2E8F0)),
-                ),
-              ),
-              hint: Text(
-                "e.g. Lacha",
-                style: TextStyle(
-                  color: Color(0xFFA8A8A8),
-                  fontFamily: "Inter",
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ),
-              ),
-              icon: Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Color(0xFFA8A8A8),
-              ),
-            ),
-            //
-            if (_isOtherFish) ...[
-              SizedBox(height: 8),
-              TextFormField(
-                controller: _otherFishController,
-                decoration: InputDecoration(
-                  hintText: "Enter fish name...",
-                  filled: true,
-                  fillColor: Colors.white,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-            //
-            Block(),
-            Text(
-              "Catch Method",
-              style: TextStyle(
-                color: Color(0xFF334155),
-                fontFamily: "Inter",
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
-            ),
-            SizedBox(height: 7),
-            DropdownButtonFormField<String>(
-              value: _selectedCatchMethod,
-              items: _catchMethods
-                  .map(
-                    (method) =>
-                    DropdownMenuItem(value: method, child: Text(method)),
-              )
-                  .toList(),
-              onChanged: (value) {
-                setState(() => _selectedCatchMethod = value);
-              },
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFFFFFFF),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: BorderSide(width: 1.5, color: Color(0xFFE2E8F0)),
-                ),
-              ),
-              hint: Text(
-                "Select Catch Method",
-                style: TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontFamily: "Inter",
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ),
-              ),
-              icon: Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            Block(),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Quantity (kg)",
-                        style: TextStyle(
-                          color: Color(0xFF334155),
-                          fontFamily: "Inter",
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 7),
-                      TextFormField(
-                        controller: _quantityController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
-                              width: 1.5,
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: Color(0xFFFFFFFF),
-                          hintText: "0.00",
-                          hintStyle: TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontFamily: "Inter",
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Price (per kg)",
-                        style: TextStyle(
-                          color: Color(0xFF334155),
-                          fontFamily: "Inter",
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 7),
-                      TextFormField(
-                        controller: _priceController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(13),
-                            borderSide: BorderSide(
-                              width: 1.5,
-                              color: Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: Color(0xFFFFFFFF),
-                          hintText: "0.00 DA",
-                          hintStyle: TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontFamily: "Inter",
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            SubTitle(subTitle: "PHOTO", icon: Icons.camera_alt_outlined),
-            SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: _addPhoto,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
+                  SubTitle(
+                    subTitle: "BATCH DETAILS",
+                    icon: Icons.sailing_outlined,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "Category",
+                    style: TextStyle(
+                      color: Color(0xFF334155),
+                      fontFamily: "Inter",
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 7),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    items: _fishByCategory.keys
+                        .map(
+                          (cat) =>
+                              DropdownMenuItem(value: cat, child: Text(cat)),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                        _selectedFish = null;
+                        _isOtherFish = false;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFFFFFFF),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(13),
+                        borderSide: BorderSide(
+                          width: 1.5,
                           color: Color(0xFFE2E8F0),
-                          style: BorderStyle.solid,
                         ),
-                        color: Color(0xFFFFFFFF),
+                      ),
+                    ),
+                    hint: Text(
+                      "Select Category",
+                      style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_outlined,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Block(),
+                  Text(
+                    "Fish name",
+                    style: TextStyle(
+                      color: Color(0xFF334155),
+                      fontFamily: "Inter",
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 7),
+                  DropdownButtonFormField<String>(
+                    value: _selectedFish,
+                    items: [
+                      ...?_fishByCategory[_selectedCategory]
+                          ?.map(
+                            (fish) => DropdownMenuItem(
+                              value: fish,
+                              child: Text(fish),
+                            ),
+                          )
+                          .toList(),
+                      DropdownMenuItem(
+                        value: "Other",
+                        child: Text(
+                          "Other - Enter the name ..",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedFish = value;
+                        _isOtherFish = value == "Other";
+                      });
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(13),
                       ),
-                      height: 100.33,
-                      width: 111.33,
-                      child: Center(
+                      filled: true,
+                      fillColor: Color(0xFFFFFFFF),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(13),
+                        borderSide: BorderSide(
+                          width: 1.5,
+                          color: Color(0xFFE2E8F0),
+                        ),
+                      ),
+                    ),
+                    hint: Text(
+                      "e.g. Lacha",
+                      style: TextStyle(
+                        color: Color(0xFFA8A8A8),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_outlined,
+                      color: Color(0xFFA8A8A8),
+                    ),
+                  ),
+                  //
+                  if (_isOtherFish) ...[
+                    SizedBox(height: 8),
+                    TextFormField(
+                      controller: _otherFishController,
+                      decoration: InputDecoration(
+                        hintText: "Enter fish name...",
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                  //
+                  Block(),
+                  Text(
+                    "Catch Method",
+                    style: TextStyle(
+                      color: Color(0xFF334155),
+                      fontFamily: "Inter",
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 7),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCatchMethod,
+                    items: _catchMethods
+                        .map(
+                          (method) => DropdownMenuItem(
+                            value: method,
+                            child: Text(method),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() => _selectedCatchMethod = value);
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFFFFFFF),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(13),
+                        borderSide: BorderSide(
+                          width: 1.5,
+                          color: Color(0xFFE2E8F0),
+                        ),
+                      ),
+                    ),
+                    hint: Text(
+                      "Select Catch Method",
+                      style: TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_outlined,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Block(),
+                  Row(
+                    children: [
+                      Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.add_a_photo_outlined,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            SizedBox(height: 3),
                             Text(
-                              "ADD PHOTO",
+                              "Quantity (kg)",
                               style: TextStyle(
-                                color: Color(0xFF94A3B8),
+                                color: Color(0xFF334155),
                                 fontFamily: "Inter",
-                                fontWeight: FontWeight.w600,
-                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(height: 7),
+                            TextFormField(
+                              controller: _quantityController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(13),
+                                  borderSide: BorderSide(
+                                    width: 1.5,
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Color(0xFFFFFFFF),
+                                hintText: "0.00",
+                                hintStyle: TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontFamily: "Inter",
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                      SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Price (per kg)",
+                              style: TextStyle(
+                                color: Color(0xFF334155),
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(height: 7),
+                            TextFormField(
+                              controller: _priceController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(13),
+                                  borderSide: BorderSide(
+                                    width: 1.5,
+                                    color: Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Color(0xFFFFFFFF),
+                                hintText: "0.00 DA",
+                                hintStyle: TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontFamily: "Inter",
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 5),
-                  ..._photos.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    File photo = entry.value;
-
-                    return Stack(
+                  SizedBox(height: 20),
+                  SubTitle(subTitle: "PHOTO", icon: Icons.camera_alt_outlined),
+                  SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
                       children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 5,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              photo,
-                              width: 100,
-                              height: 98,
-                              fit: BoxFit.cover,
+                        GestureDetector(
+                          onTap: _addPhoto,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Color(0xFFE2E8F0),
+                                style: BorderStyle.solid,
+                              ),
+                              color: Color(0xFFFFFFFF),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            height: 100.33,
+                            width: 111.33,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_a_photo_outlined,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    "ADD PHOTO",
+                                    style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontFamily: "Inter",
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                        Positioned(
-                          top: 4,
-                          right: 12,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _photos.removeAt(index);
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
+                        SizedBox(width: 5),
+                        ..._photos.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          File photo = entry.value;
+
+                          return Stack(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 0,
+                                  horizontal: 5,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    photo,
+                                    width: 100,
+                                    height: 98,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
-                              child: Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 16,
+                              Positioned(
+                                top: 4,
+                                right: 12,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _photos.removeAt(index);
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
                               ),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SubTitle(
+                        subTitle: "CATCH LOCATION",
+                        icon: Icons.location_on,
+                      ),
+                      if (_locationLoaded)
+                        Container(
+                          padding: EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                            color: Color(0xFFDCFCE7),
+                          ),
+                          child: Text(
+                            "GPS ACTIVE",
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () => print("hello"),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                        height: 180,
+                        width: double.infinity,
+                        child: _locationLoaded
+                            ? GestureDetector(
+                                onTap: () => {print("map")},
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(13),
+                                  child: Image.network(
+                                    "https://maps.googleapis.com/maps/api/staticmap"
+                                    "?center=${_currentPosition!.latitude},${_currentPosition!.longitude}"
+                                    "&zoom=14&size=400x200"
+                                    "&markers=${_currentPosition!.latitude},${_currentPosition!.longitude}"
+                                    "&key=YOUR_API_KEY",
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                color: Color(0xFFF5F7F9),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                  ////// FOR MAP
+                  SizedBox(height: 15),
+                  TextFormField(
+                    controller: _notesController,
+                    maxLines: 2,
+                    minLines: 1,
+                    decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(13),
+                        borderSide: BorderSide(
+                          width: 1.5,
+                          color: Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Color(0xFFFFFFFF),
+                      hintText: "Gear used, or weather\n conditions...",
+                      hintStyle: TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 56,
+                          width: 389,
+                          child: ElevatedButton(
+                            onPressed: () => _addBatch(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF023E77),
+                              foregroundColor: Color(0xFFFFFFFF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                              alignment: Alignment.center,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Submit Batch",
+                                  style: TextStyle(
+                                    fontFamily: "Inter",
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Icon(Icons.send, size: 20),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Container(
+                          height: 56,
+                          width: 389,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFFA8A8A8),
+                              foregroundColor: Color(0xFFFFFFFF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                              alignment: Alignment.center,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Save as Draft",
+                                  style: TextStyle(
+                                    fontFamily: "Inter",
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Icon(Icons.drafts_outlined, size: 18),
+                              ],
                             ),
                           ),
                         ),
                       ],
-                    );
-                  }).toList(),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SubTitle(subTitle: "CATCH LOCATION", icon: Icons.location_on),
-                if (_locationLoaded)
-                  Container(
-                    padding: EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Color(0xFFDCFCE7),
-                    ),
-                    child: Text(
-                      "GPS ACTIVE",
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10,
-                        color: Color(0xFF15803D),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            SizedBox(height: 10),
-            GestureDetector(
-              onTap: () => print("hello"),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  height: 180,
-                  width: double.infinity,
-                  child: _locationLoaded
-                      ? GestureDetector(
-                    onTap: () => {print("map")},
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(13),
-                      child: Image.network(
-                        "https://maps.googleapis.com/maps/api/staticmap"
-                            "?center=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                            "&zoom=14&size=400x200"
-                            "&markers=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                            "&key=YOUR_API_KEY",
-                        width: double.infinity,
-                        height: 180,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  )
-                      : Container(
-                    color: Color(0xFFF5F7F9),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-              ),
-            ),
-            ////// FOR MAP
-            SizedBox(height: 15),
-            TextFormField(
-              controller: _notesController,
-              maxLines: 2,
-              minLines: 1,
-              decoration: InputDecoration(
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: BorderSide(width: 1.5, color: Color(0xFFE2E8F0)),
-                ),
-                filled: true,
-                fillColor: Color(0xFFFFFFFF),
-                hintText: "Gear used, or weather\n conditions...",
-                hintStyle: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontFamily: "Inter",
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Container(
-                    height: 56,
-                    width: 389,
-                    child: ElevatedButton(
-                      onPressed: () => _submitBatch(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF023E77),
-                        foregroundColor: Color(0xFFFFFFFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        alignment: Alignment.center,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Submit Batch",
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(Icons.send, size: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Container(
-                    height: 56,
-                    width: 389,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFA8A8A8),
-                        foregroundColor: Color(0xFFFFFFFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        alignment: Alignment.center,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Save as Draft",
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(Icons.drafts_outlined, size: 18),
-                        ],
-                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
