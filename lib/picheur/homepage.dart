@@ -464,7 +464,7 @@ class _HomePagePState extends State<HomePageP> {
       Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BatchDetailspage(batch: BatchItem(fishName: "Sardine", quantity: 45.5, date: "Oct 24, 05:30 AM", pricePerKg: 320.50, total: 1370.50, status: "APPROVED",)),
+            builder: (context) => BatchDetailspage(batch: FishBatch(fishName: "Sardine", quantityKg: 45.5, pricePerKg: 320.50, status: "APPROVED",)),
           ));
     },child: Container(
       width: double.infinity,
