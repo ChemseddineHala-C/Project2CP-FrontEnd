@@ -220,7 +220,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
       request.fields['latitude'] = "0";
       request.fields['longitude'] = "0";
       request.fields['additional_notes'] = _notesController.text;
-      request.fields['date_caught'] = DateTime.now().toString().substring(0,10);
+      request.fields['date_caught'] = DateTime.now().toString();
 
       for (File photo in _photos) {
         if (await photo.exists()) {
