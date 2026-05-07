@@ -172,7 +172,6 @@ class _AddBatchPageState extends State<Addbatchpage> {
   }
 
   Future<void> _addBatch() async {
-    // التحقق من صحة البيانات قبل الإرسال
     if (_selectedCategory == null ||
         (_selectedFish == null && !_isOtherFish) ||
         _selectedCatchMethod == null ||
@@ -221,7 +220,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
       request.fields['latitude'] = "0";
       request.fields['longitude'] = "0";
       request.fields['additional_notes'] = _notesController.text;
-      request.fields['date_caught'] = DateTime.now().toString().split(' ')[0];
+      request.fields['date_caught'] = DateTime.now().toString().substring(0,10);
 
       for (File photo in _photos) {
         if (await photo.exists()) {
