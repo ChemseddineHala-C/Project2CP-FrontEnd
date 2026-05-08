@@ -17,43 +17,12 @@ class BatchDetailspage extends StatefulWidget {
 }
 
 class _BatchDetailsState extends State<BatchDetailspage> {
-  bool _isLoading = false;
+  bool _isLoading = true;
   FishBatch? _batch;
 
-  Future<FishBatch?> getBatchById() async {
-    try {
-      String? token = await _getToken();
-      if (token == null) {
-        return null;
-      }
-
-      final response = await http.get(
-        Uri.parse("http://localhost:3000/api/batches/${widget.batch.id}"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> jsonData = jsonDecode(response.body);
-        return FishBatch.fromJson(jsonData);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print("Error fetching batch: $e");
-      return null;
-    }
-  }
-
-  Future<void> _fetchBatch() async {
+  Future<void> _delay5Seconds() async {
+    await Future.delayed(const Duration(seconds: 5));
     setState(() {
-      _isLoading = true;
-    });
-    FishBatch? batch = await getBatchById();
-    setState(() {
-      _batch = batch;
       _isLoading = false;
     });
   }
@@ -61,7 +30,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
   @override
   void initState() {
     super.initState();
-    _fetchBatch();
+    _delay5Seconds();
   }
 
   @override
@@ -506,7 +475,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(13),
       child: Image.network(
-        "http://localhost:3000/${path.replaceFirst("src", "")}" ?? "",
+        "http://localhost:3000${path.replaceFirst("src", "")}",
         width: 139,
         height: 127,
         fit: BoxFit.cover,

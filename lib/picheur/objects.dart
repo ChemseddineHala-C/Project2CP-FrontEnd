@@ -48,7 +48,7 @@ class FishBatch {
       pricePerKg: (json['price_per_kg'] as num?)?.toDouble(),
       photos: json['photo'] != null
           ? List<String>.from(json['photo'])
-          : [], // ✅ تحويل إلى List
+          : [],
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       additionalNotes: json['additional_notes'] as String?,

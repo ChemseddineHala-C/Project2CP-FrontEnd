@@ -52,35 +52,35 @@ class _HomePagePState extends State<HomePageP> {
                         children: [
                           _buildHeader(data,isDark),
                           const SizedBox(height: 24),
-                          _buildAddBatchCard(),
+                          //_buildAddBatchCard(),
                           const SizedBox(height: 16),
-                          _buildQuickActions(isDark),
-                          const SizedBox(height: 24),
-                          _buildSectionHeader(Icons.analytics_outlined, "Performance Overview"),
-                          const SizedBox(height: 12),
-                          _buildPerformanceGrid(data,isDark),
-                          const SizedBox(height: 24),
-                          _buildSectionHeader(Icons.inventory_2_outlined, "Batch Status Tracker"),
-                          const SizedBox(height: 12),
-                          _buildStatusTracker(data,isDark),
-                          const SizedBox(height: 24),
-                          _buildSectionHeader(Icons.storefront_outlined, "Market Highlights", trailing: "View Market"),
-                          const SizedBox(height: 12),
-                          _buildpartieHeader(
-                            "Fish Type Distribution",
-                            subtitle: "Last 7 days",
-                          ),
-                          const SizedBox(height: 12),
-                          _buildFishDistribution(data, isDark),
-                          const SizedBox(height: 12,),
-                          _buildpartieHeader(
-                            "Batch Status",
-                            subtitle: "Last 7 days",
-                          ),
-                          const SizedBox(height: 12),
-                          _buildDonutChart(data),
-                          // _buildMarketCard(data["marketItem"],isDark),
-                          const SizedBox(height: 100), // Space for navbar
+                          //_buildQuickActions(isDark),
+                          ///const SizedBox(height: 24),
+                          // _buildSectionHeader(Icons.analytics_outlined, "Performance Overview"),
+                          // const SizedBox(height: 12),
+                          // _buildPerformanceGrid(data,isDark),
+                          // const SizedBox(height: 24),
+                          // _buildSectionHeader(Icons.inventory_2_outlined, "Batch Status Tracker"),
+                          // const SizedBox(height: 12),
+                          // _buildStatusTracker(data,isDark),
+                          // const SizedBox(height: 24),
+                          // _buildSectionHeader(Icons.storefront_outlined, "Market Highlights", trailing: "View Market"),
+                          // const SizedBox(height: 12),
+                          // _buildpartieHeader(
+                          //   "Fish Type Distribution",
+                          //   subtitle: "Last 7 days",
+                          // ),
+                          // const SizedBox(height: 12),
+                          // _buildFishDistribution(data, isDark),
+                          // const SizedBox(height: 12,),
+                          // _buildpartieHeader(
+                          //   "Batch Status",
+                          //   subtitle: "Last 7 days",
+                          // ),
+                          // const SizedBox(height: 12),
+                          // _buildDonutChart(data),
+                          // // _buildMarketCard(data["marketItem"],isDark),
+                          // const SizedBox(height: 100), // Space for navbar
                         ],
                       ),
                     ),
@@ -112,10 +112,10 @@ class _HomePagePState extends State<HomePageP> {
               CircleAvatar(
                 radius: 22,
                 backgroundColor: isDark ? Colors.white10 : const Color(0xFFE3F2FD),
-                backgroundImage: data["profilePicture"] != null
-                    ? NetworkImage(data["profilePicture"])
+                backgroundImage: data["profile"]["profile_photo"] != null
+                    ? NetworkImage("http://localhost:3000"+data["profile"]["profile_photo"].toString().replaceFirst('src',''))
                     : null,
-                child: data["profilePicture"] == null
+                child: data["profile"]["profile_photo"] == null
                     ? Icon(Icons.person, color: Colors.grey)
                     : null,
               ),
@@ -124,7 +124,7 @@ class _HomePagePState extends State<HomePageP> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Welcome back,", style: TextStyle(color:isDark?Colors.white70: Colors.grey, fontSize: 13)),
-                  Text(data["userName"], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
+                  Text(data["profile"]["full_name"], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
                 ],
               ),
             ],
@@ -177,25 +177,25 @@ class _HomePagePState extends State<HomePageP> {
                     centerSpaceRadius: 45,
                     sections: [
                       PieChartSectionData(
-                        value: (user["batch_approved"] as num).toDouble(),
+                        value: (user["batch_status_chart"]["approved"]["percentage"] as num).toDouble(),
                         color: const Color(0xFF0F6E56),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_expired"] as num).toDouble(),
+                        value: (user["batch_status_chart"]["expired"]["percentage"] as num).toDouble(),
                         color: const Color(0xFF888780),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_pending"] as num).toDouble(),
+                        value: (user["batch_status_chart"]["pending"]["percentage"] as num).toDouble(),
                         color: const Color(0xFFEF9F27),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_rejected"] as num).toDouble(),
+                        value: (user["batch_status_chart"]["rejected"]["percentage"] as num).toDouble(),
                         color: const Color(0xFFE24B4A),
                         radius: 28,
                         showTitle: false,
@@ -208,7 +208,7 @@ class _HomePagePState extends State<HomePageP> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      user["batch"],
+                      user["batch_status_chart"]["total"],
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -235,22 +235,22 @@ class _HomePagePState extends State<HomePageP> {
                 _buildLegendItem(
                   color: const Color(0xFF0F6E56),
                   label: "Approved",
-                  percent: user["approved_label"],
+                  percent: user["batch_status_chart"]["approved"]["percentage"],
                 ),
                 _buildLegendItem(
                   color: const Color(0xFF888780),
                   label: "Expired",
-                  percent: user["expired_label"],
+                  percent: user["batch_status_chart"]["expired"]["percentage"],
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFEF9F27),
                   label: "Pending",
-                  percent: user["pending_label"],
+                  percent: user["batch_status_chart"]["pending"]["percentage"],
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFE24B4A),
                   label: "Rejected",
-                  percent: user["rejected_label"],
+                  percent: user["batch_status_chart"]["rejected"]["percentage"],
                 ),
               ],
             ),
@@ -496,9 +496,9 @@ class _HomePagePState extends State<HomePageP> {
   Widget _buildPerformanceGrid(Map<String, dynamic> data,bool isDark) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard("TOTAL EARNINGS", data["earnings"], data["earningsTrend"], isDark)),
+        Expanded(child: _buildStatCard("TOTAL EARNINGS", data["performance_overview"]["total_earnings"],"2.5", isDark)),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard("TOTAL WEIGHT", data["weight"], data["weightTrend"], isDark)),
+        Expanded(child: _buildStatCard("TOTAL WEIGHT", data["performance_overview"]["total_weight"], "1.5", isDark)),
       ],
     );
   }
@@ -535,10 +535,10 @@ class _HomePagePState extends State<HomePageP> {
       crossAxisSpacing: 12,
       childAspectRatio: 2.1,
       children: [
-        _buildStatusItem(Icons.access_time, data["pendingBatches"].toString(), "Pending", const Color(0xFFFFB038)),
-        _buildStatusItem(Icons.check_circle_outline, data["approvedBatches"].toString(), "Approved", const Color(0xFF4CAF50)),
-        _buildStatusItem(Icons.cancel_outlined, data["rejectedBatches"].toString(), "Rejected", const Color(0xFFFF5252)),
-        _buildStatusItem(Icons.history, "0${data["expiredBatches"]}", "Expired", const Color(0xFF7B8D9E)),
+        _buildStatusItem(Icons.access_time, data["batch_status_tracker"]["pending"].toString(), "Pending", const Color(0xFFFFB038)),
+        _buildStatusItem(Icons.check_circle_outline, data["batch_status_tracker"]["approved"].toString(), "Approved", const Color(0xFF4CAF50)),
+        _buildStatusItem(Icons.cancel_outlined, data["batch_status_tracker"]["rejected"].toString(), "Rejected", const Color(0xFFFF5252)),
+        _buildStatusItem(Icons.history, "0${data["batch_status_tracker"]["expired"]}", "Expired", const Color(0xFF7B8D9E)),
       ],
     );
   }
@@ -640,15 +640,15 @@ class _HomePagePState extends State<HomePageP> {
             },
             child: _navIcon(Icons.anchor, false),
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Addbatchpage()),
-              );
-            },
-            child: _navIcon(Icons.storefront_outlined, false),
-          ),
+          // GestureDetector(
+          //   onTap: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => Addbatchpage()),
+          //     );
+          //   },
+          //   child: _navIcon(Icons.storefront_outlined, false),
+          // ),
           GestureDetector(
             onTap: () {
               Navigator.push(

@@ -1054,22 +1054,17 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      // Simulation d'un appel API
-      await Future.delayed(const Duration(seconds: 1));
-      final response = await _authorizedRequest(
-        "GET",
-        "$_baseUrl/get-profile-fishmen",
+      
+      final response = await http.get(
+        Uri.parse("$_baseUrl/fishermen/dashboard"),
+        headers: {"Authorization": "Bearer $token"},
       );
-      // final response = await http.get(
-      //   Uri.parse("$_baseUrl/auth/get-profile-fishmen"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        emit(ProfileLoaded(data));
+        print(data);
+        // ✅ تغيير: إرسال HomeDataLoaded بدلاً من ProfileLoaded
+        emit(HomeDataLoaded(data));
       } else {
         emit(AuthError("Failed to load Home page"));
       }

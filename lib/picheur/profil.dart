@@ -5,13 +5,12 @@ import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import '../signin/cubit/themecubit.dart';
 import 'Weather&Safety.dart';
-import 'addBatchPage.dart';
+import 'homepage.dart';
 import 'editprofile.dart';
 import 'myBatches.dart';
 import 'password.dart';
 
 class ProfilePage extends StatefulWidget {
-
   const ProfilePage({super.key});
 
   @override
@@ -57,7 +56,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Profile",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -96,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           onPressed: () {},
                           icon: const Icon(Icons.upload_file, size: 18),
                           label: const Text("Upload New"),
-                        )
+                        ),
                       ],
                     ),
                     _buildDocumentsCard(user, isDark),
@@ -121,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ElevatedButton(
                     onPressed: () => context.read<AuthCubit>().fetchProfile(),
                     child: const Text("Retry"),
-                  )
+                  ),
                 ],
               ),
             );
@@ -137,7 +139,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w700, fontSize: 13),
+      style: const TextStyle(
+        color: Color(0xFF94A3B8),
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+      ),
     );
   }
 
@@ -148,33 +154,64 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
           CircleAvatar(
             radius: 50,
-            backgroundColor: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
-            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
-            child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFF013D73)) : null,
+            backgroundColor: isDark
+                ? Colors.grey[800]
+                : const Color(0xFFE3F2FD),
+            backgroundImage: user["profile_photo"] != null
+                ? NetworkImage(
+                    "http://localhost:3000" +
+                        user["profile_photo"].replaceFirst('src', ''),
+                  )
+                : null,
+            child: user["profile_photo"] == null
+                ? Icon(
+                    Icons.person,
+                    size: 60,
+                    color: isDark ? Colors.white : const Color(0xFF013D73),
+                  )
+                : null,
           ),
           const SizedBox(height: 12),
-          Text(user["full_name"] ?? "Unknown", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ID: ${user["national_id"] ?? "N/A"} | LICENSE: ${user["fishing_license_number"] ?? "N/A"}",
-              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+          Text(
+            user["full_name"] ?? "Unknown",
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "ID: ${user["national_id"] ?? "N/A"} | LICENSE: ${user["fishing_license_number"] ?? "N/A"}",
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditProfilePage()),
+                  );
                 },
                 icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                label: const Text("Edit Profile", style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Edit Profile",
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF013D73),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -188,17 +225,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Correction : Utilisation correcte de Share
                     Share.share(
                       "🐟 Découvre Let's Fishing !\n"
-                          "L'app du marché de poisson en Algérie.\n\n"
-                          "📱 Télécharge ici :\n"
-                          "https://play.google.com/store/apps/details?id=com.example.projetsndcp",
+                      "L'app du marché de poisson en Algérie.\n\n"
+                      "📱 Télécharge ici :\n"
+                      "https://play.google.com/store/apps/details?id=com.example.projetsndcp",
                       subject: "Let's Fishing App",
                     );
                   },
                   icon: const Icon(Icons.share, color: Color(0xFF475569)),
                 ),
-              )
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -207,23 +244,60 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildAccountInfoCard(Map<String, dynamic> user, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
-          _infoTile(Icons.directions_boat, "Boat Name", _getBoatName(user) ?? "N/A", isDark, trailing: _statusBadge()),
+          _infoTile(
+            Icons.directions_boat,
+            "Boat Name",
+            _getBoatName(user) ?? "N/A",
+            isDark,
+            trailing: _statusBadge(),
+          ),
           const Divider(),
           Row(
             children: [
-              Expanded(child: _infoTile(null, "Registration", _getBoatRegistration(user) ?? "N/A", isDark)),
-              Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.grey.shade300),
+              Expanded(
+                child: _infoTile(
+                  null,
+                  "Registration",
+                  _getBoatRegistration(user) ?? "N/A",
+                  isDark,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: isDark ? Colors.white10 : Colors.grey.shade300,
+              ),
               const SizedBox(width: 8),
-              Expanded(child: _infoTile(null, "Home Port", user["home_port"] ?? "N/A", isDark)),
+              Expanded(
+                child: _infoTile(
+                  null,
+                  "Home Port",
+                  user["home_port"] ?? "N/A",
+                  isDark,
+                ),
+              ),
             ],
           ),
           const Divider(),
-          _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "N/A", isDark),
+          _infoTile(
+            Icons.email_outlined,
+            "Email Address",
+            user["email"] ?? "N/A",
+            isDark,
+          ),
           const Divider(),
-          _infoTile(Icons.calendar_today_outlined, "License Expiry", user["fishing_license_number"].toString().substring(0,10) ?? "N/A", isDark),
+          _infoTile(
+            Icons.calendar_today_outlined,
+            "License Expiry",
+            user["fishing_license_number"].toString().substring(0, 10) ?? "N/A",
+            isDark,
+          ),
         ],
       ),
     );
@@ -231,12 +305,25 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildDocumentsCard(Map<String, dynamic> user, bool isDark) {
     return Container(
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
-          _docTile(Icons.description, "Fishing License", "Valid until ${user["license_expiry_date"] ?? "N/A"}", isDark),
+          _docTile(
+            Icons.description,
+            "Fishing License",
+            "Valid until ${user["license_expiry_date"] ?? "N/A"}",
+            isDark,
+          ),
           const Divider(height: 1),
-          _docTile(Icons.directions_boat, "Boat Registration", "Verified on ${user["created_at"] ?? "N/A"}", isDark),
+          _docTile(
+            Icons.directions_boat,
+            "Boat Registration",
+            "Verified on ${user["created_at"] ?? "N/A"}",
+            isDark,
+          ),
         ],
       ),
     );
@@ -244,7 +331,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSettingsCard(bool isDark) {
     return Container(
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
           _settingsTile(
@@ -253,7 +343,10 @@ class _ProfilePageState extends State<ProfilePage> {
             isDark,
             trailing: IconButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ChangepasswordPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChangepasswordPage()),
+                );
               },
               icon: const Icon(Icons.chevron_right, color: Colors.grey),
             ),
@@ -287,12 +380,36 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _infoTile(IconData? icon, String label, String value, bool isDark, {Widget? trailing}) {
+  Widget _infoTile(
+    IconData? icon,
+    String label,
+    String value,
+    bool isDark, {
+    Widget? trailing,
+  }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: icon != null ? Icon(icon, color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73)) : null,
-      title: Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w400)),
-      subtitle: Text(value, style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF0F172A))),
+      leading: icon != null
+          ? Icon(
+              icon,
+              color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73),
+            )
+          : null,
+      title: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      subtitle: Text(
+        value,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : const Color(0xFF0F172A),
+        ),
+      ),
       trailing: trailing,
     );
   }
@@ -300,8 +417,18 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _statusBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(5)),
-      child: const Text("ACTIVE", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: const Text(
+        "ACTIVE",
+        style: TextStyle(
+          color: Colors.green,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -309,8 +436,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: isDark ? Colors.white12 : const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73)),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73),
+        ),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text(sub, style: const TextStyle(fontSize: 12)),
@@ -318,9 +451,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _settingsTile(IconData icon, String title, bool isDark, {required Widget trailing}) {
+  Widget _settingsTile(
+    IconData icon,
+    String title,
+    bool isDark, {
+    required Widget trailing,
+  }) {
     return ListTile(
-      leading: Icon(icon, color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73)),
+      leading: Icon(
+        icon,
+        color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73),
+      ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: trailing,
     );
@@ -338,27 +479,64 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(onPressed: () {
-
-          }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => WeatherSafetypage()));
-          }, icon: const Icon(Icons.anchor, color: Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MyBatchesPage()));
-          }, icon: const Icon(Icons.shopping_basket_outlined, color: Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Addbatchpage()));
-          }, icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
-          }, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73), size: 30)),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomePageP()),
+              );
+            },
+            icon: const Icon(Icons.home_outlined, color: Colors.grey),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyBatchesPage()),
+              );
+            },
+            icon: const Icon(Icons.anchor, color: Colors.grey),
+          ),
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => MyBatchesPage()),
+          //     );
+          //   },
+          //   icon: const Icon(
+          //     Icons.shopping_basket_outlined,
+          //     color: Colors.grey,
+          //   ),
+          // ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => WeatherSafetypage()),
+              );
+            },
+            icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
+            },
+            icon: Icon(
+              Icons.person,
+              color: isDark ? const Color(0xFF01A896) : const Color(0xFF013D73),
+              size: 30,
+            ),
+          ),
         ],
       ),
     );

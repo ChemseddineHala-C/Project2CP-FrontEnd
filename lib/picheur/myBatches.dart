@@ -42,7 +42,7 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/batches"),
+        Uri.parse("http://localhost:3000/api/batches/me"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -318,18 +318,18 @@ Widget BatchCard(FishBatch batch) {
   Color bgColor;
   Color textColor;
 
-  switch (batch.status) {
-    case "Approved":
+  switch (batch.status!.toLowerCase()) {
+    case "approved":
       bgColor = Color(0xFFECFDF5);
       textColor = Color(0xFF065F46);
 
       break;
-    case "Rejected":
+    case "rejected":
       bgColor = Color(0xFFFFEBEC);
       textColor = Color(0xFFBD3456);
 
       break;
-    case "Pending":
+    case "pending":
       bgColor = Color(0xFFFEF3C7);
       textColor = Color(0xFFB45309);
 
@@ -353,18 +353,17 @@ Widget BatchCard(FishBatch batch) {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: batch.photos!.isEmpty?
-                Image.asset(
-                  "images/grey.jpg",
+              child: Image.network(
+                  "http://localhost:3000${batch.photos?[0].replaceFirst("src", "")}",
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
-                ): 
-                Image.network(
-                  "http://localhost:3000/${batch.photos?[0]?.replaceFirst("src", "")}" ?? "",
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    "images/grey.jpg",
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  ),
                 )
             ),
             const SizedBox(width: 12),
@@ -382,7 +381,7 @@ Widget BatchCard(FishBatch batch) {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${batch.quantityKg} kg\n${batch.dateCaught}",
+                    "${batch.quantityKg} kg\n${batch.dateCaught.toString().substring(0,16)}",
                     style: const TextStyle(
                       color: Color(0xFF64748B),
                       fontSize: 14,
