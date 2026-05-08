@@ -765,10 +765,11 @@ class _AddBatchPageState extends State<Addbatchpage> {
                   Container(
                     padding: EdgeInsets.all(10),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                           height: 56,
-                          width: 389,
+                          width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () => _addBatch(),
                             style: ElevatedButton.styleFrom(
@@ -797,36 +798,36 @@ class _AddBatchPageState extends State<Addbatchpage> {
                           ),
                         ),
                         SizedBox(height: 10),
-                        Container(
-                          height: 56,
-                          width: 389,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFA8A8A8),
-                              foregroundColor: Color(0xFFFFFFFF),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(13),
-                              ),
-                              alignment: Alignment.center,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Save as Draft",
-                                  style: TextStyle(
-                                    fontFamily: "Inter",
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Icon(Icons.drafts_outlined, size: 18),
-                              ],
-                            ),
-                          ),
-                        ),
+                        // Container(
+                        //   height: 56,
+                        //   width: 389,
+                        //   child: ElevatedButton(
+                        //     onPressed: () {},
+                        //     style: ElevatedButton.styleFrom(
+                        //       backgroundColor: Color(0xFFA8A8A8),
+                        //       foregroundColor: Color(0xFFFFFFFF),
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(13),
+                        //       ),
+                        //       alignment: Alignment.center,
+                        //     ),
+                        //     child: Row(
+                        //       mainAxisAlignment: MainAxisAlignment.center,
+                        //       children: [
+                        //         Text(
+                        //           "Save as Draft",
+                        //           style: TextStyle(
+                        //             fontFamily: "Inter",
+                        //             fontWeight: FontWeight.w600,
+                        //             fontSize: 14,
+                        //           ),
+                        //         ),
+                        //         SizedBox(width: 10),
+                        //         Icon(Icons.drafts_outlined, size: 18),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
