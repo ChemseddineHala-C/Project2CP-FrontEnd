@@ -1,4 +1,5 @@
 
+import 'package:flutter/material.dart';
 class FishBatchWithFisherman {
   final int? id;
   final int? fishermanId;
@@ -179,7 +180,8 @@ class Inspection {
     return jsonList.map((json) => Inspection.fromJson(json)).toList();
   }
 }
-
+/////////////////////////////
+// ✅ نموذج لمعلومات الدفعة
 // ✅ نموذج لمعلومات الدفعة
 class BatchInformations {
   final int? batchId;
@@ -217,9 +219,13 @@ class BatchInformations {
     );
   }
 
-  String getFishermanPhotoUrl() {
-    if (fishermanPhoto == null) return '';
-    return "http://localhost:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
+  String getFormattedCatchDate() {
+    if (dateCaught == null) return 'N/A';
+    try {
+      return dateCaught!.replaceFirst('T', ' ').substring(0, 16);
+    } catch (e) {
+      return dateCaught!;
+    }
   }
 
   String getFormattedInspectionDate() {
@@ -228,7 +234,7 @@ class BatchInformations {
   }
 }
 
-
+// ✅ نموذج لتفاصيل المفتش
 class InspectorDetails {
   final String? vetName;
   final String? vetLicense;
@@ -249,12 +255,12 @@ class InspectorDetails {
   }
 
   String getVetPhotoUrl() {
-    if (vetPhoto == null) return '';
+    if (vetPhoto == null || vetPhoto!.isEmpty) return '';
     return "http://localhost:3000/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 
-
+// ✅ نموذج لفحص الجودة
 class QualityInspection {
   final int? freshnessScore;
   final String? smell;
@@ -296,6 +302,7 @@ class QualityInspection {
   }
 }
 
+// ✅ النموذج الرئيسي لتقرير الفحص
 class InspectionReport {
   final BatchInformations? batchInformations;
   final InspectorDetails? inspectorDetails;
@@ -312,11 +319,6 @@ class InspectionReport {
   });
 
   factory InspectionReport.fromJson(Map<String, dynamic> json) {
-    QualityInspection? qualityInspectionValue;
-    if (json['inspector_details'] != null && json['inspector_details']['quality_inspection'] != null) {
-      qualityInspectionValue = QualityInspection.fromJson(json['inspector_details']['quality_inspection']);
-    }
-
     return InspectionReport(
       batchInformations: json['batch_informations'] != null
           ? BatchInformations.fromJson(json['batch_informations'])
@@ -324,27 +326,34 @@ class InspectionReport {
       inspectorDetails: json['inspector_details'] != null
           ? InspectorDetails.fromJson(json['inspector_details'])
           : null,
-      qualityInspection: qualityInspectionValue,
-      notes: json['inspector_details'] != null 
-          ? json['inspector_details']['notes'] as String?
+      qualityInspection: json['quality_inspection'] != null
+          ? QualityInspection.fromJson(json['quality_inspection'])
           : null,
-      decision: json['inspector_details'] != null 
-          ? json['inspector_details']['decision'] as String?
-          : null,
+      notes: json['notes'] as String?,
+      decision: json['decision'] as String?,
     );
   }
 
-
-  
-  DateTime? get inspectionDate => batchInformations?.inspectionDate;
-  
-  String getFormattedInspectionDate() {
-    return batchInformations?.getFormattedInspectionDate() ?? 'N/A';
+  Color get decisionColor {
+    switch (decision?.toLowerCase()) {
+      case 'approved':
+        return const Color(0xFF047857);
+      case 'rejected':
+        return const Color(0xFFBE123C);
+      default:
+        return Colors.orange;
+    }
   }
 
-  String getVetPhotoUrl() {
-    return inspectorDetails?.getVetPhotoUrl() ?? '';
+  String get decisionText {
+    switch (decision?.toLowerCase()) {
+      case 'approved':
+        return 'APPROVED';
+      case 'rejected':
+        return 'REJECTED';
+      default:
+        return 'PENDING';
+    }
   }
 }
-
 
