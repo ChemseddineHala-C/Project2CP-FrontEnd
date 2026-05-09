@@ -126,7 +126,7 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: const Color(0xFFE3F2FD),
-            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000${user["profile_photo"].replaceFirst('src','')}") : null,
             child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: primaryTeal) : null,
           ),
           const SizedBox(height: 12),
@@ -299,13 +299,17 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
         children: [
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => InspectorDashboard()));
-          }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
+          }, icon: _navIcon(Icons.home_outlined, false)),
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
-          }, icon: const Icon(Icons.access_time, color: Colors.grey)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.person, color: primaryTeal, size: 30)),
+          }, icon: _navIcon(Icons.access_time, false)),
+          IconButton(onPressed: () {}, icon: _navIcon(Icons.person, true)),
         ],
       ),
     );
   }
+}
+
+Widget _navIcon(IconData icon, bool isActive) {
+    return Icon(icon, color: isActive ? const Color(0xFF00A896) : Colors.grey.shade400, size: 28);
 }

@@ -445,12 +445,12 @@ class _BatchDetailsState extends State<BatchDetails> {
                   // View Batch Report
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BatchReportPage(),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => BatchReportPage(),
+                      //   ),
+                      // );
                     },
                     child: Container(
                       padding: EdgeInsets.all(11),

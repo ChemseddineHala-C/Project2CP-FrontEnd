@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import './object.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class BatchReportPage extends StatefulWidget {
-  const BatchReportPage({super.key});
+  final int id;
+  const BatchReportPage({super.key, required this.id});
 
   @override
   State<BatchReportPage> createState() => _BatchReportPageState();
@@ -10,21 +19,59 @@ class BatchReportPage extends StatefulWidget {
 
 class _BatchReportPageState extends State<BatchReportPage> {
   bool _isLoading = false;
-  Map<String, dynamic>? _reportData;
+  InspectionReport? _report;
+
+  static Future<InspectionReport?> getInspectionReport(int batchId) async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse("http://localhost:3000/api/inspections//${batchId}/report"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("GET INSPECTION REPORT STATUS: ${response.statusCode}");
+      print("GET INSPECTION REPORT RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return InspectionReport.fromJson(decoded);
+      } else {
+        print("Failed to get inspection report");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching inspection report: $e");
+      return null;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _fetchReport();
   }
 
-
+  Future<void> _fetchReport() async {
+    setState(() {
+      _isLoading = true;
+    });
+    InspectionReport? report = await getInspectionReport(widget.id);
+    setState(() {
+      _report = report;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
       backgroundColor: Color(0xFFF5F7F9),
       appBar: AppBar(
@@ -49,25 +96,27 @@ class _BatchReportPageState extends State<BatchReportPage> {
         shadowColor: Colors.black,
         elevation: 3,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionLabel("Batch Informations"),
-            const SizedBox(height: 10),
-            _buildBatchHeaderCard(),
-            const Block(),
-            _sectionLabel("Inspection Details"),
-            const SizedBox(height: 10),
-            _buildInspectionDetailCard(),
-            const Block(),
-            _buildSummaryQuote("hello"),
-            const Block(),
-            _buildDownloadButton(),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionLabel("Batch Informations"),
+                  const SizedBox(height: 10),
+                  _buildBatchHeaderCard(),
+                  const Block(),
+                  _sectionLabel("Inspection Details"),
+                  const SizedBox(height: 10),
+                  _buildInspectionDetailCard(),
+                  const Block(),
+                  _buildSummaryQuote("hello"),
+                  const Block(),
+                  _buildDownloadButton(),
+                ],
+              ),
+            ),
     );
   }
 
@@ -95,17 +144,17 @@ class _BatchReportPageState extends State<BatchReportPage> {
         children: [
           Row(
             children: [
-              _infoTile("N/A","N/A", isMain: true),
+              _infoTile('${_report!.batchInformations!.fishName}', '${_report!.batchInformations!.batchId}', isMain: true),
               const SizedBox(width: 12),
-              _infoTile("FISHER NAME","N/A"),
+              _infoTile("FISHER NAME", '${_report!.batchInformations!.fishermanName}'),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              _infoTile("CATCH DATE","N/A"),
+              _infoTile("CATCH DATE", '${_report!.batchInformations!.dateCaught}'),
               const SizedBox(width: 12),
-              _infoTile("INSPECTION DATE","N/A"),
+              _infoTile("INSPECTION DATE", '${_report!.batchInformations!.inspectionDate}'),
             ],
           ),
         ],
@@ -119,7 +168,9 @@ class _BatchReportPageState extends State<BatchReportPage> {
         height: 80,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color:isMain? Colors.white: const Color(0xFFE2E8F0)),
+          border: Border.all(
+            color: isMain ? Colors.white : const Color(0xFFE2E8F0),
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -130,13 +181,20 @@ class _BatchReportPageState extends State<BatchReportPage> {
               style: TextStyle(
                 fontSize: isMain ? 18 : 10,
                 fontWeight: FontWeight.w800,
-                color: isMain ? const Color(0xFF01A896) : const Color(0xFF6F787D),
+                color: isMain
+                    ? const Color(0xFF01A896)
+                    : const Color(0xFF6F787D),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: TextStyle(fontFamily: 'Inter',fontSize: 12, fontWeight: FontWeight.w700, color: isMain ? Color(0xFF3F484C):Color(0xFF191C1D)),
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isMain ? Color(0xFF3F484C) : Color(0xFF191C1D),
+              ),
             ),
           ],
         ),
@@ -155,24 +213,38 @@ class _BatchReportPageState extends State<BatchReportPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Inspector Details", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF64748B))),
+          const Text(
+            "Inspector Details",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF64748B),
+            ),
+          ),
           const SizedBox(height: 10),
-          _inspectorTile("Dr Ahmed Nacer","#MAR-5542","images/fish1.png"),
+          _inspectorTile('${_report!.inspectorDetails!.vetName}', "${_report!.inspectorDetails!.vetLicense}", _report!.inspectorDetails!.vetPhoto.toString()),
           Block(),
-          const Text("Quality Inspection", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF64748B))),
+          const Text(
+            "Quality Inspection",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF64748B),
+            ),
+          ),
           const SizedBox(height: 10),
-          _freshnessBar(85),
-          _qualityCard(Icons.air, "SMELL", "a"),
-          _qualityCard(Icons.visibility_outlined, "EYE CLARITY", "b"),
-          _qualityCard(Icons.front_hand_outlined, "FLESH FIRMNESS", "c"),
-          _qualityCard(Icons.water_drop_outlined, "GILL COLOR", "d"),
-          _qualityCard(Icons.thermostat, "TEMPERATURE", "e"),
+          _freshnessBar(_report!.qualityInspection!.freshnessScore!.toDouble()),
+          _qualityCard(Icons.air, "SMELL", "${_report!.qualityInspection!.smell}"),
+          _qualityCard(Icons.visibility_outlined, "EYE CLARITY", "${_report!.qualityInspection!.eyeClarity}"),
+          _qualityCard(Icons.front_hand_outlined, "FLESH FIRMNESS", "${_report!.qualityInspection!.fleshFirmness}"),
+          _qualityCard(Icons.water_drop_outlined, "GILL COLOR", "${_report!.qualityInspection!.gillColor}"),
+          _qualityCard(Icons.thermostat, "TEMPERATURE", "${_report!.qualityInspection!.internalTemperature}"),
         ],
       ),
     );
   }
 
-  Widget _inspectorTile(String full_name,String ID,String picture) {
+  Widget _inspectorTile(String full_name, String ID, String picture) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -183,17 +255,33 @@ class _BatchReportPageState extends State<BatchReportPage> {
       child: Row(
         children: [
           CircleAvatar(
+            radius: 50,
             backgroundColor: Color(0xFFE2E8F0),
-            child: Icon(Icons.person_2_outlined,color:Color(0xFF01A896)),
+            backgroundImage: NetworkImage(picture),
+            child: picture == ""? Icon(Icons.person_2_outlined, color: Color(0xFF01A896)):null,
           ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Dr $full_name", style: const TextStyle(fontFamily: 'Inter',color: Color(0xFF191C1D),fontWeight: FontWeight.bold)),
-              Text("ID LICENSE: $ID", style: const TextStyle(fontFamily: 'Inter',fontSize: 11, color: Color(0xFF6F787D))),
+              Text(
+                "Dr $full_name",
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  color: Color(0xFF191C1D),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                "ID LICENSE: $ID",
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 11,
+                  color: Color(0xFF6F787D),
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -212,11 +300,15 @@ class _BatchReportPageState extends State<BatchReportPage> {
           Container(
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-                color: Color(0x1A0C6780),
-                shape: BoxShape.circle
+              color: Color(0x1A0C6780),
+              shape: BoxShape.circle,
             ),
 
-            child: Icon(Icons.signal_cellular_alt_outlined, color: const Color(0xFF01A896), size: 18),
+            child: Icon(
+              Icons.signal_cellular_alt_outlined,
+              color: const Color(0xFF01A896),
+              size: 18,
+            ),
           ),
 
           const SizedBox(width: 12),
@@ -227,8 +319,22 @@ class _BatchReportPageState extends State<BatchReportPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("freshness_score".toUpperCase(), style: const TextStyle(fontSize: 10, color: Color(0xFF6F787D), fontWeight: FontWeight.w700)),
-                    Text("${score.toInt()}/100", style: const TextStyle(fontSize: 10,fontWeight: FontWeight.bold, color: Color(0xFF01A896))),
+                    Text(
+                      "freshness_score".toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF6F787D),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      "${score.toInt()}/100",
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF01A896),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 8),
@@ -247,7 +353,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
     );
   }
 
-  Widget _qualityCard(IconData icon,String data1, String data2) {
+  Widget _qualityCard(IconData icon, String data1, String data2) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -260,8 +366,8 @@ class _BatchReportPageState extends State<BatchReportPage> {
           Container(
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-                color: Color(0x1A0C6780),
-                shape: BoxShape.circle
+              color: Color(0x1A0C6780),
+              shape: BoxShape.circle,
             ),
             child: Icon(icon, color: const Color(0xFF01A896), size: 18),
           ),
@@ -271,8 +377,22 @@ class _BatchReportPageState extends State<BatchReportPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(data1, style: const TextStyle(fontSize: 10, color: Color(0xFF6F787D), fontWeight: FontWeight.w700)),
-                Text(data2, style: const TextStyle(fontSize: 13, color: Color(0xFF191C1D),fontWeight: FontWeight.bold)),
+                Text(
+                  data1,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF6F787D),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  data2,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF191C1D),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -293,7 +413,12 @@ class _BatchReportPageState extends State<BatchReportPage> {
       ),
       child: Text(
         summary,
-        style: const TextStyle(fontFamily: 'Inter',fontStyle: FontStyle.italic, color: Color(0xFF3F484C), height: 1.4),
+        style: const TextStyle(
+          fontFamily: 'Inter',
+          fontStyle: FontStyle.italic,
+          color: Color(0xFF3F484C),
+          height: 1.4,
+        ),
       ),
     );
   }
@@ -305,11 +430,16 @@ class _BatchReportPageState extends State<BatchReportPage> {
       child: ElevatedButton.icon(
         onPressed: () {},
         icon: const Icon(Icons.picture_as_pdf_outlined),
-        label: const Text("Download Certificate (PDF)", style: TextStyle(fontFamily: 'Inter',fontWeight: FontWeight.bold)),
+        label: const Text(
+          "Download Certificate (PDF)",
+          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF01A896),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
         ),
       ),
