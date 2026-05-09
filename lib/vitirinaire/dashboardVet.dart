@@ -302,18 +302,21 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
-          }, icon: const Icon(Icons.home_outlined, color: Colors.grey)),
+          }, icon: _navIcon(Icons.home_outlined,true)),
           IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
-          }, icon: const Icon(Icons.access_time, color: Colors.grey)),
+            Navigator.push(context, MaterialPageRoute(builder: (context) => InspectionHistoryPage()));
+          }, icon: _navIcon(Icons.access_time, false)),
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilevitPage()));
-          }, icon: Icon(Icons.person, color: primaryTeal, size: 30)),
+          }, icon: _navIcon(Icons.person, false)),
         ],
       ),
     );
   }
+}
+
+Widget _navIcon(IconData icon, bool isActive) {
+    return Icon(icon, color: isActive ? const Color(0xFF00A896) : Colors.grey.shade400, size: 28);
 }
 
 class Block extends StatelessWidget {

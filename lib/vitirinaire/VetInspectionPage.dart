@@ -1,10 +1,12 @@
 import 'package:fishapp/vitirinaire/failedverfc.dart';
 import 'package:fishapp/vitirinaire/succesverfc.dart';
+import './object.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class vetInspectionPage extends StatefulWidget {
-  const vetInspectionPage({super.key});
+  final FishBatchWithFisherman batch;
+  const vetInspectionPage({super.key, required this.batch});
 
   @override
   State<vetInspectionPage> createState() => _VetInspectionPageState();
@@ -121,20 +123,6 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
     return score.clamp(0, 100);
   }
 
-  //trial data
-  VetInspection _inspection = VetInspection(
-    batchId: "#FSH-99283",
-    captainName: "Capt. Elias",
-    vesselName: "Sea's King",
-    latitude: 36.7,
-    longitude: 3.1,
-    photos: [
-      "images/fish1.png",
-      "images/fish2.png",
-      "images/fish3.jpg",
-      "map.png",
-    ],
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +180,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Batch ID: ${_inspection.batchId}",
+                        "Batch ID: ${widget.batch.id}",
                         style: TextStyle(
                           color: Color(0xFF0F172A),
                           fontFamily: 'Inter',
@@ -201,7 +189,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                         ),
                       ),
                       Text(
-                        "${_inspection.captainName} • Vessel: ${_inspection.vesselName}",
+                        "Capt. ${widget.batch.fishermanName} • Fishtype: ${widget.batch.fishName}",
                         style: TextStyle(
                           fontFamily: 'Inter',
                           color: Color(0xFF64748B),
@@ -225,27 +213,17 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _inspection.photos.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final path = entry.value;
-                  return Row(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          image: DecorationImage(
-                            image: AssetImage(path),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                children: widget.batch.photo!
+                    .map(
+                      (path) => Row(
+                        children: [
+                          _buildFishImage(path),
+                          if (widget.batch.photo!.last != path)
+                            const SizedBox(width: 10),
+                        ],
                       ),
-                      if (index != _inspection.photos.length - 1)
-                        const SizedBox(width: 10),
-                    ],
-                  );
-                }).toList(),
+                    )
+                    .toList(),
               ),
             ),
 
@@ -371,8 +349,9 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                   setState(() => _selectedGillColor = value),
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: _selectedGillColor == null?
-                                    Colors.white:_selectedGillColor == _gillColorOptions[0]
+                                fillColor: _selectedGillColor == null
+                                    ? Colors.white
+                                    : _selectedGillColor == _gillColorOptions[0]
                                     ? Color(0xFFD7FFE1)
                                     : _selectedGillColor == _gillColorOptions[1]
                                     ? Color(0xFFFFFCD7)
@@ -445,9 +424,10 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               ),
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: _selectedFleshFirmness == null?
-                                    Colors.white:_selectedFleshFirmness ==
-                                        _fleshFirmnessOptions[0]
+                                fillColor: _selectedFleshFirmness == null
+                                    ? Colors.white
+                                    : _selectedFleshFirmness ==
+                                          _fleshFirmnessOptions[0]
                                     ? Color(0xFFD7FFE1)
                                     : _selectedFleshFirmness ==
                                           _fleshFirmnessOptions[1]
@@ -515,8 +495,10 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                   setState(() => _selectedEyeClarity = value),
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: _selectedEyeClarity == null?
-                                    Colors.white:_selectedEyeClarity == _eyeClarityOptions[0]
+                                fillColor: _selectedEyeClarity == null
+                                    ? Colors.white
+                                    : _selectedEyeClarity ==
+                                          _eyeClarityOptions[0]
                                     ? Color(0xFFD7FFE1)
                                     : _selectedEyeClarity ==
                                           _eyeClarityOptions[1]
@@ -766,7 +748,21 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => FailedvetPage(batchId: _inspection.batchId)));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FailedvetPage(
+                                  batch: widget.batch,
+                                  op1: _selectedSmell.toString(),
+                                  op2: _selectedGillColor.toString(),
+                                  op3: _selectedFleshFirmness.toString(),
+                                  op4: _selectedEyeClarity.toString(),
+                                  op5: double.parse(_tempController.text),
+                                  op6: _parasitesPresent,
+                                  op7: _freshnessScore,
+                                ),
+                              ),
+                            );
                           },
                           icon: Icon(Icons.cancel_outlined),
                           label: Text(
@@ -794,7 +790,21 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => VetInspectionPage(batchId: _inspection.batchId)));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SuccessedVetPage(
+                                  batch: widget.batch,
+                                  op1: _selectedSmell.toString(),
+                                  op2: _selectedGillColor.toString(),
+                                  op3: _selectedFleshFirmness.toString(),
+                                  op4: _selectedEyeClarity.toString(),
+                                  op5: double.parse(_tempController.text),
+                                  op6: _parasitesPresent,
+                                  op7: _freshnessScore,
+                                ),
+                              ),
+                            );
                           },
                           icon: Icon(Icons.check_circle_outline),
                           label: Text(
@@ -830,33 +840,33 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
   }
 }
 
-class VetInspection {
-  final String batchId;
-  final String captainName;
-  final String vesselName;
-  final double latitude;
-  final double longitude;
-  final List<String> photos;
-  String? smell;
-  String? gillColor;
-  String? fleshFirmness;
-  bool? parasitesPresent;
-  double? internalTemp;
+// class VetInspection {
+//   final String batchId;
+//   final String captainName;
+//   final String vesselName;
+//   final double latitude;
+//   final double longitude;
+//   final List<String> photos;
+//   String? smell;
+//   String? gillColor;
+//   String? fleshFirmness;
+//   bool? parasitesPresent;
+//   double? internalTemp;
 
-  VetInspection({
-    required this.batchId,
-    required this.captainName,
-    required this.vesselName,
-    required this.latitude,
-    required this.longitude,
-    required this.photos,
-    this.smell,
-    this.gillColor,
-    this.fleshFirmness,
-    this.parasitesPresent,
-    this.internalTemp,
-  });
-}
+//   VetInspection({
+//     required this.batchId,
+//     required this.captainName,
+//     required this.vesselName,
+//     required this.latitude,
+//     required this.longitude,
+//     required this.photos,
+//     this.smell,
+//     this.gillColor,
+//     this.fleshFirmness,
+//     this.parasitesPresent,
+//     this.internalTemp,
+//   });
+// }
 
 class Block extends StatelessWidget {
   const Block({super.key});
@@ -866,9 +876,7 @@ class Block extends StatelessWidget {
   }
 }
 
-Widget subTitle (String title) {
-
-  
+Widget subTitle(String title) {
   return Text(
     title,
     style: TextStyle(
@@ -877,6 +885,25 @@ Widget subTitle (String title) {
       fontWeight: FontWeight.w700,
       letterSpacing: 0.6,
       color: Color(0xFF94A3B8),
+    ),
+  );
+}
+
+Widget _buildFishImage(String path) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(13),
+    child: Image.network(
+      "http://localhost:3000${path.replaceFirst("src", "")}",
+      width: 139,
+      height: 127,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) =>
+        Image.asset(
+          "images/grey.jpg",
+          width: 139,
+          height: 127,
+          fit: BoxFit.cover,
+        ),
     ),
   );
 }

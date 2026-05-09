@@ -208,10 +208,10 @@ class _AddBatchPageState extends State<Addbatchpage> {
         Uri.parse("http://localhost:3000/api/batches"),
       );
 
-      // ✅ إضافة التوكن في الـ Header
+ 
       request.headers['Authorization'] = 'Bearer $token';
 
-      // ✅ إضافة الحقول النصية
+
       request.fields['category'] = _selectedCategory ?? "";
       request.fields['fish_name'] = fishName;
       request.fields['catch_method'] = _selectedCatchMethod ?? "";

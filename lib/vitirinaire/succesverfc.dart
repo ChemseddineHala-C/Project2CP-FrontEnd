@@ -1,40 +1,161 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import './object.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
-class VetInspectionPage extends StatefulWidget {
-  final String batchId;
-
-  const VetInspectionPage({super.key, required this.batchId});
-
-  @override
-  State<VetInspectionPage> createState() => _VetInspectionPageState();
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
 }
 
-class _VetInspectionPageState extends State<VetInspectionPage> {
+class SuccessedVetPage extends StatefulWidget {
+  final FishBatchWithFisherman batch;
+  final String op1;
+  final String op2;
+  final String op3;
+  final String op4;
+  final double op5;
+  final bool op6;
+  final int op7;
+
+  const SuccessedVetPage({
+    super.key,
+    required this.batch,
+    required this.op1,
+    required this.op2,
+    required this.op3,
+    required this.op4,
+    required this.op5,
+    required this.op6,
+    required this.op7,
+  });
+
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
+  State<SuccessedVetPage> createState() => _VetInspectionPageState();
+}
 
-  void _loadData() {
-    context.read<AuthCubit>().fetchInspectionDetails(widget.batchId);
-  }
+class _VetInspectionPageState extends State<SuccessedVetPage> {
+  bool _isLoading = false;
+  final TextEditingController _approvedController = TextEditingController();
 
-  Future<void> _downloadCertificate(String? url) async {
-    final Uri uri = Uri.parse(url ?? "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf");
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
+  Future<void> submitInspection({
+    required int batchId,
+    required String smell,
+    required String gillColor,
+    required String fleshFirmness,
+    required String eyeClarity,
+    required double internalTemperature,
+    required bool parasitesPresent,
+    required int freshnessScore,
+    required String notes,
+    required String decision,
+    required BuildContext context,
+  }) async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not launch download")),
+          const SnackBar(
+            content: Text("No token found. Please login again."),
+            backgroundColor: Colors.red,
+          ),
         );
+        return;
       }
+
+      final response = await http.post(
+        Uri.parse("http://localhost:3000/api/inspections/${batchId}"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "batch_id": batchId,
+          "smell": smell,
+          "gill_color": gillColor,
+          "flesh_firmness": fleshFirmness,
+          "eye_clarity": eyeClarity,
+          "internal_temperature": internalTemperature,
+          "parasites_present": parasitesPresent,
+          "freshness_score": freshnessScore,
+          "notes": notes,
+          "decision": decision,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Inspection submitted successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed: ${response.body}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+      return;
     }
+  }
+
+  Future<void> DownloadCer() async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse("http://localhost:3000/api/inspections/${widget.batch.id}:id/certificate"),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+      
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<void> _submitBatches() async {
+    setState(() {
+      _isLoading = true;
+    });
+    submitInspection(
+      batchId: widget.batch.id!,
+      smell: widget.op1,
+      gillColor: widget.op2,
+      fleshFirmness: widget.op3,
+      eyeClarity: widget.op4,
+      internalTemperature: widget.op5,
+      parasitesPresent: widget.op6,
+      freshnessScore: widget.op7,
+      notes: _approvedController.text,
+      decision: 'approved',
+      context: context,
+    );
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -49,70 +170,63 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? Colors.white : Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           "Vet Inspection",
           style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF011A33),
-              fontWeight: FontWeight.bold
+            color: isDark ? Colors.white : const Color(0xFF011A33),
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
       ),
-      body: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          if (state is AuthLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is InspectionDataLoaded) {
-            final data = state.data;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatusCard(isDark),
-                  const SizedBox(height: 32),
-                  _buildSectionTitle("Batch Identity", isDark),
-                  const SizedBox(height: 12),
-                  _buildIdentityCard(data, isDark),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle("Expiration Date", isDark),
-                  const SizedBox(height: 12),
-                  _buildExpirationCard(data["expiryDate"], data["timeLeft"], isDark),
-                  const SizedBox(height: 24),
-                  _buildActionCard(
-                    icon: Icons.picture_as_pdf_outlined,
-                    title: "Digital certificate",
-                    subtitle: "PDF format - 1.2 MB",
-                    actionIcon: Icons.download_outlined,
-                    onTap: () => _downloadCertificate(data["pdfUrl"]),
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionCard(
-                    icon: Icons.remove_red_eye_outlined,
-                    title: "View Batch Report",
-                    subtitle: "",
-                    actionIcon: Icons.open_in_new_outlined,
-                    onTap: () {},
-                    isDark: isDark,
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Center(
-            child: ElevatedButton(
-              onPressed: _loadData,
-              child: const Text("Retry"),
+      body: _isLoading?
+        const Center(child: CircularProgressIndicator()):
+        SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatusCard(isDark),
+            const SizedBox(height: 32),
+            _buildSectionTitle("Batch Identity", isDark),
+            const SizedBox(height: 12),
+            _buildIdentityCard(isDark),
+            const SizedBox(height: 24),
+            _buildSectionTitle("Notes", isDark),
+            const SizedBox(height: 12),
+            _buildApprovedInputCard(
+              isDark,
+            ), //pour cause de fefutation de envoyer id de pecheur et le text
+            const SizedBox(height: 24),
+            _buildSectionTitle("Expiration Date", isDark),
+            const SizedBox(height: 12),
+            _buildExpirationCard("expiryDate", "timeLeft", isDark),
+            const SizedBox(height: 24),
+            _buildActionCard(
+              icon: Icons.picture_as_pdf_outlined,
+              title: "Digital certificate",
+              subtitle: "PDF format",
+              actionIcon: Icons.download_outlined,
+              onTap: () => {DownloadCer()},
+              isDark: isDark,
             ),
-          );
-        },
+            const SizedBox(height: 12),
+            _buildActionCard(
+              icon: Icons.remove_red_eye_outlined,
+              title: "View Batch Report",
+              subtitle: "",
+              actionIcon: Icons.open_in_new_outlined,
+              onTap: () {},
+              isDark: isDark,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -130,7 +244,7 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -189,7 +303,7 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
     );
   }
 
-  Widget _buildIdentityCard(Map<String, dynamic> data, bool isDark) {
+  Widget _buildIdentityCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -197,18 +311,22 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-              blurRadius: 10
-          )
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Column(
         children: [
-          _buildIdentityItem("BATCH ID", data["batchId"], isDark),
+          _buildIdentityItem("BATCH ID", '${widget.batch.id}', isDark),
           const Divider(height: 32),
-          _buildIdentityItem("FISHER NAME", data["fisherName"], isDark),
+          _buildIdentityItem(
+            "FISHER NAME",
+            '${widget.batch.fishermanName}',
+            isDark,
+          ),
           const Divider(height: 32),
-          _buildIdentityItem("FISH TYPE", data["fishType"], isDark),
+          _buildIdentityItem("FISH TYPE", '${widget.batch.fishName}', isDark),
         ],
       ),
     );
@@ -220,9 +338,23 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: isDark ? Colors.white54 : Colors.grey, fontSize: 11, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: TextStyle(
+                color: isDark ? Colors.white54 : Colors.grey,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF011A33))),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF011A33),
+              ),
+            ),
           ],
         ),
       ],
@@ -242,7 +374,11 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
           const SizedBox(width: 16),
           Text(
             date,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
           const SizedBox(width: 8),
           Text(
@@ -256,7 +392,67 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
     );
   }
 
-  Widget _buildActionCard({required bool isDark, required IconData icon, required String title, String? subtitle, required IconData actionIcon, VoidCallback? onTap}) {
+  Widget _buildApprovedInputCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).cardColor, // Utilisation de cardColor pour la cohérence
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: _approvedController,
+            maxLines: 4,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            decoration: InputDecoration(
+              hintText: "Add any informations related to inspection..",
+              hintStyle: TextStyle(
+                color: isDark ? Colors.white38 : Colors.grey,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              _submitBatches();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(
+                0xFF006F63,
+              ), // Rouge pour l'action de rejet
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              "Send Approval",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required bool isDark,
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required IconData actionIcon,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -280,9 +476,19 @@ class _VetInspectionPageState extends State<VetInspectionPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : Colors.black)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
                   if (subtitle != null)
-                    Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                 ],
               ),
             ),
