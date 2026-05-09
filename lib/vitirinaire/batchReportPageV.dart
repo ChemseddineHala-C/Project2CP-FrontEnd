@@ -29,8 +29,9 @@ class _BatchReportPageState extends State<BatchReportPage> {
         return null;
       }
 
+      // ✅ تصحيح الرابط (إزالة الشرطة المائلة الزائدة)
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/inspections//${batchId}/report"),
+        Uri.parse("http://localhost:3000/api/inspections/$batchId/report"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -72,16 +73,48 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ التحقق من وجود البيانات قبل بناء الواجهة
+    if (_report == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7F9),
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+            color: const Color(0xFF0F172A),
+          ),
+          title: const Text(
+            "Inspection Report",
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontFamily: "Inter",
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              letterSpacing: -0.6,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          shadowColor: Colors.black,
+          elevation: 3,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : const Center(child: Text("No data available")),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Color(0xFFF5F7F9),
+      backgroundColor: const Color(0xFFF5F7F9),
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back),
-          color: Color(0xFF0F172A),
+          icon: const Icon(Icons.arrow_back),
+          color: const Color(0xFF0F172A),
         ),
-        title: Text(
-          "Inspection History",
+        title: const Text(
+          "Inspection Report",
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontFamily: "Inter",
@@ -111,7 +144,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
                   const SizedBox(height: 10),
                   _buildInspectionDetailCard(),
                   const Block(),
-                  _buildSummaryQuote("hello"),
+                  _buildSummaryQuote(),
                   const Block(),
                   _buildDownloadButton(),
                 ],
@@ -133,33 +166,54 @@ class _BatchReportPageState extends State<BatchReportPage> {
   }
 
   Widget _buildBatchHeaderCard() {
+    // ✅ التحقق من وجود البيانات
+    if (_report!.batchInformations == null) {
+      return const SizedBox.shrink();
+    }
+
+    final batchInfo = _report!.batchInformations!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Color(0x1ABFC8CD)),
+        border: Border.all(color: const Color(0x1ABFC8CD)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              _infoTile('${_report!.batchInformations!.fishName}', '${_report!.batchInformations!.batchId}', isMain: true),
+              _infoTile(
+                batchInfo.fishName ?? 'N/A',
+                '${batchInfo.batchId ?? "N/A"}',
+                isMain: true,
+              ),
               const SizedBox(width: 12),
-              _infoTile("FISHER NAME", '${_report!.batchInformations!.fishermanName}'),
+              _infoTile("FISHER NAME", batchInfo.fishermanName ?? 'N/A'),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              _infoTile("CATCH DATE", '${_report!.batchInformations!.dateCaught}'),
+              _infoTile("CATCH DATE", _formatDate(batchInfo.dateCaught)),
               const SizedBox(width: 12),
-              _infoTile("INSPECTION DATE", '${_report!.batchInformations!.inspectionDate}'),
+              _infoTile("INSPECTION DATE", batchInfo.getFormattedInspectionDate()),
             ],
           ),
         ],
       ),
     );
+  }
+
+  // ✅ دالة مساعدة لتنسيق التاريخ
+  String _formatDate(String? dateString) {
+    if (dateString == null) return 'N/A';
+    try {
+      return dateString.replaceFirst('T', ' ').substring(0, 16);
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _infoTile(String title, String value, {bool isMain = false}) {
@@ -193,7 +247,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
                 fontFamily: 'Inter',
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isMain ? Color(0xFF3F484C) : Color(0xFF191C1D),
+                color: isMain ? const Color(0xFF3F484C) : const Color(0xFF191C1D),
               ),
             ),
           ],
@@ -203,6 +257,14 @@ class _BatchReportPageState extends State<BatchReportPage> {
   }
 
   Widget _buildInspectionDetailCard() {
+    // ✅ التحقق من وجود البيانات
+    if (_report!.inspectorDetails == null || _report!.qualityInspection == null) {
+      return const SizedBox.shrink();
+    }
+
+    final inspector = _report!.inspectorDetails!;
+    final quality = _report!.qualityInspection!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -222,8 +284,12 @@ class _BatchReportPageState extends State<BatchReportPage> {
             ),
           ),
           const SizedBox(height: 10),
-          _inspectorTile('${_report!.inspectorDetails!.vetName}', "${_report!.inspectorDetails!.vetLicense}", _report!.inspectorDetails!.vetPhoto.toString()),
-          Block(),
+          _inspectorTile(
+            inspector.vetName ?? 'Unknown',
+            inspector.vetLicense ?? 'N/A',
+            inspector.vetPhoto ?? '',
+          ),
+          const Block(),
           const Text(
             "Quality Inspection",
             style: TextStyle(
@@ -233,18 +299,24 @@ class _BatchReportPageState extends State<BatchReportPage> {
             ),
           ),
           const SizedBox(height: 10),
-          _freshnessBar(_report!.qualityInspection!.freshnessScore!.toDouble()),
-          _qualityCard(Icons.air, "SMELL", "${_report!.qualityInspection!.smell}"),
-          _qualityCard(Icons.visibility_outlined, "EYE CLARITY", "${_report!.qualityInspection!.eyeClarity}"),
-          _qualityCard(Icons.front_hand_outlined, "FLESH FIRMNESS", "${_report!.qualityInspection!.fleshFirmness}"),
-          _qualityCard(Icons.water_drop_outlined, "GILL COLOR", "${_report!.qualityInspection!.gillColor}"),
-          _qualityCard(Icons.thermostat, "TEMPERATURE", "${_report!.qualityInspection!.internalTemperature}"),
+          _freshnessBar((quality.freshnessScore ?? 0).toDouble()),
+          _qualityCard(Icons.air, "SMELL", quality.smell ?? 'N/A'),
+          _qualityCard(Icons.visibility_outlined, "EYE CLARITY", quality.eyeClarity ?? 'N/A'),
+          _qualityCard(Icons.front_hand_outlined, "FLESH FIRMNESS", quality.fleshFirmness ?? 'N/A'),
+          _qualityCard(Icons.water_drop_outlined, "GILL COLOR", quality.gillColor ?? 'N/A'),
+          _qualityCard(Icons.thermostat, "TEMPERATURE", "${quality.internalTemperature ?? 0}°C"),
+          _qualityCard(Icons.bug_report, "PARASITES", (quality.parasitesPresent == true) ? "Present" : "Not Present"),
         ],
       ),
     );
   }
 
   Widget _inspectorTile(String full_name, String ID, String picture) {
+    // ✅ التحقق من صحة رابط الصورة
+    final imageUrl = picture.isNotEmpty 
+        ? "http://localhost:3000/${picture.replaceFirst("src/", "")}"
+        : null;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -254,18 +326,50 @@ class _BatchReportPageState extends State<BatchReportPage> {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Color(0xFFE2E8F0),
-            backgroundImage: NetworkImage(picture),
-            child: picture == ""? Icon(Icons.person_2_outlined, color: Color(0xFF01A896)):null,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(40),  // ✅ شكل دائري
+            child: imageUrl != null
+                ? Image.network(
+                    imageUrl,
+                    width: 40,           // ✅ العرض
+                    height: 40,          // ✅ الارتفاع
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 40,
+                        height: 40,
+                        color: const Color(0xFFE2E8F0),
+                        child: const Icon(Icons.person_2_outlined, color: Color(0xFF01A896), size: 40),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 40,
+                        height: 40,
+                        color: const Color(0xFFE2E8F0),
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE2E8F0),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person_2_outlined, color: Color(0xFF01A896), size: 40),
+                  ),
           ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Dr $full_name",
+                full_name.isNotEmpty ? "Dr $full_name" : "Unknown",
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   color: Color(0xFF191C1D),
@@ -273,7 +377,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
                 ),
               ),
               Text(
-                "ID LICENSE: $ID",
+                ID != 'N/A' ? "ID LICENSE: $ID" : "No license",
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 11,
@@ -300,17 +404,15 @@ class _BatchReportPageState extends State<BatchReportPage> {
           Container(
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: Color(0x1A0C6780),
+              color: const Color(0x1A0C6780),
               shape: BoxShape.circle,
             ),
-
-            child: Icon(
+            child: const Icon(
               Icons.signal_cellular_alt_outlined,
-              color: const Color(0xFF01A896),
+              color: Color(0xFF01A896),
               size: 18,
             ),
           ),
-
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -321,7 +423,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
                   children: [
                     Text(
                       "freshness_score".toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         color: Color(0xFF6F787D),
                         fontWeight: FontWeight.w700,
@@ -337,7 +439,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: score / 100,
                   backgroundColor: const Color(0xFFE2E8F0),
@@ -364,14 +466,13 @@ class _BatchReportPageState extends State<BatchReportPage> {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(5),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(5),
+            decoration: const BoxDecoration(
               color: Color(0x1A0C6780),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: const Color(0xFF01A896), size: 18),
           ),
-
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -402,7 +503,10 @@ class _BatchReportPageState extends State<BatchReportPage> {
     );
   }
 
-  Widget _buildSummaryQuote(String summary) {
+  Widget _buildSummaryQuote() {
+    // ✅ استخدام notes من التقرير
+    final notes = _report?.notes ?? "No additional notes";
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -412,7 +516,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
         border: Border(left: BorderSide(color: Color(0xFF01A896), width: 4)),
       ),
       child: Text(
-        summary,
+        notes,
         style: const TextStyle(
           fontFamily: 'Inter',
           fontStyle: FontStyle.italic,
@@ -457,66 +561,72 @@ class Block extends StatelessWidget {
 }
 
 Color _pointColor(String str) {
-  Color _tmpColor = Colors.black;
-  switch (str) {
-    case "Neutral / Sea-like":
-      _tmpColor = Color(0xFFD7FFE1);
-      break;
-    case "Strong":
-      _tmpColor = Color(0xFFFFFCD7);
-      break;
-    case "Sour / Ammonia-like":
-      _tmpColor = Color(0xFFFFD7D7);
-      break;
+  Color _tmpColor = Colors.grey.shade300;
+  
+  // ✅ للرائحة (Smell)
+  if (str.contains("Neutral") || str.contains("Sea-like")) {
+    _tmpColor = const Color(0xFFD7FFE1);
+  } else if (str.contains("Strong")) {
+    _tmpColor = const Color(0xFFFFFCD7);
+  } else if (str.contains("Sour") || str.contains("Ammonia")) {
+    _tmpColor = const Color(0xFFFFD7D7);
   }
-
-  switch (str) {
-    case "Bright Red":
-      _tmpColor = Color(0xFFD7FFE1);
-      break;
-    case "Brownish / Dark Red":
-      _tmpColor = Color(0xFFFFFCD7);
-      break;
-    case "Gray / Green / Black":
-      _tmpColor = Color(0xFFFFD7D7);
-      break;
-    case "Not a Mesure ..":
-      _tmpColor = Color(0xFFF2F2F2);
-      break;
+  
+  // ✅ للون الخياشيم (Gill Color)
+  if (str.contains("Bright Red")) {
+    _tmpColor = const Color(0xFFD7FFE1);
+  } else if (str.contains("Brownish") || str.contains("Dark Red")) {
+    _tmpColor = const Color(0xFFFFFCD7);
+  } else if (str.contains("Gray") || str.contains("Green") || str.contains("Black")) {
+    _tmpColor = const Color(0xFFFFD7D7);
+  } else if (str.contains("Not a Mesure")) {
+    _tmpColor = const Color(0xFFF2F2F2);
   }
-
-  switch (str) {
-    case "Firm":
-      _tmpColor = Color(0xFFD7FFE1);
-      break;
-    case "Slightly Soft":
-      _tmpColor = Color(0xFFFFFCD7);
-      break;
-    case "Soft":
-      _tmpColor = Color(0xFFFFDFA0);
-      break;
-    case "Mushy":
-      _tmpColor = Color(0xFFFFD7D7);
+  
+  // ✅ لقوام اللحم (Flesh Firmness)
+  if (str.contains("Firm") && !str.contains("Slightly")) {
+    _tmpColor = const Color(0xFFD7FFE1);
+  } else if (str.contains("Slightly Soft")) {
+    _tmpColor = const Color(0xFFFFFCD7);
+  } else if (str.contains("Soft") && !str.contains("Slightly")) {
+    _tmpColor = const Color(0xFFFFDFA0);
+  } else if (str.contains("Mushy")) {
+    _tmpColor = const Color(0xFFFFD7D7);
   }
-
-  switch (str) {
-    case "Clear / Bright":
-      _tmpColor = Color(0xFFD7FFE1);
-      break;
-    case "Slightly Cloudy":
-      _tmpColor = Color(0xFFFFFCD7);
-      break;
-    case "Cloudy":
-      _tmpColor = Color(0xFFFFDFA0);
-      break;
-    case "Sunken / Opaque":
-      _tmpColor = Color(0xFFFFD7D7);
+  
+  // ✅ لوضوح العين (Eye Clarity)
+  if (str.contains("Clear") || str.contains("Bright")) {
+    _tmpColor = const Color(0xFFD7FFE1);
+  } else if (str.contains("Slightly Cloudy")) {
+    _tmpColor = const Color(0xFFFFFCD7);
+  } else if (str.contains("Cloudy") && !str.contains("Slightly")) {
+    _tmpColor = const Color(0xFFFFDFA0);
+  } else if (str.contains("Sunken") || str.contains("Opaque")) {
+    _tmpColor = const Color(0xFFFFD7D7);
   }
-
-  // double? value = double.parse(str);
-  // if (value != null){
-  //   _tmpColor = (value > -1 && value < 4) ? Color(0xFFD7FFE1) : Color(0xFFFFD7D7) ;
-  // }
-
+  
+  // ✅ لدرجة الحرارة (Temperature)
+  if (str.contains("°C")) {
+    try {
+      double temp = double.parse(str.replaceAll("°C", "").trim());
+      if (temp >= 0 && temp <= 4) {
+        _tmpColor = const Color(0xFFD7FFE1);
+      } else if (temp > 4 && temp <= 7) {
+        _tmpColor = const Color(0xFFFFFCD7);
+      } else if (temp > 7) {
+        _tmpColor = const Color(0xFFFFD7D7);
+      }
+    } catch (e) {
+      // إذا فشل التحويل، استخدم اللون الافتراضي
+    }
+  }
+  
+  // ✅ للطفيليات (Parasites)
+  if (str.contains("Not Present")) {
+    _tmpColor = const Color(0xFFD7FFE1);
+  } else if (str.contains("Present")) {
+    _tmpColor = const Color(0xFFFFD7D7);
+  }
+  
   return _tmpColor;
 }
