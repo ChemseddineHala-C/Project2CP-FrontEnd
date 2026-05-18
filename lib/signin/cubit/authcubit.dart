@@ -1054,12 +1054,12 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      
+
       final response = await http.get(
         Uri.parse("$_baseUrl/fishermen/dashboard"),
         headers: {"Authorization": "Bearer $token"},
       );
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print(data);
@@ -1512,7 +1512,10 @@ class AuthCubit extends Cubit<AuthState> {
       }
       // Simulation d'un appel API
       await Future.delayed(const Duration(seconds: 1));
-      final response = await _authorizedRequest("GET", "$_baseUrl/api/profile");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/admins/dashboard",
+      );
       // final response = await http.get(
       //   Uri.parse("https://yourbackend.com/api/profile"),
       //   headers: {
@@ -1522,6 +1525,7 @@ class AuthCubit extends Cubit<AuthState> {
       // );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data);
         emit(AdminLoaded(data));
       } else {
         emit(AuthError("Failed to load Admin page"));
@@ -1552,7 +1556,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> fetchAdminvet() async {
+  Future<void> fetchAdminvet(String id) async {
     try {
       emit(AuthLoading());
       String? token = await _getToken();
@@ -1562,7 +1566,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "GET",
-        "$_baseUrl/auth/profile-fishmen",
+        "$_baseUrl/veterinarians/$id",
       );
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/profile-fishmen"),
@@ -1574,6 +1578,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data);
         emit(AdminLoaded(data));
       } else {
         emit(AuthError("Failed to load profile"));
@@ -1583,7 +1588,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> fetchAdminpecheur() async {
+  Future<void> fetchAdminpecheur(String id) async {
     try {
       emit(AuthLoading());
       String? token = await _getToken();
@@ -1593,7 +1598,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "GET",
-        "$_baseUrl/auth/profile-fishmen",
+        "$_baseUrl/fishermen/$id",
       );
       // final response = await http.get(
       //   Uri.parse("$_baseUrl/auth/profile-fishmen"),
@@ -1605,6 +1610,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data);
         emit(AdminLoaded(data));
       } else {
         emit(AuthError("Failed to load profile"));
