@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import './Admin_Pecheur.dart';
+import './admin_vit.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -345,6 +347,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     ],
                   ),
                 ),
+                SizedBox(height: 20),
                 // User List
                 Expanded(
                   child: ListView.builder(
@@ -523,7 +526,26 @@ class UserItemCard extends StatelessWidget {
                         // View Details or Full Profile Button
                         Expanded(
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              if (user.role == 'Fisherman') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => Adminpecheurinfo(id: user.id)),
+                                );
+                              } else if (user.role == 'Veterinarian') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => Adminvitinfo(id: user.id)),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Not found"),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
                             style: TextButton.styleFrom(
                               backgroundColor: const Color(0xFFF3F4F5),
                               shape: RoundedRectangleBorder(

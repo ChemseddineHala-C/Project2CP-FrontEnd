@@ -119,7 +119,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                       iconBgColor: const Color(0xFFBAEAFF),
                       iconColor: const Color(0xFF013D73),
                       label: "Total Users",
-                      value: user["infousers"],
+                      value: user["total_users"],
                       badge: "+${user["deg_incresing"]}%",
                       badgeBg: const Color(0xFFE8F5E9),
                       badgeColor: Colors.green,
@@ -133,7 +133,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                       iconBgColor: const Color(0xFFFFF3E0),
                       iconColor: const Color(0xFFF59E0B),
                       label: "Total Batches",
-                      value: user["total_batchs"],
+                      value: user["total_batches"],
                       badge: "+${user["deg_batchs"]}%",
                       badgeBg: const Color(0xFFE8F5E9),
                       badgeColor: Colors.green,
@@ -404,7 +404,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            user["total_revenu"],
+            user["total_revenue"],
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,

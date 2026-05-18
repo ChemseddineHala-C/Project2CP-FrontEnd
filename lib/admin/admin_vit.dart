@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -6,7 +5,8 @@ import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
 class Adminvitinfo extends StatefulWidget {
-  const Adminvitinfo({super.key});
+  final String id;
+  const Adminvitinfo({super.key, required this.id});
 
   @override
   State<Adminvitinfo> createState() => _AdminvitinfoState();
@@ -16,14 +16,12 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
   @override
   void initState() {
     super.initState();
-    context.read<AuthCubit>().fetchAdminvet();
+    context.read<AuthCubit>().fetchAdminvet(widget.id);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -63,8 +61,13 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
 
           if (state is AdminLoaded) {
             final user = state.user;
+            final documents = (user["documents"] is List)
+                ? List.from(user["documents"])
+                : <dynamic>[];
+
             return RefreshIndicator(
-              onRefresh: () async => context.read<AuthCubit>().fetchAdminvet(),
+              onRefresh: () async =>
+                  context.read<AuthCubit>().fetchAdminvet(widget.id),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -78,23 +81,26 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
                       title: "Personal Information",
                       children: [
                         _label("Full Name", isDark),
-                        _readOnlyField(user["full_name"] ?? "Dr Ahmed", isDark),
+                        _readOnlyField(
+                          safeText(user["full_name"], "Dr Ahmed"),
+                          isDark,
+                        ),
                         const SizedBox(height: 16),
                         _label("National ID / Passport", isDark),
                         _readOnlyField(
-                          user["national_id"] ?? "10002651",
+                          safeText(user["national_id"], "10002651"),
                           isDark,
                         ),
                         const SizedBox(height: 16),
                         _label("Phone Number", isDark),
                         _readOnlyField(
-                          user["phone_number"] ?? "+213 674854088",
+                          safeText(user["phone_number"], "+213 674854088"),
                           isDark,
                         ),
                         const SizedBox(height: 16),
                         _label("Email Address", isDark),
                         _readOnlyField(
-                          user["email"] ?? "Projet@esi-sba.dz",
+                          safeText(user["email"], "Projet@esi-sba.dz"),
                           isDark,
                         ),
                       ],
@@ -107,19 +113,19 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
                       children: [
                         _label("Specialization", isDark),
                         _readOnlyField(
-                          user["specialization"] ?? "Aquatic Pathology",
+                          safeText(user["specialization"], "Aquatic Pathology"),
                           isDark,
                         ),
                         const SizedBox(height: 16),
                         _label("Primary License #", isDark),
                         _readOnlyField(
-                          user["license_number"] ?? "LIC-00-1122",
+                          safeText(user["license_number"], "LIC-00-1122"),
                           isDark,
                         ),
                         const SizedBox(height: 16),
                         _label("Expiry Date", isDark),
                         _readOnlyField(
-                          user["license_expiry_date"] ?? "Sep/17 /2026",
+                          safeDate(user["license_expiry_date"], "17-09-2026"),
                           isDark,
                         ),
                         const SizedBox(height: 24),
@@ -137,14 +143,14 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
                         _buildDownloadTile(
                           Icons.description,
                           "License",
-                          'http://localhost:3000'+user["documents"][0]["file_path"].toString().replaceFirst('src',''),
+                          extractDocumentUrl(documents, 0),
                           isDark,
                         ),
                         const SizedBox(height: 12),
                         _buildDownloadTile(
                           Icons.badge_outlined,
                           "ID Card",
-                          'http://localhost:3000'+user["documents"][1]["file_path"].toString().replaceFirst('src',''),
+                          extractDocumentUrl(documents, 1),
                           isDark,
                         ),
                       ],
@@ -190,8 +196,15 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               width: 65,
               height: 65,
               color: Colors.grey[200],
-              child: user["photo_profilevit"] != null
-                  ? Image.network(user["photo_profilevit"], fit: BoxFit.cover)
+              child: user["profile_photo"] != null
+                  ? Image.network(
+                      'http://localhost:3000' +
+                          user["profile_photo"].toString().replaceFirst(
+                            'src',
+                            '',
+                          ),
+                      fit: BoxFit.cover,
+                    )
                   : const Icon(Icons.person, size: 35, color: Colors.grey),
             ),
           ),
@@ -201,14 +214,14 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user["fullNamevit"] ?? "Dr, Elias Khaled",
+                  user["full_name"] ?? "Dr, Elias Khaled",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  "Vet ID: ${user["vet_id"] ?? "#F-9281"}",
+                  "Vet ID: ${user["id"] ?? "#F-9281"}",
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
               ],
@@ -221,7 +234,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              user["vit_state"],
+              safeText(user["account_status"], 'Unknown'),
               style: TextStyle(
                 color: Color(0xFFF59E0B),
                 fontSize: 10,
@@ -319,12 +332,38 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
     );
   }
 
+  String safeText(dynamic value, String fallback) {
+    if (value == null) return fallback;
+    final text = value.toString().trim();
+    return text.isEmpty ? fallback : text;
+  }
+
+  String safeDate(dynamic value, String fallback) {
+    if (value == null) return fallback;
+    final text = value.toString();
+    if (text.length >= 10) return text.substring(0, 10);
+    return fallback;
+  }
+
+  String? extractDocumentUrl(List<dynamic> documents, int index) {
+    if (documents.length <= index) return null;
+    final item = documents[index];
+    if (item is! Map) return null;
+    final fp = item['file_path'];
+    if (fp == null) return null;
+    return 'http://localhost:3000' + fp.toString().replaceFirst('src', '');
+  }
+
   Widget _buildDownloadTile(
     IconData icon,
     String title,
-    String filename,
+    String? filename,
     bool isDark,
   ) {
+    final label = (filename != null && filename.isNotEmpty)
+        ? filename
+        : 'No file available';
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -357,14 +396,16 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
                   ),
                 ),
                 Text(
-                  filename,
+                  label,
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
           ),
           ElevatedButton(
-            onPressed: () => openFile(context, filename),
+            onPressed: (filename != null && filename.isNotEmpty)
+                ? () => openFile(context, filename)
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE0F2F1),
               foregroundColor: const Color(0xFF01A896),
@@ -375,7 +416,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               ),
             ),
             child: const Text(
-              "Download",
+              "see",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -444,33 +485,29 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
 }
 
 void openFile(BuildContext context, String url) {
-      final isPdf = url.toLowerCase().endsWith('.pdf');
-      final isImage =
-          url.toLowerCase().endsWith('.jpeg') ||
-          url.toLowerCase().endsWith('.png');
+  final isPdf = url.toLowerCase().endsWith('.pdf');
+  final isImage =
+      url.toLowerCase().endsWith('.jpeg') ||
+      url.toLowerCase().endsWith('.jpg') ||
+      url.toLowerCase().endsWith('.png');
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Scaffold(
-            appBar: AppBar(
-              title: Text(isPdf ? 'PDF' : 'Image'),
-              leading: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            body: isPdf
-                ? SfPdfViewer.network(url)
-                : isImage
-                ? InteractiveViewer(
-                    child: Image.network(url, fit: BoxFit.contain),
-                  )
-                : const Center(child: Text('Type of file is not supported')),
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Scaffold(
+        appBar: AppBar(
+          title: Text(isPdf ? 'PDF' : 'Image'),
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.arrow_back, color: Colors.black),
           ),
         ),
-      );
-    }
+        body: isPdf
+            ? SfPdfViewer.network(url)
+            : isImage
+            ? InteractiveViewer(child: Image.network(url, fit: BoxFit.contain))
+            : const Center(child: Text('Type of file is not supported')),
+      ),
+    ),
+  );
+}
