@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import './userMan.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
@@ -892,7 +892,12 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserManagementPage()),
+              );
+            },
             icon: Icon(
               Icons.people_outline,
               color: isDark ? Colors.white54 : Colors.grey,
