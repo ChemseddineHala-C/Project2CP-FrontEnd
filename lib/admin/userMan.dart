@@ -23,48 +23,156 @@ class _UserManagementPageState extends State<UserManagementPage> {
   String _selectedRole = "All";
   String _selectedStatus = "All";
 
-  // Updated Trial Data to match your specific image details
-  final List<UserCardData> _allUsers = [
-    // UserCardData(
-    //   name: "Capt, Elias Khaldi",
-    //   id: "#F-9281",
-    //   role: "Fishermans",
-    //   status: "ACTIVE",
-    //   image: "images/fish1.png",
-    // ),
-    // UserCardData(
-    //   name: "Capt, Elias Khaldi",
-    //   id: "#F-9281",
-    //   role: "Fishermans",
-    //   status: "PENDING",
-    //   image: "images/fish1.png",
-    // ),
-    // UserCardData(
-    //   name: "Dr, Elias Khaldi",
-    //   id: "#F-9281",
-    //   role: "Veterinarian",
-    //   status: "ACTIVE",
-    //   image: "images/fish1.png",
-    // ),
-    // UserCardData(
-    //   name: "Dr, Elias Khaldi",
-    //   id: "#F-9281",
-    //   role: "Veterinarian",
-    //   status: "PENDING",
-    //   image: "images/fish1.png",
-    // ),
-    // UserCardData(
-    //   name: "Mr, Elias Khaldi",
-    //   id: "#F-9281",
-    //   role: "Buyers",
-    //   status: "ACTIVE",
-    //   image: "images/fish1.png",
-    // ),
-  ];
+  UserCardData _mapApiUser(Map<String, dynamic> user) {
+    final rawRole = user['role']?.toString() ?? '';
+    final role = _displayRole(rawRole);
+    final rawStatus = user['account_status']?.toString() ?? '';
+
+    return UserCardData(
+      name: user['email']?.toString() ?? 'Unknown',
+      id: user['id']?.toString() ?? '',
+      role: role,
+      status: rawStatus,
+      image: _profileImageUrl(user['profile_photo']?.toString()),
+    );
+  }
+
+  String _displayRole(String rawRole) {
+    switch (rawRole.toLowerCase()) {
+      case 'fisherman':
+        return 'Fisherman';
+      case 'veterinarian':
+        return 'Veterinarian';
+      case 'customer':
+        return 'Buyers';
+      case 'buyer':
+        return 'Buyers';
+      case 'admin':
+        return 'Admin';
+      case 'super_admin':
+      case 'super-admin':
+      case 'super admin':
+        return 'Super Admin';
+      default:
+        return rawRole.isEmpty
+            ? 'Unknown'
+            : rawRole[0].toUpperCase() + rawRole.substring(1);
+    }
+  }
+
+  bool _isPending(String accountStatus) {
+    return accountStatus.toLowerCase() == 'pending';
+  }
+
+  bool _isApprovedOrRejected(String accountStatus) {
+    final status = accountStatus.toLowerCase();
+    return status == 'approved' || status == 'rejected';
+  }
+
+  String _getApiEndpoint(String role, String userId, String action) {
+    final roleKey = role == 'Fisherman' ? 'fishermen' : 'veterinarians';
+    return 'http://localhost:3000/api/$roleKey/$userId/$action';
+  }
+
+  Future<void> _approveUser(UserCardData user) async {
+    print(
+      'Approve clicked for user: ${user.name} (${user.id}) with role: ${user.role}',
+    );
+    if (!_isPending(user.status)) {
+      print('User status is not pending: ${user.status}');
+      return;
+    }
+
+    final token = await _getToken();
+    if (token == null) {
+      print('No token available');
+      return;
+    }
+
+    try {
+      final endpoint = _getApiEndpoint(user.role, user.id, 'approve');
+      print('Approve endpoint: $endpoint');
+      final response = await http.put(
+        Uri.parse(endpoint),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({}),
+      );
+
+      print('Approve response status: ${response.statusCode}');
+      print('Approve response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _fetchUsers();
+      } else {
+        print('Unexpected status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Approve error: $e');
+    }
+  }
+
+  Future<void> _rejectUser(UserCardData user) async {
+    print(
+      'Reject clicked for user: ${user.name} (${user.id}) with role: ${user.role}',
+    );
+    if (!_isPending(user.status)) {
+      print('User status is not pending: ${user.status}');
+      return;
+    }
+
+    final token = await _getToken();
+    if (token == null) {
+      print('No token available');
+      return;
+    }
+
+    try {
+      final endpoint = _getApiEndpoint(user.role, user.id, 'reject');
+      print('Reject endpoint: $endpoint');
+      final response = await http.put(
+        Uri.parse(endpoint),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({}),
+      );
+
+      print('Reject response status: ${response.statusCode}');
+      print('Reject response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _fetchUsers();
+      } else {
+        print('Unexpected status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Reject error: $e');
+    }
+  }
+
+  String _profileImageUrl(String? profilePhoto) {
+    if (profilePhoto == null || profilePhoto.isEmpty) {
+      return 'images/fish1.png';
+    }
+
+    if (profilePhoto.startsWith('http')) {
+      return profilePhoto;
+    }
+
+    if (profilePhoto.startsWith('src/') || profilePhoto.contains('/uploads/')) {
+      return 'http://localhost:3000/$profilePhoto';
+    }
+
+    return 'images/fish1.png';
+  }
 
   static Future<List<Map<String, dynamic>>> getUsers() async {
     try {
-      String? token = await _getToken();
+      final token = await _getToken();
       if (token == null) {
         return [];
       }
@@ -74,14 +182,19 @@ class _UserManagementPageState extends State<UserManagementPage> {
         headers: {"Authorization": "Bearer $token"},
       );
 
-      if (response.statusCode == 200) {
-        //_users = jsonDecode(response.body);
-        //print(jsonDecode(response.body));
-        return jsonDecode(response.body);
-      } else {
+      if (response.statusCode != 200) {
         return [];
       }
-    } catch (e) {
+
+      final decoded = jsonDecode(response.body);
+      if (decoded is! List) {
+        return [];
+      }
+
+      return decoded
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+    } catch (_) {
       return [];
     }
   }
@@ -96,25 +209,37 @@ class _UserManagementPageState extends State<UserManagementPage> {
     setState(() {
       _isLoading = true;
     });
-    List<Map<String, dynamic>> users = await getUsers();
+
+    final users = await getUsers();
+    if (!mounted) return;
+
     setState(() {
       _users = users;
-      print(_users);
       _isLoading = false;
     });
   }
 
   List<UserCardData> get _filteredUsers {
-    return _allUsers.where((user) {
-      // Search logic depends on card info (Name and ID)
+    return _users.map(_mapApiUser).where((user) {
+      // Exclude admin and super admin users
+      if (user.role == "Admin" || user.role == "Super Admin") {
+        return false;
+      }
+
       bool matchesSearch =
           user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           user.id.toLowerCase().contains(_searchQuery.toLowerCase());
 
       bool matchesRole = _selectedRole == "All" || user.role == _selectedRole;
-      bool matchesStatus =
-          _selectedStatus == "All" ||
-          user.status == _selectedStatus.toUpperCase();
+
+      bool matchesStatus = _selectedStatus == "All";
+      if (!matchesStatus) {
+        if (_selectedStatus == "Active") {
+          matchesStatus = _isApprovedOrRejected(user.status);
+        } else if (_selectedStatus == "Pending") {
+          matchesStatus = _isPending(user.status);
+        }
+      }
 
       return matchesSearch && matchesRole && matchesStatus;
     }).toList();
@@ -131,7 +256,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
           color: Color(0xFF0F172A),
         ),
         title: Text(
-          "My Batches",
+          "User Management",
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontFamily: "Inter",
@@ -194,7 +319,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                         child: Row(
                           children: [
                             "All",
-                            "Fishermans",
+                            "Fisherman",
                             "Veterinarian",
                             "Buyers",
                           ].map((role) => _buildFilterChip(role)).toList(),
@@ -225,8 +350,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _filteredUsers.length,
-                    itemBuilder: (context, index) =>
-                        UserItemCard(user: _filteredUsers[index]),
+                    itemBuilder: (context, index) => UserItemCard(
+                      user: _filteredUsers[index],
+                      onApprove: () => _approveUser(_filteredUsers[index]),
+                      onReject: () => _rejectUser(_filteredUsers[index]),
+                    ),
                   ),
                 ),
               ],
@@ -248,7 +376,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Color(0xFF475569),
+            color: isSelected ? Colors.white : const Color(0xFF475569),
           ),
         ),
       ),
@@ -283,12 +411,26 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
 class UserItemCard extends StatelessWidget {
   final UserCardData user;
-  const UserItemCard({super.key, required this.user});
+  final VoidCallback? onApprove;
+  final VoidCallback? onReject;
+
+  const UserItemCard({
+    super.key,
+    required this.user,
+    this.onApprove,
+    this.onReject,
+  });
 
   @override
   Widget build(BuildContext context) {
-    bool isActive = user.status == "ACTIVE";
-    Color accentColor = user.role == "Fishermans"
+    bool isPending = user.status.toLowerCase() == 'pending';
+    bool isApprovedOrRejected =
+        user.status.toLowerCase() == 'approved' ||
+        user.status.toLowerCase() == 'rejected';
+    bool showApprovalButtons =
+        isPending && (user.role == "Fisherman" || user.role == "Veterinarian");
+
+    Color accentColor = user.role == "Fisherman"
         ? Colors.blue
         : (user.role == "Veterinarian" ? Colors.teal : Colors.orange);
 
@@ -317,12 +459,25 @@ class UserItemCard extends StatelessWidget {
             SizedBox(width: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                user.image,
-                width: 100,
-                height: 90,
-                fit: BoxFit.cover,
-              ),
+              child: user.image.startsWith('http')
+                  ? Image.network(
+                      user.image,
+                      width: 100,
+                      height: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'images/fish1.png',
+                        width: 100,
+                        height: 90,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      user.image,
+                      width: 100,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
             ),
             Expanded(
               child: Padding(
@@ -376,7 +531,9 @@ class UserItemCard extends StatelessWidget {
                               ),
                             ),
                             child: Text(
-                              isActive ? "Full Profile" : "View Details",
+                              isApprovedOrRejected
+                                  ? "Full Profile"
+                                  : "View Details",
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Color(0xFF0C6780),
@@ -385,13 +542,14 @@ class UserItemCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (!isActive) ...[
+                        if (showApprovalButtons) ...[
                           const SizedBox(width: 8),
                           // Approve Button
                           Expanded(
                             child: _actionButton(
                               "Approve",
                               const Color(0xFF10B981),
+                              onApprove,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -400,10 +558,11 @@ class UserItemCard extends StatelessWidget {
                             child: _actionButton(
                               "Reject",
                               const Color(0xFFEF4444),
+                              onReject,
                             ),
                           ),
                         ],
-                        if (isActive) ...[
+                        if (isApprovedOrRejected) ...[
                           const SizedBox(width: 8),
                           // Trashbin IconButton
                           IconButton(
@@ -432,9 +591,9 @@ class UserItemCard extends StatelessWidget {
     );
   }
 
-  Widget _actionButton(String label, Color color) {
+  Widget _actionButton(String label, Color color, VoidCallback? onPressed) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
@@ -450,17 +609,35 @@ class UserItemCard extends StatelessWidget {
   }
 
   Widget _statusBadge(String status) {
-    bool active = status == "ACTIVE";
+    final statusLower = status.toLowerCase();
+    final displayStatus = status.isEmpty
+        ? 'Unknown'
+        : status[0].toUpperCase() + status.substring(1).toLowerCase();
+
+    Color bgColor;
+    Color textColor;
+
+    if (statusLower == 'approved') {
+      bgColor = const Color(0xFFD1FAE5);
+      textColor = const Color(0xFF047857);
+    } else if (statusLower == 'rejected') {
+      bgColor = const Color(0xFFFEE2E2);
+      textColor = const Color(0xFFBA1A1A);
+    } else {
+      bgColor = const Color(0xFFFEF3C7);
+      textColor = const Color(0xFFB45309);
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFFD1FAE5) : const Color(0xFFFEF3C7),
+        color: bgColor,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        status,
+        displayStatus,
         style: TextStyle(
-          color: active ? const Color(0xFF047857) : const Color(0xFFB45309),
+          color: textColor,
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
