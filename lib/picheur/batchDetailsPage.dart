@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'objects.dart';
-
-final FlutterSecureStorage storage = const FlutterSecureStorage();
-Future<String?> _getToken() async {
-  return await storage.read(key: "token");
-}
 
 class BatchDetailspage extends StatefulWidget {
   final FishBatch batch;
@@ -18,7 +10,6 @@ class BatchDetailspage extends StatefulWidget {
 
 class _BatchDetailsState extends State<BatchDetailspage> {
   bool _isLoading = true;
-  FishBatch? _batch;
 
   Future<void> _delay5Seconds() async {
     await Future.delayed(const Duration(seconds: 5));
@@ -63,7 +54,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _statusCard(widget.batch.status!),
+                  _statusCard(widget.batch.status ?? 'unknown'),
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -109,13 +100,14 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                           ),
                         ),
                         Text(
-                          widget.batch.fishName!,
+                          widget.batch.fishName ?? 'Unknown fish',
                           style: TextStyle(
                             color: const Color(0xFF0F172A),
                             fontFamily: "Inter",
                             fontWeight: FontWeight.w700,
                             fontSize: 24,
-                            decoration: widget.batch.status == "Rejected"
+                            decoration:
+                                widget.batch.status?.toLowerCase() == "rejected"
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
                           ),
@@ -151,7 +143,9 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                                 ),
                               ),
                               Text(
-                                "${widget.batch.quantityKg!} kg", // Corrigé : quantity au lieu de weight
+                                widget.batch.quantityKg != null
+                                    ? "${widget.batch.quantityKg!.toStringAsFixed(2)} kg"
+                                    : 'N/A',
                                 style: const TextStyle(
                                   color: Color(0xFF0F172A),
                                   fontFamily: "Inter",
@@ -189,7 +183,10 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                                 ),
                               ),
                               Text(
-                                "${widget.batch.pricePerKg! * widget.batch.quantityKg!} DA", // Corrigé : total au lieu de price
+                                widget.batch.pricePerKg != null &&
+                                        widget.batch.quantityKg != null
+                                    ? "${(widget.batch.pricePerKg! * widget.batch.quantityKg!).toStringAsFixed(2)} DA"
+                                    : 'N/A',
                                 style: const TextStyle(
                                   color: Color(0xFF023E77),
                                   fontFamily: "Inter",
@@ -239,10 +236,12 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                         _buildLogTile(
                           Icons.calendar_today_outlined,
                           "Date & Time",
-                          widget.batch.createdAt
-                              .toString()
-                              .replaceFirst('T', ' ')
-                              .substring(0, 16),
+                          widget.batch.createdAt != null
+                              ? widget.batch.createdAt!
+                                    .toString()
+                                    .replaceFirst('T', ' ')
+                                    .substring(0, 16)
+                              : 'Unknown',
                         ),
                         const Divider(color: Color(0xFFF1F5F9), thickness: 1),
                         _buildLogTile(
@@ -254,7 +253,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                         _buildLogTile(
                           Icons.anchor_outlined,
                           "Catch Method",
-                          widget.batch.catchMethod ?? "Longline",
+                          widget.batch.catchMethod ?? 'N/A',
                         ),
                       ],
                     ),
@@ -367,42 +366,51 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: widget.batch.photos!
-                          .map(
-                            (path) => Row(
-                              children: [
-                                _buildFishImage(path),
-                                if (widget.batch.photos!.last != path)
-                                  const SizedBox(width: 10),
-                              ],
-                            ),
-                          )
-                          .toList(),
+                      children: widget.batch.photos?.isNotEmpty == true
+                          ? widget.batch.photos!
+                                .map(
+                                  (path) => Row(
+                                    children: [
+                                      _buildFishImage(path),
+                                      if (widget.batch.photos!.last != path)
+                                        const SizedBox(width: 10),
+                                    ],
+                                  ),
+                                )
+                                .toList()
+                          : [
+                              Container(
+                                width: 139,
+                                height: 127,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'No photos',
+                                  style: TextStyle(color: Color(0xFF64748B)),
+                                ),
+                              ),
+                            ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Icon(Icons.history, color: Color(0xFF023E77)),
-                      const SizedBox(width: 5),
-                      const Text(
-                        "Status History",
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  // Version manuelle de la timeline (pour éviter l'erreur de package)
-                  // Column(
-                  //   children: List.generate(
-                  //     events.length,
-                  //         (index) => _buildTimelineTile(index),
-                  //   ),
+                  // const SizedBox(height: 20),
+                  // Row(
+                  //   children: [
+                  //     const Icon(Icons.history, color: Color(0xFF023E77)),
+                  //     const SizedBox(width: 5),
+                  //     const Text(
+                  //       "Status History",
+                  //       style: TextStyle(
+                  //         color: Color(0xFF0F172A),
+                  //         fontWeight: FontWeight.bold,
+                  //         fontSize: 20,
+                  //       ),
+                  //     ),
+                  //   ],
                   // ),
+                  // const SizedBox(height: 15),
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 56,
@@ -530,25 +538,26 @@ class _BatchDetailsState extends State<BatchDetailspage> {
   // }
 
   Widget _statusCard(String status) {
+    final normalizedStatus = status.toLowerCase();
     Color bgColor;
     Color textColor;
     Color border;
     IconData icon;
 
-    switch (status) {
-      case "Approved":
+    switch (normalizedStatus) {
+      case "approved":
         bgColor = Color(0xFFECFDF5);
         textColor = Color(0xFF065F46);
         icon = Icons.check_circle_outline;
         border = Color(0xFFD1FAE5);
         break;
-      case "Rejected":
+      case "rejected":
         bgColor = Color(0xFFFFEBEC);
         textColor = Color(0xFFBD3456);
         icon = Icons.cancel_outlined;
         border = Color(0x99FAD6D1);
         break;
-      case "Pending":
+      case "pending":
         bgColor = Color(0xFFFEF3C7);
         textColor = Color(0xFFB45309);
         icon = Icons.access_time_outlined;

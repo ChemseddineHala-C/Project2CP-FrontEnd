@@ -13,7 +13,6 @@ class HomepageadminPage extends StatefulWidget {
 }
 
 class _HomeAdminPageState extends State<HomepageadminPage> {
-
   @override
   void initState() {
     super.initState();
@@ -22,197 +21,246 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final adminName = _extractAdminName(state);
+        final batchVolume = _extractBatchVolume(state);
+        final activities = _extractActivities(state);
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundColor: isDark
-                ? Colors.grey[800]
-                : const Color(0xFFE3F2FD),
-            child: Icon(Icons.person,
-                color: isDark ? Colors.white : const Color(0xFF013D73),
-                size: 20),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Welcome back,",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-                fontWeight: FontWeight.normal,
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: isDark
+                    ? Colors.grey[800]
+                    : const Color(0xFFE3F2FD),
+                child: adminName.isNotEmpty
+                    ? Text(
+                        adminName[0].toUpperCase(),
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF013D73),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : Icon(
+                        Icons.person,
+                        color: isDark ? Colors.white : const Color(0xFF013D73),
+                        size: 20,
+                      ),
               ),
             ),
-            Text(
-              "Mr. Ahmed",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF011A33),
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-
-          // ─── Chargement ─────────────────────────────
-          if (state is AuthLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is AuthError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red[300], size: 48),
-                  const SizedBox(height: 12),
-                  Text(
-                    state.message,  // ← affiche "No token found"
-                    style: const TextStyle(color: Colors.grey),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Welcome back,",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.normal,
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<AuthCubit>().fetchadmin(),
-                    child: const Text("Retry"),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // ─── Données chargées ────────────────────────
-          if (state is AdminLoaded) {
-            final user = state.user;
-
-            return RefreshIndicator(
-              onRefresh: () async {
-                await context.read<AuthCubit>().fetchadmin();
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    // ─── Section Market Overview ───────
-                    _buildSectionHeader(
-                      "Market Overview",
-                      subtitle: "Last 7 days",
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Carte Total Users
-                    _buildStatCard(
-                      isDark: isDark,
-                      icon: Icons.people_outline,
-                      iconBgColor: const Color(0xFFBAEAFF),
-                      iconColor: const Color(0xFF013D73),
-                      label: "Total Users",
-                      value: user["total_users"],
-                      badge: "+${user["deg_incresing"]}%",
-                      badgeBg: const Color(0xFFE8F5E9),
-                      badgeColor: Colors.green,
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Carte Total Batches
-                    _buildStatCard(
-                      isDark: isDark,
-                      icon: Icons.inventory_2_outlined,
-                      iconBgColor: const Color(0xFFFFF3E0),
-                      iconColor: const Color(0xFFF59E0B),
-                      label: "Total Batches",
-                      value: user["total_batches"],
-                      badge: "+${user["deg_batchs"]}%",
-                      badgeBg: const Color(0xFFE8F5E9),
-                      badgeColor: Colors.green,
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Carte Total Revenue (fond teal)
-                    _buildRevenueCard(user),
-                    const SizedBox(height: 24),
-
-                    // ─── Section Batch Volume ───────────
-                    _buildSectionHeader(
-                      "Batch Volume",
-                      subtitle: "Last 7 days",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildBarChart(),
-                    const SizedBox(height: 24),
-
-                    // ─── Section Batch Status ───────────
-                    _buildSectionHeader(
-                      "Batch Status",
-                      subtitle: "Last 7 days",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildDonutChart(user),
-                    const SizedBox(height: 24),
-
-                    // ─── Section Fish Distribution ──────
-                    _buildSectionHeader(
-                      "Fish Type Distribution",
-                      subtitle: "Last 7 days",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFishDistribution(user, isDark),
-                    const SizedBox(height: 24),
-
-                    // ─── Section Recent Activity ────────
-                    _buildSectionHeader("Recent System Activity"),
-                    const SizedBox(height: 12),
-                    _buildActivityCard(user, isDark),
-                    const SizedBox(height: 100),
-                  ],
                 ),
-              ),
-            );
-          }
-
-          // ─── Erreur ──────────────────────────────────
-          if (state is ProfileError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline,
-                      color: Colors.red[300], size: 48),
-                  const SizedBox(height: 12),
-                  Text(state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<AuthCubit>().fetchadmin(),
-                    child: const Text("Retry"),
+                Text(
+                  adminName.isNotEmpty ? adminName : "Admin",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF011A33),
                   ),
-                ],
-              ),
-            );
-          }
-
-          return const Center(child: Text("No Admin Data Available"));
-        },
-      ),
-      bottomNavigationBar: _buildBottomNavBar(isDark),
+                ),
+              ],
+            ),
+          ),
+          body: _buildBody(context, state, isDark, batchVolume, activities),
+          bottomNavigationBar: _buildBottomNavBar(isDark, 0),
+        );
+      },
     );
   }
 
-  // ─── En-tête de section ──────────────────────────────────
+  Widget _buildBody(
+    BuildContext context,
+    AuthState state,
+    bool isDark,
+    List<Map<String, dynamic>> batchVolume,
+    List<Map<String, dynamic>> activities,
+  ) {
+    if (state is AuthLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state is AuthError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.red[300], size: 48),
+            const SizedBox(height: 12),
+            Text(state.message, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.read<AuthCubit>().fetchadmin(),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state is AdminLoaded) {
+      final user = state.user;
+      final stat = _dashboardStats(user);
+
+      return RefreshIndicator(
+        onRefresh: () async {
+          await context.read<AuthCubit>().fetchadmin();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader("Market Overview", subtitle: "Last 7 days"),
+              const SizedBox(height: 12),
+              _buildStatCard(
+                isDark: isDark,
+                icon: Icons.people_outline,
+                iconBgColor: const Color(0xFFBAEAFF),
+                iconColor: const Color(0xFF013D73),
+                label: "Total Users",
+                value: _safeString(stat['total_users']),
+                badge: "+${_safeString(stat['user_growth'])}%",
+                badgeBg: const Color(0xFFE8F5E9),
+                badgeColor: Colors.green,
+              ),
+              const SizedBox(height: 12),
+              _buildStatCard(
+                isDark: isDark,
+                icon: Icons.inventory_2_outlined,
+                iconBgColor: const Color(0xFFFFF3E0),
+                iconColor: const Color(0xFFF59E0B),
+                label: "Total Batches",
+                value: _safeString(stat['total_batches']),
+                badge: "+${_safeString(stat['batch_growth'])}%",
+                badgeBg: const Color(0xFFE8F5E9),
+                badgeColor: Colors.green,
+              ),
+              const SizedBox(height: 12),
+              _buildRevenueCard(user, isDark),
+              const SizedBox(height: 24),
+              _buildSectionHeader("Batch Volume", subtitle: "Last 7 days"),
+              const SizedBox(height: 12),
+              _buildBarChart(batchVolume),
+              const SizedBox(height: 24),
+              _buildSectionHeader("Batch Status", subtitle: "Last 7 days"),
+              const SizedBox(height: 12),
+              _buildDonutChart(user),
+              const SizedBox(height: 24),
+              _buildSectionHeader(
+                "Fish Type Distribution",
+                subtitle: "Last 7 days",
+              ),
+              const SizedBox(height: 12),
+              _buildFishDistribution(user, isDark),
+              const SizedBox(height: 24),
+              _buildSectionHeader("Recent System Activity"),
+              const SizedBox(height: 12),
+              _buildActivityCard(activities, isDark),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (state is ProfileError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.red[300], size: 48),
+            const SizedBox(height: 12),
+            Text(
+              state.message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.read<AuthCubit>().fetchadmin(),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const Center(child: Text("No Admin Data Available"));
+  }
+
+  String _extractAdminName(AuthState state) {
+    if (state is AdminLoaded) {
+      final user = state.user;
+      if (user['admin'] is Map<String, dynamic>) {
+        return _safeString(user['admin']['full_name']);
+      }
+      return _safeString(user['full_name']);
+    }
+    return '';
+  }
+
+  List<Map<String, dynamic>> _extractBatchVolume(AuthState state) {
+    if (state is AdminLoaded) {
+      final raw = state.user['batch_volume'];
+      if (raw is List) {
+        return raw
+            .map(
+              (item) =>
+                  item is Map<String, dynamic> ? item : <String, dynamic>{},
+            )
+            .toList();
+      }
+    }
+    return [];
+  }
+
+  List<Map<String, dynamic>> _extractActivities(AuthState state) {
+    if (state is AdminLoaded) {
+      final raw = state.user['recent_activity'];
+      if (raw is List) {
+        return raw
+            .map(
+              (item) =>
+                  item is Map<String, dynamic> ? item : <String, dynamic>{},
+            )
+            .toList();
+      }
+    }
+    return [];
+  }
+
+  Map<String, dynamic> _dashboardStats(Map<String, dynamic> user) {
+    return {
+      'total_users': user['total_users'],
+      'total_batches': user['total_batches'],
+      'user_growth': user['deg_incresing'] ?? 0,
+      'batch_growth': user['deg_batchs'] ?? 0,
+      'total_revenue': user['total_revenue'],
+    };
+  }
+
+  String _safeString(Object? value) {
+    if (value == null) return '';
+    return value.toString();
+  }
+
   Widget _buildSectionHeader(String title, {String? subtitle}) {
     return Row(
       children: [
@@ -228,17 +276,13 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
           const SizedBox(width: 6),
           Text(
             "($subtitle)",
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.grey[500], fontSize: 12),
           ),
         ],
       ],
     );
   }
 
-  // ─── Carte statistique réutilisable ─────────────────────
   Widget _buildStatCard({
     required bool isDark,
     required IconData icon,
@@ -269,7 +313,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Icône
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -278,10 +321,11 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
-              // Badge pourcentage
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 5),
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: badgeBg,
                   borderRadius: BorderRadius.circular(20),
@@ -289,8 +333,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.arrow_upward,
-                        color: badgeColor, size: 12),
+                    Icon(Icons.arrow_upward, color: badgeColor, size: 12),
                     const SizedBox(width: 2),
                     Text(
                       badge,
@@ -306,13 +349,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 13,
-            ),
-          ),
+          Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 13)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -327,8 +364,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Carte Revenue (fond teal) ───────────────────────────
-  Widget _buildRevenueCard(Map<String, dynamic> user) {
+  Widget _buildRevenueCard(Map<String, dynamic> user, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -348,7 +384,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Icône monnaie
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -361,10 +396,11 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                   size: 20,
                 ),
               ),
-              // Badge LIVE
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 5),
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -373,7 +409,8 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 6, height: 6,
+                      width: 6,
+                      height: 6,
                       decoration: const BoxDecoration(
                         color: Colors.greenAccent,
                         shape: BoxShape.circle,
@@ -397,14 +434,11 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
           const SizedBox(height: 16),
           const Text(
             "Total Revenue",
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 4),
           Text(
-            user["total_revenue"],
+            _safeString(user['total_revenue']),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -416,8 +450,24 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Graphique barres ────────────────────────────────────
-  Widget _buildBarChart() {
+  Widget _buildBarChart(List<Map<String, dynamic>> batchVolume) {
+    final values = batchVolume
+        .map(
+          (entry) => (entry['count'] is num)
+              ? (entry['count'] as num).toDouble()
+              : 0.0,
+        )
+        .toList();
+    final labels = batchVolume
+        .map((entry) => _shortDate(entry['date']?.toString() ?? ''))
+        .toList();
+
+    final defaultValues = [3.0, 1.5, 2.5, 1.0, 1.8, 2.0, 4.5];
+    final chartValues = values.isNotEmpty ? values : defaultValues;
+    final chartLabels = labels.length == chartValues.length
+        ? labels
+        : List.generate(chartValues.length, (i) => '');
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -438,31 +488,29 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             gridData: FlGridData(show: false),
             borderData: FlBorderData(show: false),
             titlesData: FlTitlesData(
-              leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
-              topTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
+              leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               rightTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false)),
+                sideTitles: SideTitles(showTitles: false),
+              ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 28,
                   getTitlesWidget: (value, meta) {
-                    const days = [
-                      'MON','TUE','WED','THU','FRI','SAT','TODAY'
-                    ];
-                    final isToday = value.toInt() == 6;
+                    final index = value.toInt();
+                    if (index < 0 || index >= chartLabels.length)
+                      return const SizedBox();
                     return Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        days[value.toInt()],
+                        chartLabels[index],
                         style: TextStyle(
                           fontSize: 9,
-                          color: isToday
+                          color: index == chartLabels.length - 1
                               ? const Color(0xFF013D73)
                               : Colors.grey,
-                          fontWeight: isToday
+                          fontWeight: index == chartLabels.length - 1
                               ? FontWeight.bold
                               : FontWeight.normal,
                         ),
@@ -472,15 +520,13 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ),
               ),
             ),
-            barGroups: List.generate(7, (i) {
-              // données simulées
-              final values = [3.0, 1.5, 2.5, 1.0, 1.8, 2.0, 4.5];
+            barGroups: List.generate(chartValues.length, (i) {
               return BarChartGroupData(
                 x: i,
                 barRods: [
                   BarChartRodData(
-                    toY: values[i],
-                    color: i == 6
+                    toY: chartValues[i],
+                    color: i == chartValues.length - 1
                         ? const Color(0xFF013D73)
                         : const Color(0xFFB3D4F5),
                     width: 30,
@@ -495,8 +541,38 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Graphique Donut ─────────────────────────────────────
+  String _shortDate(String rawDate) {
+    final parsed = DateTime.tryParse(rawDate);
+    if (parsed != null) {
+      return '${parsed.month}/${parsed.day}';
+    }
+    return rawDate.length >= 5 ? rawDate.substring(0, 5) : rawDate;
+  }
+
   Widget _buildDonutChart(Map<String, dynamic> user) {
+    final statusList =
+        (user['batch_status'] as List<dynamic>?)
+            ?.cast<Map<String, dynamic>>() ??
+        [];
+    final counts = <String, num>{
+      'approved': 0,
+      'expired': 0,
+      'pending': 0,
+      'rejected': 0,
+    };
+    for (final status in statusList) {
+      final key = (status['status'] as String?)?.toLowerCase() ?? '';
+      final value = status['count'];
+      if (value is num) {
+        counts[key] = (counts[key] ?? 0) + value;
+      }
+    }
+    final totalCount = counts.values.fold<num>(0, (sum, item) => sum + item);
+
+    String labelValue(num value) => totalCount > 0
+        ? '${((value / totalCount) * 100).toStringAsFixed(0)}%'
+        : '0%';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -512,7 +588,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
       ),
       child: Row(
         children: [
-          // ─── Cercle donut ───────────────────────────
           SizedBox(
             height: 150,
             width: 150,
@@ -525,25 +600,25 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                     centerSpaceRadius: 45,
                     sections: [
                       PieChartSectionData(
-                        value: (user["batch_approved"] as num).toDouble(),
+                        value: counts['approved']?.toDouble() ?? 0.0,
                         color: const Color(0xFF0F6E56),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_expired"] as num).toDouble(),
+                        value: counts['expired']?.toDouble() ?? 0.0,
                         color: const Color(0xFF888780),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_pending"] as num).toDouble(),
+                        value: counts['pending']?.toDouble() ?? 0.0,
                         color: const Color(0xFFEF9F27),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_rejected"] as num).toDouble(),
+                        value: counts['rejected']?.toDouble() ?? 0.0,
                         color: const Color(0xFFE24B4A),
                         radius: 28,
                         showTitle: false,
@@ -551,12 +626,11 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                     ],
                   ),
                 ),
-                // Texte au centre
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      user["batch"],
+                      _safeString(totalCount),
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -576,29 +650,28 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             ),
           ),
           const SizedBox(width: 20),
-          // ─── Légende ────────────────────────────────
           Expanded(
             child: Column(
               children: [
                 _buildLegendItem(
                   color: const Color(0xFF0F6E56),
                   label: "Approved",
-                  percent: user["approved_label"],
+                  percent: labelValue(counts['approved'] ?? 0),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFF888780),
                   label: "Expired",
-                  percent: user["expired_label"],
+                  percent: labelValue(counts['expired'] ?? 0),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFEF9F27),
                   label: "Pending",
-                  percent: user["pending_label"],
+                  percent: labelValue(counts['pending'] ?? 0),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFE24B4A),
                   label: "Rejected",
-                  percent: user["rejected_label"],
+                  percent: labelValue(counts['rejected'] ?? 0),
                 ),
               ],
             ),
@@ -608,7 +681,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Item de légende ────────────────────────────────────
   Widget _buildLegendItem({
     required Color color,
     required String label,
@@ -619,66 +691,50 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
       child: Row(
         children: [
           Container(
-            width: 10, height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13),
-            ),
-          ),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
           Text(
             percent,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),
     );
   }
 
-  // ─── Distribution par type de poisson ───────────────────
-  Widget _buildFishDistribution(
-      Map<String, dynamic> user, bool isDark) {
-    final List<Map<String, dynamic>> fishData = [
-      {
-        "name": "SARDINE",
-        "pct": (user["sardine_pct"] as num).toDouble(),
-        "label": user["sardine_label"],
-        "color": const Color(0xFF0F6E56),
-      },
-      {
-        "name": "SALMON",
-        "pct": (user["salmon_pct"] as num).toDouble(),
-        "label": user["salmon_label"],
-        "color": const Color(0xFF0F6E56),
-      },
-      {
-        "name": "TUNA",
-        "pct": (user["tuna_pct"] as num).toDouble(),
-        "label": user["tuna_label"],
-        "color": const Color(0xFF888780),
-      },
-      {
-        "name": "SEA BASS",
-        "pct": (user["seabass_pct"] as num).toDouble(),
-        "label": user["seabass_label"],
-        "color": const Color(0xFFE24B4A),
-      },
-      {
-        "name": "OTHER",
-        "pct": (user["other_pct"] as num).toDouble(),
-        "label": user["other_label"],
-        "color": const Color(0xFF888780),
-      },
-    ];
+  Widget _buildFishDistribution(Map<String, dynamic> user, bool isDark) {
+    final rawList = (user['fish_distribution'] as List<dynamic>?) ?? [];
+    final fishData = <Map<String, dynamic>>[];
+    num total = 0;
+
+    for (final item in rawList) {
+      if (item is Map<String, dynamic>) {
+        final count = item['count'];
+        if (count is num) {
+          total += count;
+          fishData.add({
+            'name': _safeString(item['fish_name']).toUpperCase(),
+            'count': count,
+            'color': const Color(0xFF0F6E56),
+          });
+        }
+      }
+    }
+
+    if (fishData.isEmpty) {
+      fishData.addAll([
+        {"name": "SARDINE", "count": 45, "color": const Color(0xFF0F6E56)},
+        {"name": "SALMON", "count": 30, "color": const Color(0xFF0F6E56)},
+        {"name": "TUNA", "count": 16, "color": const Color(0xFF888780)},
+        {"name": "SEA BASS", "count": 10, "color": const Color(0xFFE24B4A)},
+        {"name": "OTHER", "count": 5, "color": const Color(0xFF888780)},
+      ]);
+      total = 106;
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -695,6 +751,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
       ),
       child: Column(
         children: fishData.map((fish) {
+          final pct = total > 0 ? (fish['count'] as num) / total * 100 : 0;
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Column(
@@ -704,7 +761,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      fish["name"],
+                      fish['name'],
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -713,11 +770,8 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                       ),
                     ),
                     Text(
-                      fish["label"],
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      '${pct.toStringAsFixed(1)}%',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -725,13 +779,11 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: fish["pct"] / 100,
+                    value: pct / 100,
                     minHeight: 6,
-                    backgroundColor: isDark
-                        ? Colors.white10
-                        : Colors.grey[200],
+                    backgroundColor: isDark ? Colors.white10 : Colors.grey[200],
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      fish["color"],
+                      fish['color'] as Color,
                     ),
                   ),
                 ),
@@ -743,9 +795,29 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Activité récente ────────────────────────────────────
   Widget _buildActivityCard(
-      Map<String, dynamic> user, bool isDark) {
+    List<Map<String, dynamic>> activities,
+    bool isDark,
+  ) {
+    final firstActivities = activities.take(3).toList();
+    if (firstActivities.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Center(child: Text("No recent activity available.")),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -760,50 +832,69 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
         ],
       ),
       child: Column(
-        children: [
-          // ─── Batch Approved ───────────────────────
-          _buildActivityItem(
-            iconBg: Colors.green.withOpacity(0.1),
-            iconBorder: Colors.green.withOpacity(0.3),
-            icon: Icons.check_circle_outline,
-            iconColor: Colors.green,
-            title: "Batch #7819 Approved",
-            subtitle: "Vet ID: ${user["vet_id"]}  •  Dr. ${user["fulnamevet"]}",
-            time: "${user["time"]} ago",
-          ),
+        children: List.generate(firstActivities.length, (index) {
+          final activity = firstActivities[index];
+          final title = _safeString(activity['title']);
+          final subtitle = _safeString(activity['message']);
+          final time = _formatActivityTime(activity['created_at']);
+          final type = _activityType(title);
 
-          const Divider(height: 1),
-
-          // ─── Batch Rejected ───────────────────────
-          _buildActivityItem(
-            iconBg: Colors.red.withOpacity(0.1),
-            iconBorder: Colors.red.withOpacity(0.3),
-            icon: Icons.cancel_outlined,
-            iconColor: Colors.red,
-            title: "Batch #7819 Rejected",
-            subtitle: "Vet ID: ${user["vet_id"]}  •  Dr. ${user["fulnamevet"]}",
-            time: "${user["time"]} ago",
-          ),
-
-          const Divider(height: 1),
-
-          // ─── New Buyer ────────────────────────────
-          _buildActivityItem(
-            iconBg: Colors.purple.withOpacity(0.1),
-            iconBorder: Colors.purple.withOpacity(0.3),
-            icon: Icons.person_add_alt_outlined,
-            iconColor: Colors.purple,
-            title: "New Buyer Registered",
-            subtitle: "Atlantic Logistics Ltd  •  Cape Town Hub",
-            time: "${user["time_reg"]} ago",
-            isLast: true,
-          ),
-        ],
+          return Column(
+            children: [
+              _buildActivityItem(
+                iconBg: type.iconBg,
+                iconBorder: type.iconBorder,
+                icon: type.icon,
+                iconColor: type.iconColor,
+                title: title,
+                subtitle: subtitle,
+                time: time,
+                isLast: index == firstActivities.length - 1,
+              ),
+              if (index < firstActivities.length - 1) const Divider(height: 1),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  // ─── Item d'activité réutilisable ────────────────────────
+  _ActivityIcon _activityType(String title) {
+    if (title.toLowerCase().contains('approved')) {
+      return _ActivityIcon(
+        iconBg: Colors.green.withOpacity(0.1),
+        iconBorder: Colors.green.withOpacity(0.3),
+        icon: Icons.check_circle_outline,
+        iconColor: Colors.green,
+      );
+    }
+    if (title.toLowerCase().contains('rejected')) {
+      return _ActivityIcon(
+        iconBg: Colors.red.withOpacity(0.1),
+        iconBorder: Colors.red.withOpacity(0.3),
+        icon: Icons.cancel_outlined,
+        iconColor: Colors.red,
+      );
+    }
+    return _ActivityIcon(
+      iconBg: Colors.purple.withOpacity(0.1),
+      iconBorder: Colors.purple.withOpacity(0.3),
+      icon: Icons.person_add_alt_outlined,
+      iconColor: Colors.purple,
+    );
+  }
+
+  String _formatActivityTime(Object? raw) {
+    if (raw is String && raw.isNotEmpty) {
+      final parsed = DateTime.tryParse(raw);
+      if (parsed != null) {
+        return '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';
+      }
+      return raw;
+    }
+    return '';
+  }
+
   Widget _buildActivityItem({
     required Color iconBg,
     required Color iconBorder,
@@ -815,8 +906,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     bool isLast = false,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          vertical: isLast ? 0 : 4),
+      padding: EdgeInsets.symmetric(vertical: isLast ? 0 : 4),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Container(
@@ -831,10 +921,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -842,10 +929,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             const SizedBox(height: 2),
             Text(
               subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
             const SizedBox(height: 2),
             Text(
@@ -862,8 +946,7 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
     );
   }
 
-  // ─── Barre de navigation ─────────────────────────────────
-  Widget _buildBottomNavBar(bool isDark) {
+  Widget _buildBottomNavBar(bool isDark, int activeIndex) {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       height: 70,
@@ -885,9 +968,9 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             onPressed: () {},
             icon: Icon(
               Icons.home,
-              color: isDark
-                  ? const Color(0xFF023E77)
-                  : const Color(0xFF013D73),
+              color: activeIndex == 0
+                  ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
+                  : (isDark ? Colors.white54 : Colors.grey),
               size: 28,
             ),
           ),
@@ -900,20 +983,38 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
             },
             icon: Icon(
               Icons.people_outline,
-              color: isDark ? Colors.white54 : Colors.grey,
+              color: activeIndex == 1
+                  ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
+                  : (isDark ? Colors.white54 : Colors.grey),
               size: 26,
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.person_outline,
-              color: isDark ? Colors.white54 : Colors.grey,
-              size: 28,
-            ),
-          ),
+          // IconButton(
+          //   onPressed: () {},
+          //   icon: Icon(
+          //     Icons.person_outline,
+          //     color: activeIndex == 2
+          //         ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
+          //         : (isDark ? Colors.white54 : Colors.grey),
+          //     size: 28,
+          //   ),
+          // ),
         ],
       ),
     );
   }
+}
+
+class _ActivityIcon {
+  final Color iconBg;
+  final Color iconBorder;
+  final IconData icon;
+  final Color iconColor;
+
+  _ActivityIcon({
+    required this.iconBg,
+    required this.iconBorder,
+    required this.icon,
+    required this.iconColor,
+  });
 }
