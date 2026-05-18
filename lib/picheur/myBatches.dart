@@ -76,13 +76,15 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
   }).toList();
 
   bool _matchesFilter(FishBatch batch) {
-    return _selectedFilter == "All" ||
-        batch.status!.toLowerCase() == _selectedFilter.toLowerCase();
+    final status = batch.status?.toLowerCase() ?? '';
+    return _selectedFilter == "All" || status == _selectedFilter.toLowerCase();
   }
 
   bool _matchesSearch(FishBatch batch) {
     if (_searchQuery.isEmpty) return true;
-    return batch.fishName!.toLowerCase().contains(_searchQuery.toLowerCase());
+    return (batch.fishName ?? '').toLowerCase().contains(
+      _searchQuery.toLowerCase(),
+    );
   }
 
   @override
@@ -318,7 +320,8 @@ Widget BatchCard(FishBatch batch) {
   Color bgColor;
   Color textColor;
 
-  switch (batch.status!.toLowerCase()) {
+  final status = batch.status?.toLowerCase() ?? 'unknown';
+  switch (status) {
     case "approved":
       bgColor = Color(0xFFECFDF5);
       textColor = Color(0xFF065F46);
@@ -339,6 +342,26 @@ Widget BatchCard(FishBatch batch) {
       textColor = Color(0xFF475569);
   }
 
+  final imageUrl = batch.photos?.isNotEmpty == true
+      ? batch.photos![0].replaceFirst("src", "")
+      : null;
+  final fishName = batch.fishName ?? 'Unnamed batch';
+  final quantityText = batch.quantityKg != null
+      ? "${batch.quantityKg!.toStringAsFixed(2)} kg"
+      : 'N/A';
+  final dateText = batch.dateCaught != null
+      ? batch.dateCaught!
+            .toIso8601String()
+            .replaceFirst('T', ' ')
+            .substring(0, 16)
+      : 'Unknown date';
+  final unitPriceText = batch.pricePerKg != null
+      ? "${batch.pricePerKg!.toStringAsFixed(2)} DA/kg"
+      : 'N/A';
+  final totalPriceText = batch.pricePerKg != null && batch.quantityKg != null
+      ? "${(batch.pricePerKg! * batch.quantityKg!).toStringAsFixed(2)} DA"
+      : 'N/A';
+
   return Container(
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(16),
@@ -353,18 +376,25 @@ Widget BatchCard(FishBatch batch) {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                  "http://localhost:3000${batch.photos?[0].replaceFirst("src", "")}",
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    "images/grey.jpg",
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-                )
+              child: imageUrl != null
+                  ? Image.network(
+                      "http://localhost:3000$imageUrl",
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        "images/grey.jpg",
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      "images/grey.jpg",
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -372,7 +402,7 @@ Widget BatchCard(FishBatch batch) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    batch.fishName!,
+                    fishName,
                     style: const TextStyle(
                       color: Color(0xFF0F172A),
                       fontWeight: FontWeight.bold,
@@ -381,7 +411,7 @@ Widget BatchCard(FishBatch batch) {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${batch.quantityKg} kg\n${batch.dateCaught.toString().substring(0,16)}",
+                    "$quantityText\n$dateText",
                     style: const TextStyle(
                       color: Color(0xFF64748B),
                       fontSize: 14,
@@ -411,7 +441,7 @@ Widget BatchCard(FishBatch batch) {
         Row(
           children: [
             Text(
-              "${batch.pricePerKg} DA/kg",
+              unitPriceText,
               style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
             ),
             const Spacer(),
@@ -423,7 +453,7 @@ Widget BatchCard(FishBatch batch) {
                   style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                 ),
                 Text(
-                  "${batch.pricePerKg! * batch.quantityKg!} DA",
+                  totalPriceText,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -438,5 +468,3 @@ Widget BatchCard(FishBatch batch) {
     ),
   );
 }
-
-

@@ -1,11 +1,9 @@
 import 'package:fishapp/picheur/profil.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
-import '../signin/cubit/authcubit.dart';
 import 'homepage.dart';
 import 'myBatches.dart';
 
@@ -21,7 +19,8 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
   double? _wind;
   double? _visibility;
   double? _waveHeight;
-  String? _highTide, _lowTide, _sunrise, _sunset, _lastUpdated = "";
+  String? _highTide, _lowTide, _sunrise, _sunset;
+  DateTime? _lastUpdated;
   // ignore: unused_field
   bool _weatherLoaded = false;
 
@@ -65,7 +64,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
           _temp = data["main"]["temp"];
           _wind = data["wind"]["speed"];
           _visibility = (data["visibility"] as int) / 1000;
-          _lastUpdated = DateTime.now().toString();
+          _lastUpdated = DateTime.now();
           _weatherLoaded = true;
         });
       }
@@ -75,7 +74,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
 
         setState(() {
           _waveHeight = data1["current"]["wave_height"];
-          _lastUpdated = DateTime.now().toString();
+          _lastUpdated = DateTime.now();
           _weatherLoaded = true;
         });
       }
@@ -86,7 +85,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
         setState(() {
           _sunrise = data2["daily"]["sunrise"][0];
           _sunset = data2["daily"]["sunset"][0];
-          _lastUpdated = DateTime.now().toString();
+          _lastUpdated = DateTime.now();
           _weatherLoaded = true;
         });
       }
@@ -97,7 +96,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
         setState(() {
           _highTide = data3["data"]?[0]?["high"]?.toString();
           _lowTide = data3["data"]?[0]?["low"]?.toString();
-          _lastUpdated = DateTime.now().toString();
+          _lastUpdated = DateTime.now();
           _weatherLoaded = true;
         });
       }
@@ -107,10 +106,9 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
   }
 
   String _getUpdatedTime() {
-    if (_lastUpdated == null || _lastUpdated!.isEmpty) return "Updating...";
+    if (_lastUpdated == null) return "Updating...";
 
-    final lastTime = DateTime.parse(_lastUpdated!);
-    final difference = DateTime.now().difference(lastTime);
+    final difference = DateTime.now().difference(_lastUpdated!);
 
     if (difference.inMinutes < 1) return "Updated just now";
     if (difference.inMinutes < 60)
@@ -295,8 +293,6 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
           const Color(0xFF0F172A),
           Colors.white,
         ),
-
-
       ],
     );
   }
@@ -323,9 +319,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => HomePageP(),
-                ),
+                MaterialPageRoute(builder: (context) => HomePageP()),
               );
             },
             child: _navIcon(Icons.home, false),
@@ -334,9 +328,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MyBatchesPage(),
-                ),
+                MaterialPageRoute(builder: (context) => MyBatchesPage()),
               );
             },
             child: _navIcon(Icons.anchor, false),
@@ -345,9 +337,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => WeatherSafetypage(),
-                ),
+                MaterialPageRoute(builder: (context) => WeatherSafetypage()),
               );
             },
             child: _navIcon(Icons.remove_red_eye_outlined, true),
@@ -356,9 +346,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => ProfilePage(),
-                ),
+                MaterialPageRoute(builder: (context) => ProfilePage()),
               );
             },
             child: _navIcon(Icons.person_outline, false),
@@ -463,14 +451,14 @@ class WeatherInfo extends StatelessWidget {
 }
 
 Widget cardInfo(
-    Color color,
-    IconData icon,
-    String title,
-    String i1,
-    String v1,
-    String i2,
-    String v2,
-    ) {
+  Color color,
+  IconData icon,
+  String title,
+  String i1,
+  String v1,
+  String i2,
+  String v2,
+) {
   return Container(
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(

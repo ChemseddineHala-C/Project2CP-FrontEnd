@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './Admin_Pecheur.dart';
 import './admin_vit.dart';
+import './homepageadmin.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -252,11 +253,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back),
-          color: Color(0xFF0F172A),
-        ),
+        // leading: IconButton(
+        //   onPressed: () => Navigator.pop(context),
+        //   icon: Icon(Icons.arrow_back),
+        //   color: Color(0xFF0F172A),
+        // ),
         title: Text(
           "User Management",
           style: TextStyle(
@@ -362,6 +363,77 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 ),
               ],
             ),
+      bottomNavigationBar: _buildBottomNavBar(context, 1),
+    );
+  }
+
+  Widget _buildBottomNavBar(BuildContext context, int activeIndex) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      height: 70,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(35),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            onPressed: () {
+              if (activeIndex != 0) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HomepageadminPage(),
+                  ),
+                );
+              }
+            },
+            icon: Icon(
+              Icons.home,
+              color: activeIndex == 0
+                  ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
+                  : (isDark ? Colors.white54 : Colors.grey),
+              size: 28,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              if (activeIndex != 1) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserManagementPage(),
+                  ),
+                );
+              }
+            },
+            icon: Icon(
+              Icons.people,
+              color: activeIndex == 1
+                  ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
+                  : (isDark ? Colors.white54 : Colors.grey),
+              size: 26,
+            ),
+          ),
+          // IconButton(
+          //   onPressed: () {},
+          //   icon: Icon(
+          //     Icons.person_outline,
+          //     color: isDark ? Colors.white54 : Colors.grey,
+          //     size: 28,
+          //   ),
+          // ),
+        ],
+      ),
     );
   }
 
@@ -530,12 +602,18 @@ class UserItemCard extends StatelessWidget {
                               if (user.role == 'Fisherman') {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => Adminpecheurinfo(id: user.id)),
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        Adminpecheurinfo(id: user.id),
+                                  ),
                                 );
                               } else if (user.role == 'Veterinarian') {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => Adminvitinfo(id: user.id)),
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        Adminvitinfo(id: user.id),
+                                  ),
                                 );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
