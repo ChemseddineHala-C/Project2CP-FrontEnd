@@ -122,7 +122,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/inspections/${widget.batch.id}:id/certificate"),
+        Uri.parse("http://localhost:3000/api/inspections/${widget.batch.id}/certificate"),
         headers: {
           "Authorization": "Bearer $token",
         },

@@ -117,22 +117,26 @@ class _FailedvetPageState extends State<FailedvetPage> {
     setState(() {
       _isLoading = true;
     });
-    submitInspection(
-      batchId: widget.batch.id!,
-      smell: widget.op1,
-      gillColor: widget.op2,
-      fleshFirmness: widget.op3,
-      eyeClarity: widget.op4,
-      internalTemperature: widget.op5,
-      parasitesPresent: widget.op6,
-      freshnessScore: widget.op7,
-      notes: _rejectionController.text,
-      decision: 'rejected',
-      context: context,
-    );
-    setState(() {
-      _isLoading = false;
-    });
+    try {
+      await submitInspection(
+        batchId: widget.batch.id!,
+        smell: widget.op1,
+        gillColor: widget.op2,
+        fleshFirmness: widget.op3,
+        eyeClarity: widget.op4,
+        internalTemperature: widget.op5,
+        parasitesPresent: widget.op6,
+        freshnessScore: widget.op7,
+        notes: _rejectionController.text,
+        decision: 'rejected',
+        context: context,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -166,45 +170,45 @@ class _FailedvetPageState extends State<FailedvetPage> {
         ),
         centerTitle: true,
       ),
-      body:_isLoading?
-        const Center(child: CircularProgressIndicator()): 
-        SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatusCard(isDark),
-            const SizedBox(height: 32),
-            _buildSectionTitle("Batch Identity", isDark),
-            const SizedBox(height: 12),
-            _buildIdentityCard(isDark),
-            const SizedBox(height: 24),
-            _buildSectionTitle("Notes", isDark),
-            const SizedBox(height: 12),
-            _buildRejectionInputCard(
-              isDark,
-            ), //pour cause de fefutation de envoyer id de pecheur et le text
-            const SizedBox(height: 24),
-            _buildActionCard(
-              icon: Icons.picture_as_pdf_outlined,
-              title: "Digital certificate",
-              subtitle: "PDF format",
-              actionIcon: Icons.download_outlined,
-              onTap: () {},
-              isDark: isDark,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatusCard(isDark),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle("Batch Identity", isDark),
+                  const SizedBox(height: 12),
+                  _buildIdentityCard(isDark),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle("Notes", isDark),
+                  const SizedBox(height: 12),
+                  _buildRejectionInputCard(
+                    isDark,
+                  ), //pour cause de fefutation de envoyer id de pecheur et le text
+                  const SizedBox(height: 24),
+                  _buildActionCard(
+                    icon: Icons.picture_as_pdf_outlined,
+                    title: "Digital certificate",
+                    subtitle: "PDF format",
+                    actionIcon: Icons.download_outlined,
+                    onTap: () {},
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActionCard(
+                    icon: Icons.remove_red_eye_outlined,
+                    title: "View Batch Report",
+                    subtitle: "",
+                    actionIcon: Icons.open_in_new_outlined,
+                    onTap: () {},
+                    isDark: isDark,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            _buildActionCard(
-              icon: Icons.remove_red_eye_outlined,
-              title: "View Batch Report",
-              subtitle: "",
-              actionIcon: Icons.open_in_new_outlined,
-              onTap: () {},
-              isDark: isDark,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -366,7 +370,9 @@ class _FailedvetPageState extends State<FailedvetPage> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              _submitBatches();
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(
                 0xFFE53935,

@@ -402,7 +402,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Choisissez votre rôle"),
+        title: const Text("Choose your role"),
         centerTitle: true,
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
@@ -435,12 +435,12 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
               children: [
                 const SizedBox(height: 30),
                 const Text(
-                  "Qui êtes-vous ?",
+                  "Who are you ?",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "Sélectionnez votre rôle pour continuer",
+                  "Select your role to continue",
                   style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 40),
@@ -448,24 +448,24 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                 // ✅ Noms de rôles identiques au listener
                 _buildRoleCard(
                   role: "fisherman",
-                  title: "Pêcheur",
-                  description: "Gérez vos sorties et vos prises",
+                  title: "Fisherman",
+                  description: "Manage your trips and catches",
                   icon: Icons.directions_boat,
                   color: const Color(0xFF013D73),
                 ),
                 const SizedBox(height: 16),
                 _buildRoleCard(
                   role: "veterinarian",
-                  title: "Vétérinaire",
-                  description: "Inspectez et validez les lots de poisson",
+                  title: "Veterinarian",
+                  description: "Inspect and validate fish batches",
                   icon: Icons.medical_services,
                   color: const Color(0xFF2E7D32),
                 ),
                 const SizedBox(height: 16),
                 _buildRoleCard(
                   role: "customer",
-                  title: "Consommateur",
-                  description: "Achetez du poisson frais et certifié",
+                  title: "Consumer",
+                  description: "Buy fresh and certified fish",
                   icon: Icons.shopping_cart,
                   color: const Color(0xFF6A1B9A),
                 ),
@@ -493,7 +493,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                     },
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Confirmer",
+                        : const Text("Confirm",
                         style: TextStyle(fontSize: 16, color: Colors.white)),
                   ),
                 ),

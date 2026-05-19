@@ -12,7 +12,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
   bool _isLoading = true;
 
   Future<void> _delay5Seconds() async {
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 2));
     setState(() {
       _isLoading = false;
     });
