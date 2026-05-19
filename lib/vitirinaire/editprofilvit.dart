@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:file_picker/file_picker.dart';  // ✅ changed from image_picker
+import 'package:file_picker/file_picker.dart'; // ✅ changed from image_picker
 
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
@@ -21,7 +21,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
   final TextEditingController _boatNamevitController = TextEditingController();
 
   File? _imageFile;
-  bool _isInitialized = false;  // ✅ removed ImagePicker
+  bool _isInitialized = false; // ✅ removed ImagePicker
 
   @override
   void initState() {
@@ -38,6 +38,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
     _boatNamevitController.dispose();
     super.dispose();
   }
+
   double _completionPercent = 0.0;
   void _updateCompletionPercent() {
     int total = 0;
@@ -102,7 +103,9 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         });
 
         String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf') ? 'PDF' : 'Image';
+        String fileType = fileName.toLowerCase().contains('.pdf')
+            ? 'PDF'
+            : 'Image';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OK $fileType: $fileName'),
@@ -141,22 +144,37 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is ProfileLoaded) {
-            _namevitController.text = state.user["full_name"] ?? "";
-            _phonevitController.text = state.user["phone_number"] ?? "";
-            _emailvitController.text = state.user["email"] ?? "";
-            _homePortvitController.text = state.user["home_port"] ?? "";
-            _boatNamevitController.text = state.user["boat_name"] ?? "";
+            _namevitController.text = state.user["full_name"]?.toString() ?? "";
+            _phonevitController.text =
+                state.user["phone_number"]?.toString() ?? "";
+            _emailvitController.text = state.user["email"]?.toString() ?? "";
+            _homePortvitController.text =
+                state.user["home_port"]?.toString() ?? "";
+            _boatNamevitController.text =
+                state.user["boat_name"]?.toString() ?? "";
             _isInitialized = true;
+            _updateCompletionPercent();
           }
           if (state is ProfileUpdatedSuccess) {
+            // Refresh the profile data after successful update
+            context.read<AuthCubit>().fetchvitProfile();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully")),
+              const SnackBar(
+                content: Text("Profile updated successfully"),
+                backgroundColor: Colors.green,
+              ),
             );
-            Navigator.pop(context);
+            // Wait a moment for the refresh to complete before popping
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) Navigator.pop(context);
+            });
           }
           if (state is ProfileError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -211,10 +229,10 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
   //                     ? FileImage(_imageFile!)
   //                     : (networkImage != null
   //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
+  //                     : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
   //                 // _imageFile != null
   //                 //     ? FileImage(_imageFile!)
-  //                 //     : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo') as ImageProvider,
+  //                 //     : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo') as ImageProvider,
   //               ),
   //             ),
   //           ),
@@ -258,16 +276,29 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
               onTap: () => _pickFile("profile_photo"), // ✅ corrigé
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  shape: BoxShape.circle,
+                ),
                 child: CircleAvatar(
                   radius: 65,
-                  backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
+                  backgroundColor: isDark
+                      ? Colors.white12
+                      : const Color(0xFFE3F2FD),
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage('http://localhost:3000'+networkImage.toString().replaceFirst('src',''))
-                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo'))
-                  as ImageProvider,
+                                ? NetworkImage(
+                                    'http://localhost:3000' +
+                                        networkImage.toString().replaceFirst(
+                                          'src',
+                                          '',
+                                        ),
+                                  )
+                                : const NetworkImage(
+                                    'http://localhost:3000/uploads/fishermen/me/photo',
+                                  ))
+                            as ImageProvider,
                 ),
               ),
             ),
@@ -282,10 +313,14 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
                     color: Color(0xFF013D73),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -293,9 +328,13 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           onTap: () => _pickFile("profile_photo"), // ✅ corrigé
           child: const Text(
             "Change Profile Photo",
-            style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+              color: Color(0xFF013D73),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -330,9 +369,19 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       isDark: isDark,
       title: "ADDITIONAL INFORMATION",
       children: [
-        _buildTextField("Assigned Port", _homePortvitController, isDark, prefixIcon: Icons.location_on_outlined),
+        _buildTextField(
+          "Assigned Port",
+          _homePortvitController,
+          isDark,
+          prefixIcon: Icons.location_on_outlined,
+        ),
         const SizedBox(height: 16),
-        _buildTextField("Boat Name", _boatNamevitController, isDark, prefixIcon: Icons.directions_boat_outlined),
+        _buildTextField(
+          "Boat Name",
+          _boatNamevitController,
+          isDark,
+          prefixIcon: Icons.directions_boat_outlined,
+        ),
       ],
     );
   }
@@ -346,7 +395,10 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           onPressed: () {},
           child: const Text(
             "Deactivate Account",
-            style: TextStyle(color: Color(0xFFFF5252), fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Color(0xFFFF5252),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -361,7 +413,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           phone: _phonevitController.text,
           homePort: _homePortvitController.text,
           boatName: _boatNamevitController.text,
-          profileImage: _imageFile,  // ✅ added profileImage
+          profileImage: _imageFile, // ✅ added profileImage
         );
       },
       style: ElevatedButton.styleFrom(
@@ -377,7 +429,11 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
           SizedBox(width: 8),
           Text(
             "Save Changes",
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -389,34 +445,69 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       onPressed: () => Navigator.pop(context),
       child: const Text(
         "Cancel",
-        style: TextStyle(color: Color(0xFF7B8D9E), fontWeight: FontWeight.bold, fontSize: 16),
+        style: TextStyle(
+          color: Color(0xFF7B8D9E),
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool enabled = true, IconData? prefixIcon, IconData? suffixIcon}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    bool enabled = true,
+    IconData? prefixIcon,
+    IconData? suffixIcon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF4A5568), fontSize: 13)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: enabled,
-          style: TextStyle(color: isDark ? Colors.white : (enabled ? Colors.black : const Color(0xFF7B8D9E))),
+          style: TextStyle(
+            color: isDark
+                ? Colors.white
+                : (enabled ? Colors.black : const Color(0xFF7B8D9E)),
+          ),
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: const Color(0xFF00A896)) : null,
-            suffixIcon: suffixIcon != null ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18) : null,
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, color: const Color(0xFF00A896))
+                : null,
+            suffixIcon: suffixIcon != null
+                ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18)
+                : null,
             filled: true,
-            fillColor: isDark ? Colors.white12 : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            fillColor: isDark
+                ? Colors.white12
+                : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
           ),
         ),
@@ -424,7 +515,11 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
     );
   }
 
-  Widget _cardContainer({required String title, required List<Widget> children, required bool isDark}) {
+  Widget _cardContainer({
+    required String title,
+    required List<Widget> children,
+    required bool isDark,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -436,7 +531,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -444,7 +539,12 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white54 : const Color(0xFF718096), fontSize: 14, letterSpacing: 0.5),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white54 : const Color(0xFF718096),
+              fontSize: 14,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 20),
           ...children,

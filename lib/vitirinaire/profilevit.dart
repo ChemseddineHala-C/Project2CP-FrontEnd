@@ -9,7 +9,6 @@ import 'editprofilvit.dart';
 import 'inspectionHistoryPage.dart';
 
 class ProfilevitPage extends StatefulWidget {
-
   const ProfilevitPage({super.key});
 
   @override
@@ -35,7 +34,13 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text("Profile", style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Profile",
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -90,9 +95,10 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                   const SizedBox(height: 16),
                   Text(state.message),
                   TextButton(
-                    onPressed: () => context.read<AuthCubit>().fetchvitProfile(),
+                    onPressed: () =>
+                        context.read<AuthCubit>().fetchvitProfile(),
                     child: const Text("Retry"),
-                  )
+                  ),
                 ],
               ),
             );
@@ -108,7 +114,11 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w700, fontSize: 13),
+      style: const TextStyle(
+        color: Color(0xFF94A3B8),
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+      ),
     );
   }
 
@@ -119,34 +129,67 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         children: [
           CircleAvatar(
             radius: 50,
             backgroundColor: const Color(0xFFE3F2FD),
-            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000${user["profile_photo"].replaceFirst('src','')}") : null,
-            child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: primaryTeal) : null,
+            backgroundImage:
+                user["profile_photo"] != null &&
+                    user["profile_photo"].toString().isNotEmpty
+                ? NetworkImage(
+                    "http://localhost:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
+                  )
+                : null,
+            child:
+                user["profile_photo"] == null ||
+                    user["profile_photo"].toString().isEmpty
+                ? Icon(Icons.person, size: 60, color: primaryTeal)
+                : null,
           ),
           const SizedBox(height: 12),
-          Text(user["full_name"] ?? "Dr. Mohamed", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ID: ${user["id"] ?? "/"} | LICENSE: ${user["license_number"] ?? "/"}",
-              style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+          Text(
+            user["full_name"]?.toString() ?? "Dr. Mohamed",
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "ID: ${user["id"]?.toString() ?? "/"} | LICENSE: ${user["license_number"]?.toString() ?? "/"}",
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilevitPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfilevitPage(),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                label: const Text("Edit Profile", style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Edit Profile",
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryTeal,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -159,7 +202,8 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                   onPressed: () async {
                     await SharePlus.instance.share(
                       ShareParams(
-                        text: "🐟 Découvre Let's Fishing !\n"
+                        text:
+                            "🐟 Découvre Let's Fishing !\n"
                             "L'app du marché de poisson en Algérie.\n\n"
                             "📱 Télécharge ici :\n"
                             "https://play.google.com/store/apps/details?id=com.example.projetsndcp\n\n"
@@ -183,9 +227,9 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -194,14 +238,32 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
   Widget _buildCredentialsCard(Map<String, dynamic> user) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
-          _infoTile(Icons.anchor_outlined, "ASSIGNED PORT", user["home_port"] ?? "Oran Port", trailing: _statusBadge()),
+          _infoTile(
+            Icons.anchor_outlined,
+            "ASSIGNED PORT",
+            user["home_port"]?.toString() ?? "Oran Port",
+            trailing: _statusBadge(),
+          ),
           const Divider(height: 32),
-          _infoTile(Icons.medical_services_outlined, "SPECIALIZATION", user["specialization"] ?? "Aquatic Pathology"),
+          _infoTile(
+            Icons.medical_services_outlined,
+            "SPECIALIZATION",
+            user["specialization"]?.toString() ?? "Aquatic Pathology",
+          ),
           const Divider(height: 32),
-          _infoTile(Icons.verified_user_outlined, "LICENSE EXPIRY", user["license_expiry_date"].toString().substring(0,10) ?? "Dec 31, 2024"),
+          _infoTile(
+            Icons.verified_user_outlined,
+            "LICENSE EXPIRY",
+            user["license_expiry_date"] != null
+                ? user["license_expiry_date"].toString().substring(0, 10)
+                : "Dec 31, 2024",
+          ),
         ],
       ),
     );
@@ -210,12 +272,23 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
   Widget _buildCommunicationCard(Map<String, dynamic> user) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
-          _infoTile(Icons.email_outlined, "Email Address", user["email"] ?? "mohamed@mail.com"),
+          _infoTile(
+            Icons.email_outlined,
+            "Email Address",
+            user["email"]?.toString() ?? "mohamed@mail.com",
+          ),
           const Divider(height: 32),
-          _infoTile(Icons.phone_outlined, "Phone Number", user["phone_number"] ?? "+213 550515255"),
+          _infoTile(
+            Icons.phone_outlined,
+            "Phone Number",
+            user["phone_number"]?.toString() ?? "+213 550515255",
+          ),
         ],
       ),
     );
@@ -223,26 +296,67 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
 
   Widget _buildSettingsCard() {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
         children: [
-          _settingsTile(Icons.lock_outline, "Change Password", trailing: IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ChangepasswordVitPage()));
-          }, icon: const Icon(Icons.chevron_right, color: Colors.grey))),
+          _settingsTile(
+            Icons.lock_outline,
+            "Change Password",
+            trailing: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangepasswordVitPage(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.chevron_right, color: Colors.grey),
+            ),
+          ),
           const Divider(height: 1),
-          _settingsTile(Icons.language, "Language", trailing: const Text("English >", style: TextStyle(color: Colors.grey))),
+          _settingsTile(
+            Icons.language,
+            "Language",
+            trailing: const Text(
+              "English >",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
           const Divider(height: 1),
-          _settingsTile(Icons.notifications_none, "Notifications",
-              trailing: Switch(value: _notifications, activeColor: primaryTeal, onChanged: (v) {})),
+          _settingsTile(
+            Icons.notifications_none,
+            "Notifications",
+            trailing: Switch(
+              value: _notifications,
+              activeColor: primaryTeal,
+              onChanged: (v) {},
+            ),
+          ),
           const Divider(height: 1),
-          _settingsTile(Icons.dark_mode_outlined, "Dark Mode",
-              trailing: Switch(value: _darkMode, activeColor: primaryTeal, onChanged: (v) {})),
+          _settingsTile(
+            Icons.dark_mode_outlined,
+            "Dark Mode",
+            trailing: Switch(
+              value: _darkMode,
+              activeColor: primaryTeal,
+              onChanged: (v) {},
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _infoTile(IconData icon, String label, String value, {Widget? trailing}) {
+  Widget _infoTile(
+    IconData icon,
+    String label,
+    String value, {
+    Widget? trailing,
+  }) {
     return Row(
       children: [
         Container(
@@ -258,9 +372,23 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A), fontSize: 14)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
@@ -272,15 +400,35 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
   Widget _statusBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(5)),
-      child: const Text("ACTIVE", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: const Text(
+        "ACTIVE",
+        style: TextStyle(
+          color: Colors.green,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
-  Widget _settingsTile(IconData icon, String title, {required Widget trailing}) {
+  Widget _settingsTile(
+    IconData icon,
+    String title, {
+    required Widget trailing,
+  }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF64748B)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF0F172A),
+        ),
+      ),
       trailing: trailing,
     );
   }
@@ -292,17 +440,37 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => InspectorDashboard()));
-          }, icon: _navIcon(Icons.home_outlined, false)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const InspectionHistoryPage()));
-          }, icon: _navIcon(Icons.access_time, false)),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => InspectorDashboard()),
+              );
+            },
+            icon: _navIcon(Icons.home_outlined, false),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const InspectionHistoryPage(),
+                ),
+              );
+            },
+            icon: _navIcon(Icons.access_time, false),
+          ),
           IconButton(onPressed: () {}, icon: _navIcon(Icons.person, true)),
         ],
       ),
@@ -311,5 +479,9 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
 }
 
 Widget _navIcon(IconData icon, bool isActive) {
-    return Icon(icon, color: isActive ? const Color(0xFF00A896) : Colors.grey.shade400, size: 28);
+  return Icon(
+    icon,
+    color: isActive ? const Color(0xFF00A896) : Colors.grey.shade400,
+    size: 28,
+  );
 }

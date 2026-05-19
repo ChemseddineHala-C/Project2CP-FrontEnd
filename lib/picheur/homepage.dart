@@ -6,13 +6,9 @@ import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import 'Weather&Safety.dart';
 import 'addBatchPage.dart';
-import 'batchDetailsPage.dart';
 import 'myBatches.dart';
-import 'objects.dart';
 
 class HomePageP extends StatefulWidget {
-
-
   const HomePageP({super.key});
 
   @override
@@ -29,7 +25,6 @@ class _HomePagePState extends State<HomePageP> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
     return Scaffold(
       // backgroundColor: const Color(0xFFF5F7F9),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -46,11 +41,14 @@ class _HomePagePState extends State<HomePageP> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildHeader(data,isDark),
+                          _buildHeader(data, isDark),
                           const SizedBox(height: 24),
                           //_buildAddBatchCard(),
                           const SizedBox(height: 16),
@@ -96,13 +94,22 @@ class _HomePagePState extends State<HomePageP> {
     );
   }
 
-  Widget _buildHeader(Map<String, dynamic> data,bool isDark) {
+  Widget _buildHeader(Map<String, dynamic> data, bool isDark) {
+    final profile = data["profile"] as Map<String, dynamic>?;
+    final profilePhoto = profile?["profile_photo"] as String?;
+    final fullName = profile?["full_name"] as String? ?? "User";
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,35 +118,61 @@ class _HomePagePState extends State<HomePageP> {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: isDark ? Colors.white10 : const Color(0xFFE3F2FD),
-                backgroundImage: data["profile"]["profile_photo"] != null
-                    ? NetworkImage("http://localhost:3000"+data["profile"]["profile_photo"].toString().replaceFirst('src',''))
+                backgroundColor: isDark
+                    ? Colors.white10
+                    : const Color(0xFFE3F2FD),
+                backgroundImage: profilePhoto != null
+                    ? NetworkImage(
+                        "http://localhost:3000${profilePhoto.replaceFirst('src', '')}",
+                      )
                     : null,
-                child: data["profile"]["profile_photo"] == null
-                    ? Icon(Icons.person, color: Colors.grey)
+                child: profilePhoto == null
+                    ? const Icon(Icons.person, color: Colors.grey)
                     : null,
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Welcome back,", style: TextStyle(color:isDark?Colors.white70: Colors.grey, fontSize: 13)),
-                  Text(data["profile"]["full_name"], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
+                  Text(
+                    "Welcome back,",
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.grey,
+                      fontSize: 13,
+                    ),
+                  ),
+                  Text(
+                    fullName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF011A33),
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
             child: const Stack(
               children: [
-                Icon(Icons.notifications_outlined,),
+                Icon(Icons.notifications_outlined),
                 Positioned(
                   right: 2,
                   top: 2,
                   child: CircleAvatar(radius: 4, backgroundColor: Colors.red),
-                )
+                ),
               ],
             ),
           ),
@@ -147,8 +180,24 @@ class _HomePagePState extends State<HomePageP> {
       ),
     );
   }
-//WIDGET DE DENOTE
+
+  //WIDGET DE DENOTE
   Widget _buildDonutChart(Map<String, dynamic> user) {
+    final chartData = user["batch_status_chart"] as Map<String, dynamic>?;
+    if (chartData == null) {
+      return const SizedBox.shrink();
+    }
+
+    final approved =
+        (chartData["approved"]?["percentage"] as num?)?.toDouble() ?? 0.0;
+    final expired =
+        (chartData["expired"]?["percentage"] as num?)?.toDouble() ?? 0.0;
+    final pending =
+        (chartData["pending"]?["percentage"] as num?)?.toDouble() ?? 0.0;
+    final rejected =
+        (chartData["rejected"]?["percentage"] as num?)?.toDouble() ?? 0.0;
+    final total = chartData["total"]?.toString() ?? "0";
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -177,25 +226,25 @@ class _HomePagePState extends State<HomePageP> {
                     centerSpaceRadius: 45,
                     sections: [
                       PieChartSectionData(
-                        value: (user["batch_status_chart"]["approved"]["percentage"] as num).toDouble(),
+                        value: approved,
                         color: const Color(0xFF0F6E56),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_status_chart"]["expired"]["percentage"] as num).toDouble(),
+                        value: expired,
                         color: const Color(0xFF888780),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_status_chart"]["pending"]["percentage"] as num).toDouble(),
+                        value: pending,
                         color: const Color(0xFFEF9F27),
                         radius: 28,
                         showTitle: false,
                       ),
                       PieChartSectionData(
-                        value: (user["batch_status_chart"]["rejected"]["percentage"] as num).toDouble(),
+                        value: rejected,
                         color: const Color(0xFFE24B4A),
                         radius: 28,
                         showTitle: false,
@@ -208,7 +257,7 @@ class _HomePagePState extends State<HomePageP> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      user["batch_status_chart"]["total"],
+                      total,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -235,22 +284,26 @@ class _HomePagePState extends State<HomePageP> {
                 _buildLegendItem(
                   color: const Color(0xFF0F6E56),
                   label: "Approved",
-                  percent: user["batch_status_chart"]["approved"]["percentage"],
+                  percent: (chartData["approved"]?["percentage"] ?? "0")
+                      .toString(),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFF888780),
                   label: "Expired",
-                  percent: user["batch_status_chart"]["expired"]["percentage"],
+                  percent: (chartData["expired"]?["percentage"] ?? "0")
+                      .toString(),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFEF9F27),
                   label: "Pending",
-                  percent: user["batch_status_chart"]["pending"]["percentage"],
+                  percent: (chartData["pending"]?["percentage"] ?? "0")
+                      .toString(),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFE24B4A),
                   label: "Rejected",
-                  percent: user["batch_status_chart"]["rejected"]["percentage"],
+                  percent: (chartData["rejected"]?["percentage"] ?? "0")
+                      .toString(),
                 ),
               ],
             ),
@@ -271,25 +324,15 @@ class _HomePagePState extends State<HomePageP> {
       child: Row(
         children: [
           Container(
-            width: 10, height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13),
-            ),
-          ),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
           Text(
             percent,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -297,37 +340,36 @@ class _HomePagePState extends State<HomePageP> {
   }
 
   // ─── Distribution par type de poisson ───────────────────
-  Widget _buildFishDistribution(
-      Map<String, dynamic> user, bool isDark) {
+  Widget _buildFishDistribution(Map<String, dynamic> user, bool isDark) {
     final List<Map<String, dynamic>> fishData = [
       {
         "name": "SARDINE",
-        "pct": (user["sardine_pct"] as num).toDouble(),
-        "label": user["sardine_label"],
+        "pct": (user["sardine_pct"] as num?)?.toDouble() ?? 0.0,
+        "label": user["sardine_label"]?.toString() ?? "0%",
         "color": const Color(0xFF0F6E56),
       },
       {
         "name": "SALMON",
-        "pct": (user["salmon_pct"] as num).toDouble(),
-        "label": user["salmon_label"],
+        "pct": (user["salmon_pct"] as num?)?.toDouble() ?? 0.0,
+        "label": user["salmon_label"]?.toString() ?? "0%",
         "color": const Color(0xFF0F6E56),
       },
       {
         "name": "TUNA",
-        "pct": (user["tuna_pct"] as num).toDouble(),
-        "label": user["tuna_label"],
+        "pct": (user["tuna_pct"] as num?)?.toDouble() ?? 0.0,
+        "label": user["tuna_label"]?.toString() ?? "0%",
         "color": const Color(0xFF888780),
       },
       {
         "name": "SEA BASS",
-        "pct": (user["seabass_pct"] as num).toDouble(),
-        "label": user["seabass_label"],
+        "pct": (user["seabass_pct"] as num?)?.toDouble() ?? 0.0,
+        "label": user["seabass_label"]?.toString() ?? "0%",
         "color": const Color(0xFFE24B4A),
       },
       {
         "name": "OTHER",
-        "pct": (user["other_pct"] as num).toDouble(),
-        "label": user["other_label"],
+        "pct": (user["other_pct"] as num?)?.toDouble() ?? 0.0,
+        "label": user["other_label"]?.toString() ?? "0%",
         "color": const Color(0xFF888780),
       },
     ];
@@ -366,10 +408,7 @@ class _HomePagePState extends State<HomePageP> {
                     ),
                     Text(
                       fish["label"],
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -379,12 +418,8 @@ class _HomePagePState extends State<HomePageP> {
                   child: LinearProgressIndicator(
                     value: fish["pct"] / 100,
                     minHeight: 6,
-                    backgroundColor: isDark
-                        ? Colors.white10
-                        : Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      fish["color"],
-                    ),
+                    backgroundColor: isDark ? Colors.white10 : Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(fish["color"]),
                   ),
                 ),
               ],
@@ -394,91 +429,107 @@ class _HomePagePState extends State<HomePageP> {
       ),
     );
   }
+
   //---------------END OF WIDGET DENOT-----------------
   Widget _buildAddBatchCard() {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const Addbatchpage(),
-          ),
+          MaterialPageRoute(builder: (context) => const Addbatchpage()),
         );
       },
       child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF013D73),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: const Color(0xFF013D73).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
-          ),
-          child:MaterialButton(onPressed: (){
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Addbatchpage(),
-                ));
-          },child:Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.add_box_outlined, color: Colors.white, size: 28),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF013D73),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF013D73).withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Add New Batch", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text("Log your latest catch", style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  ],
-                ),
+              child: const Icon(
+                Icons.add_box_outlined,
+                color: Colors.white,
+                size: 28,
               ),
-              const Icon(Icons.chevron_right, color: Colors.white),
-            ],
-          ) ,)
-
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Add New Batch",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "Log your latest catch",
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildQuickActions(bool isDark) {
-    return Container(
-      child:
-      InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MyBatchesPage(),
-            ),
-          );
-        },
-        child: _buildActionItem(Icons.list_alt, "My Batches"),
-      ),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MyBatchesPage()),
+        );
+      },
+      child: _buildActionItem(Icons.list_alt, "My Batches"),
     );
   }
 
   Widget _buildActionItem(IconData icon, String title) {
-    return MaterialButton(onPressed: (){
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BatchDetailspage(batch: FishBatch(fishName: "Sardine", quantityKg: 45.5, pricePerKg: 320.50, status: "APPROVED",)),
-          ));
-    },child: Container(
+    return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Icon(icon, color: const Color(0xFF013D73), size: 28),
           const SizedBox(height: 12),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
         ],
       ),
-    ),)
-    ;
+    );
   }
 
   Widget _buildSectionHeader(IconData icon, String title, {String? trailing}) {
@@ -486,19 +537,42 @@ class _HomePagePState extends State<HomePageP> {
       children: [
         Icon(icon, color: const Color(0xFF013D73), size: 20),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF011A33))),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF011A33),
+          ),
+        ),
         const Spacer(),
-        if (trailing != null) Text(trailing, style: const TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 13)),
+        if (trailing != null)
+          Text(
+            trailing,
+            style: const TextStyle(
+              color: Color(0xFF013D73),
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildPerformanceGrid(Map<String, dynamic> data,bool isDark) {
+  Widget _buildPerformanceGrid(Map<String, dynamic> data, bool isDark) {
+    final overview = data["performance_overview"] as Map<String, dynamic>?;
+    final totalEarnings = overview?["total_earnings"]?.toString() ?? "0";
+    final totalWeight = overview?["total_weight"]?.toString() ?? "0";
+
     return Row(
       children: [
-        Expanded(child: _buildStatCard("TOTAL EARNINGS", data["performance_overview"]["total_earnings"],"2.5", isDark)),
+        Expanded(
+          child: _buildStatCard("TOTAL EARNINGS", totalEarnings, "2.5", isDark),
+        ),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard("TOTAL WEIGHT", data["performance_overview"]["total_weight"], "1.5", isDark)),
+        Expanded(
+          child: _buildStatCard("TOTAL WEIGHT", totalWeight, "1.5", isDark),
+        ),
       ],
     );
   }
@@ -506,19 +580,41 @@ class _HomePagePState extends State<HomePageP> {
   Widget _buildStatCard(String label, String value, String trend, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color:isDark?Colors.white54: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: TextStyle(
+              color: isDark ? Colors.white54 : Colors.grey,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
-          FittedBox(child: Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          FittedBox(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.trending_up, size: 14, color: Colors.green),
+              const Icon(Icons.trending_up, size: 14, color: Colors.green),
               const SizedBox(width: 4),
-              Text(trend, style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(
+                trend,
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ],
@@ -526,7 +622,17 @@ class _HomePagePState extends State<HomePageP> {
     );
   }
 
-  Widget _buildStatusTracker(Map<String, dynamic> data,bool isDark) {
+  Widget _buildStatusTracker(Map<String, dynamic> data, bool isDark) {
+    final tracker = data["batch_status_tracker"] as Map<String, dynamic>?;
+    if (tracker == null) {
+      return const SizedBox.shrink();
+    }
+
+    final pending = tracker["pending"]?.toString() ?? "0";
+    final approved = tracker["approved"]?.toString() ?? "0";
+    final rejected = tracker["rejected"]?.toString() ?? "0";
+    final expired = tracker["expired"]?.toString() ?? "0";
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -535,23 +641,54 @@ class _HomePagePState extends State<HomePageP> {
       crossAxisSpacing: 12,
       childAspectRatio: 2.1,
       children: [
-        _buildStatusItem(Icons.access_time, data["batch_status_tracker"]["pending"].toString(), "Pending", const Color(0xFFFFB038)),
-        _buildStatusItem(Icons.check_circle_outline, data["batch_status_tracker"]["approved"].toString(), "Approved", const Color(0xFF4CAF50)),
-        _buildStatusItem(Icons.cancel_outlined, data["batch_status_tracker"]["rejected"].toString(), "Rejected", const Color(0xFFFF5252)),
-        _buildStatusItem(Icons.history, "0${data["batch_status_tracker"]["expired"]}", "Expired", const Color(0xFF7B8D9E)),
+        _buildStatusItem(
+          Icons.access_time,
+          pending,
+          "Pending",
+          const Color(0xFFFFB038),
+        ),
+        _buildStatusItem(
+          Icons.check_circle_outline,
+          approved,
+          "Approved",
+          const Color(0xFF4CAF50),
+        ),
+        _buildStatusItem(
+          Icons.cancel_outlined,
+          rejected,
+          "Rejected",
+          const Color(0xFFFF5252),
+        ),
+        _buildStatusItem(
+          Icons.history,
+          expired,
+          "Expired",
+          const Color(0xFF7B8D9E),
+        ),
       ],
     );
   }
 
-  Widget _buildStatusItem(IconData icon, String count, String label, Color color) {
+  Widget _buildStatusItem(
+    IconData icon,
+    String count,
+    String label,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),
@@ -559,8 +696,17 @@ class _HomePagePState extends State<HomePageP> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(count, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(
+                count,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
             ],
           ),
         ],
@@ -568,10 +714,19 @@ class _HomePagePState extends State<HomePageP> {
     );
   }
 
-  Widget _buildMarketCard(Map<String, dynamic> item,bool isDark) {
+  Widget _buildMarketCard(Map<String, dynamic> item, bool isDark) {
+    final name = item["name"]?.toString() ?? "Unknown";
+    final grade = item["grade"]?.toString() ?? "N/A";
+    final demand = item["demand"]?.toString() ?? "N/A";
+    final price = item["price"]?.toString() ?? "0";
+    final tag = item["tag"]?.toString() ?? "N/A";
+
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
         children: [
           ClipRRect(
@@ -585,7 +740,10 @@ class _HomePagePState extends State<HomePageP> {
                 width: 60,
                 height: 60,
                 color: Colors.grey[200],
-                child: Icon(Icons.image_not_supported, color: isDark?Colors.white:Colors.grey),
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: isDark ? Colors.white : Colors.grey,
+                ),
               ),
             ),
           ),
@@ -594,16 +752,52 @@ class _HomePagePState extends State<HomePageP> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item["name"], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
-                Text("${item["grade"]} - ${item["demand"]}", style: TextStyle(color:isDark?Colors.white54: Colors.grey, fontSize: 12), overflow: TextOverflow.ellipsis),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  "$grade - $demand",
+                  style: TextStyle(
+                    color: isDark ? Colors.white54 : Colors.grey,
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Expanded(child: Text(item["price"], style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF013D73)), overflow: TextOverflow.ellipsis)),
+                    Expanded(
+                      child: Text(
+                        price,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF013D73),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(6)),
-                      child: Text(item["tag"], style: const TextStyle(color: Color(0xFF2E7D32), fontSize: 10, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(
+                          color: Color(0xFF2E7D32),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -622,7 +816,13 @@ class _HomePagePState extends State<HomePageP> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -661,10 +861,9 @@ class _HomePagePState extends State<HomePageP> {
           GestureDetector(
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfilePage(),
-                  ));
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
             },
             child: _navIcon(Icons.person_outline, false),
           ),
@@ -674,8 +873,13 @@ class _HomePagePState extends State<HomePageP> {
   }
 
   Widget _navIcon(IconData icon, bool isActive) {
-    return Icon(icon, color: isActive ? const Color(0xFF013D73) : Colors.grey.shade400, size: 28);
+    return Icon(
+      icon,
+      color: isActive ? const Color(0xFF013D73) : Colors.grey.shade400,
+      size: 28,
+    );
   }
+
   Widget _buildpartieHeader(String title, {String? subtitle}) {
     return Row(
       children: [
@@ -691,10 +895,7 @@ class _HomePagePState extends State<HomePageP> {
           const SizedBox(width: 6),
           Text(
             "($subtitle)",
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.grey[500], fontSize: 12),
           ),
         ],
       ],
