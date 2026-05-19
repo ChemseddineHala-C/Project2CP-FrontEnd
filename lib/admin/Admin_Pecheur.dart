@@ -251,7 +251,14 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
               height: 65,
               color: Colors.grey[200],
               child: user["profile_photo"] != null
-                  ? Image.network('http://localhost:3000'+user["profile_photo"].toString().replaceFirst('src',''), fit: BoxFit.cover)
+                  ? Image.network(
+                      'http://localhost:3000' +
+                          user["profile_photo"].toString().replaceFirst(
+                            'src',
+                            '',
+                          ),
+                      fit: BoxFit.cover,
+                    )
                   : const Icon(Icons.person, size: 35, color: Colors.grey),
             ),
           ),

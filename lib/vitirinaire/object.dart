@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
 class FishBatchWithFisherman {
   final int? id;
   final int? fishermanId;
@@ -50,8 +51,23 @@ class FishBatchWithFisherman {
             .map((e) => e.toString())
             .toList();
       } else if (json['photo'] is String) {
-        photoList = [json['photo']];
+        String photoStr = json['photo'].toString().trim();
+        if (photoStr.startsWith('[')) {
+          try {
+            List<dynamic> parsed = jsonDecode(photoStr);
+            photoList = parsed
+                .where((e) => e != null && e.toString().isNotEmpty)
+                .map((e) => e.toString())
+                .toList();
+          } catch (e) {
+            print('Error parsing photo JSON: $e');
+            if (photoStr.isNotEmpty) photoList = [photoStr];
+          }
+        } else if (photoStr.isNotEmpty) {
+          photoList = [photoStr];
+        }
       }
+      photoList.removeWhere((e) => e.isEmpty);
     }
 
     return FishBatchWithFisherman(
@@ -164,8 +180,10 @@ class Inspection {
       if (gillColor != null) 'gill_color': gillColor,
       if (fleshFirmness != null) 'flesh_firmness': fleshFirmness,
       if (eyeClarity != null) 'eye_clarity': eyeClarity,
-      if (internalTemperature != null) 'internal_temperature': internalTemperature,
-      if (parasitesPresent != null) 'parasites_present': parasitesPresent == true ? 1 : 0,
+      if (internalTemperature != null)
+        'internal_temperature': internalTemperature,
+      if (parasitesPresent != null)
+        'parasites_present': parasitesPresent == true ? 1 : 0,
       if (freshnessScore != null) 'freshness_score': freshnessScore,
       if (notes != null) 'notes': notes,
       if (decision != null) 'decision': decision,
@@ -180,6 +198,7 @@ class Inspection {
     return jsonList.map((json) => Inspection.fromJson(json)).toList();
   }
 }
+
 /////////////////////////////
 // ✅ نموذج لمعلومات الدفعة
 // ✅ نموذج لمعلومات الدفعة
@@ -240,11 +259,7 @@ class InspectorDetails {
   final String? vetLicense;
   final String? vetPhoto;
 
-  InspectorDetails({
-    this.vetName,
-    this.vetLicense,
-    this.vetPhoto,
-  });
+  InspectorDetails({this.vetName, this.vetLicense, this.vetPhoto});
 
   factory InspectorDetails.fromJson(Map<String, dynamic> json) {
     return InspectorDetails(
@@ -356,4 +371,3 @@ class InspectionReport {
     }
   }
 }
-

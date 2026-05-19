@@ -123,7 +123,6 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
     return score.clamp(0, 100);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -210,22 +209,24 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
             Block(),
             subTitle('BATCH PHOTOS'),
             SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: widget.batch.photo!
-                    .map(
-                      (path) => Row(
-                        children: [
-                          _buildFishImage(path),
-                          if (widget.batch.photo!.last != path)
-                            const SizedBox(width: 10),
-                        ],
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
+            (widget.batch.photo == null || widget.batch.photo!.isEmpty)
+                ? const Text("No photos available")
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: widget.batch.photo!
+                          .map(
+                            (path) => Row(
+                              children: [
+                                _buildFishImage(path),
+                                if (widget.batch.photo!.last != path)
+                                  const SizedBox(width: 10),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
 
             Block(),
             Container(
@@ -889,21 +890,35 @@ Widget subTitle(String title) {
   );
 }
 
-Widget _buildFishImage(String path) {
+Widget _buildFishImage(String? path) {
+  if (path == null || path.isEmpty) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(13),
+      child: Image.asset(
+        "images/grey.jpg",
+        width: 139,
+        height: 127,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  final imageUrl = "http://localhost:3000${path.replaceFirst('src', '')}";
+
   return ClipRRect(
     borderRadius: BorderRadius.circular(13),
     child: Image.network(
-      "http://localhost:3000${path.replaceFirst("src", "")}",
+      imageUrl,
       width: 139,
       height: 127,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) =>
-        Image.asset(
-          "images/grey.jpg",
-          width: 139,
-          height: 127,
-          fit: BoxFit.cover,
-        ),
+      // errorBuilder: (context, error, stackTrace) =>
+      //   Image.asset(
+      //     "images/grey.jpg",
+      //     width: 139,
+      //     height: 127,
+      //     fit: BoxFit.cover,
+      //   ),
     ),
   );
 }
