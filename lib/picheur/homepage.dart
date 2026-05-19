@@ -50,35 +50,45 @@ class _HomePagePState extends State<HomePageP> {
                         children: [
                           _buildHeader(data, isDark),
                           const SizedBox(height: 24),
-                          //_buildAddBatchCard(),
+                          _buildAddBatchCard(),
                           const SizedBox(height: 16),
-                          //_buildQuickActions(isDark),
-                          ///const SizedBox(height: 24),
-                          // _buildSectionHeader(Icons.analytics_outlined, "Performance Overview"),
-                          // const SizedBox(height: 12),
-                          // _buildPerformanceGrid(data,isDark),
-                          // const SizedBox(height: 24),
-                          // _buildSectionHeader(Icons.inventory_2_outlined, "Batch Status Tracker"),
-                          // const SizedBox(height: 12),
-                          // _buildStatusTracker(data,isDark),
-                          // const SizedBox(height: 24),
-                          // _buildSectionHeader(Icons.storefront_outlined, "Market Highlights", trailing: "View Market"),
-                          // const SizedBox(height: 12),
-                          // _buildpartieHeader(
-                          //   "Fish Type Distribution",
-                          //   subtitle: "Last 7 days",
-                          // ),
-                          // const SizedBox(height: 12),
-                          // _buildFishDistribution(data, isDark),
-                          // const SizedBox(height: 12,),
-                          // _buildpartieHeader(
-                          //   "Batch Status",
-                          //   subtitle: "Last 7 days",
-                          // ),
-                          // const SizedBox(height: 12),
-                          // _buildDonutChart(data),
-                          // // _buildMarketCard(data["marketItem"],isDark),
-                          // const SizedBox(height: 100), // Space for navbar
+                          _buildQuickActions(isDark),
+                          const SizedBox(height: 24),
+                          _buildSectionHeader(
+                            Icons.analytics_outlined,
+                            "Performance Overview",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildPerformanceGrid(data, isDark),
+                          const SizedBox(height: 24),
+                          _buildSectionHeader(
+                            Icons.inventory_2_outlined,
+                            "Batch Status Tracker",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildStatusTracker(data, isDark),
+                          const SizedBox(height: 24),
+                          _buildSectionHeader(
+                            Icons.storefront_outlined,
+                            "Market Highlights",
+                            trailing: "View Market",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildpartieHeader(
+                            "Fish Type Distribution",
+                            subtitle: "Last 7 days",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildFishDistribution(data, isDark),
+                          const SizedBox(height: 12),
+                          _buildpartieHeader(
+                            "Batch Status",
+                            subtitle: "Last 7 days",
+                          ),
+                          const SizedBox(height: 12),
+                          _buildDonutChart(data),
+                          // _buildMarketCard(data["marketItem"],isDark),
+                          const SizedBox(height: 100), // Space for navbar
                         ],
                       ),
                     ),
@@ -183,25 +193,57 @@ class _HomePagePState extends State<HomePageP> {
 
   //WIDGET DE DENOTE
   Widget _buildDonutChart(Map<String, dynamic> user) {
-    final chartData = user["batch_status_chart"] as Map<String, dynamic>?;
-    if (chartData == null) {
+    // Accept multiple possible shapes from the API:
+    // - batch_status_chart: { approved: {percentage:..}, ... , total: .. }
+    // - batch_status_trackers: { approved: {count:.., percentage: ..}, ... , total: .. }
+    // - batch_status_tracker: { approved: 1, pending: 0, ... } (counts only)
+    final rawChart =
+        user["batch_status_chart"] ??
+        user["batch_status_trackers"] ??
+        user["batch_status_tracker"];
+    if (rawChart == null) {
       return const SizedBox.shrink();
     }
 
-    final approved =
-        (chartData["approved"]?["percentage"] as num?)?.toDouble() ?? 0.0;
-    final expired =
-        (chartData["expired"]?["percentage"] as num?)?.toDouble() ?? 0.0;
-    final pending =
-        (chartData["pending"]?["percentage"] as num?)?.toDouble() ?? 0.0;
-    final rejected =
-        (chartData["rejected"]?["percentage"] as num?)?.toDouble() ?? 0.0;
-    final total = chartData["total"]?.toString() ?? "0";
+    final chartData = Map<String, dynamic>.from(rawChart as Map);
+
+    double parsePct(dynamic v) {
+      if (v == null) return 0.0;
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v) ?? 0.0;
+      if (v is Map) {
+        final p = v["percentage"] ?? v["pct"] ?? v["percent"];
+        if (p is num) return p.toDouble();
+        if (p is String) return double.tryParse(p) ?? 0.0;
+      }
+      return 0.0;
+    }
+
+    String pctLabel(dynamic src, double computed) {
+      if (src == null) return '${computed.toStringAsFixed(0)}%';
+      if (src is Map && src['percentage'] != null)
+        return src['percentage'].toString() + '%';
+      if (src is num) return src.toString() + '%';
+      if (src is String) {
+        if (src.trim().endsWith('%')) return src;
+        final n = double.tryParse(src);
+        if (n != null) return src + '%';
+        return src;
+      }
+      return '${computed.toStringAsFixed(0)}%';
+    }
+
+    final approved = parsePct(chartData["approved"]);
+    final expired = parsePct(chartData["expired"]);
+    final pending = parsePct(chartData["pending"]);
+    final rejected = parsePct(chartData["rejected"]);
+    final total = (chartData["total"] ?? chartData["batch"] ?? 0).toString();
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white,
+        //Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -284,26 +326,22 @@ class _HomePagePState extends State<HomePageP> {
                 _buildLegendItem(
                   color: const Color(0xFF0F6E56),
                   label: "Approved",
-                  percent: (chartData["approved"]?["percentage"] ?? "0")
-                      .toString(),
+                  percent: pctLabel(chartData["approved"], approved),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFF888780),
                   label: "Expired",
-                  percent: (chartData["expired"]?["percentage"] ?? "0")
-                      .toString(),
+                  percent: pctLabel(chartData["expired"], expired),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFEF9F27),
                   label: "Pending",
-                  percent: (chartData["pending"]?["percentage"] ?? "0")
-                      .toString(),
+                  percent: pctLabel(chartData["pending"], pending),
                 ),
                 _buildLegendItem(
                   color: const Color(0xFFE24B4A),
                   label: "Rejected",
-                  percent: (chartData["rejected"]?["percentage"] ?? "0")
-                      .toString(),
+                  percent: pctLabel(chartData["rejected"], rejected),
                 ),
               ],
             ),
@@ -377,7 +415,8 @@ class _HomePagePState extends State<HomePageP> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white, 
+        //Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -442,11 +481,11 @@ class _HomePagePState extends State<HomePageP> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF013D73),
+          color: const Color.fromARGB(255, 19, 35, 112),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF013D73).withValues(alpha: 0.3),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -457,7 +496,7 @@ class _HomePagePState extends State<HomePageP> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: const Color.fromARGB(255, 81, 128, 161),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -467,7 +506,7 @@ class _HomePagePState extends State<HomePageP> {
               ),
             ),
             const SizedBox(width: 16),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -479,9 +518,13 @@ class _HomePagePState extends State<HomePageP> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     "Log your latest catch",
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                    style: TextStyle(
+                      color:Colors.white,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -519,16 +562,26 @@ class _HomePagePState extends State<HomePageP> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, color: const Color(0xFF013D73), size: 28),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          Column(
+            //mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: const Color(0xFF013D73), size: 28),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
           ),
+          Icon(Icons.chevron_right, color: Color(0xFF013D73)),
         ],
-      ),
+      ) 
+      
+      
     );
   }
 
@@ -581,7 +634,8 @@ class _HomePagePState extends State<HomePageP> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white,
+        //Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -678,7 +732,8 @@ class _HomePagePState extends State<HomePageP> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white,
+        //Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -724,7 +779,8 @@ class _HomePagePState extends State<HomePageP> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white, 
+        //Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
