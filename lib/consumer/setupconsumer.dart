@@ -2,7 +2,7 @@ import 'package:fishapp/consumer/interfaceconsumer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
-import 'homePage.dart';
+import './profilconsumer.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
@@ -67,17 +67,17 @@ class _SetupConpageState extends State<SetupConspage> {
   }
 
   void _submit() {
-    // ✅ التحقق من الحقول المطلوبة
+
     if (_fullNameConsController.text.isEmpty || _deleveryaddressConsController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all required fields")),
       );
       return;
     }else{
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePageC()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
     }
 
-    // ✅ فقط إرسال البيانات إلى الخادم (بدون تنقل)
+ 
     context.read<AuthCubit>().submitSetupCons(
       fullNameCons: _fullNameConsController.text.trim(),
       nationalIdCons: _nationalIdConsController.text.trim(),
@@ -108,7 +108,7 @@ class _SetupConpageState extends State<SetupConspage> {
         listener: (context, state) {
           if (state is SetupSuccess) {
             // ✅ التنقل يحدث هنا بعد نجاح العملية
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePageC()));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
           }

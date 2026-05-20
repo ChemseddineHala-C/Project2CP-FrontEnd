@@ -177,13 +177,13 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => HomePageC()));
           }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Colors.grey)),
           IconButton(onPressed: () {
-          }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Colors.grey)),
+          }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Color(0xFFD5A439), size: 30)),
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
           }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
-          }, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFFD5A439), size: 30)),
+          }, icon: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey)),
         ],
       ),
     );

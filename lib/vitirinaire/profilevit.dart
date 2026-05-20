@@ -9,6 +9,7 @@ import 'editprofilvit.dart';
 import 'inspectionHistoryPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../signin/signup/splage.dart';
+final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<void> _clearSession() async {
     await storage.delete(key: "token");
     await storage.delete(key: "role");

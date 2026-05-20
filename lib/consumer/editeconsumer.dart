@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:file_picker/file_picker.dart';  // ✅ تغيير من image_picker إلى file_picker
+import 'package:file_picker/file_picker.dart';  
 
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
@@ -262,7 +262,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                       ? NetworkImage('http://localhost:3000'+networkImage.toString().replaceFirst('src',''))
-                      : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) 
+                      : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo')) 
                   as ImageProvider,
                 ),
               ),
