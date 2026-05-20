@@ -7,6 +7,13 @@ import '../signin/cubit/authstate.dart';
 import 'dashboardVet.dart';
 import 'editprofilvit.dart';
 import 'inspectionHistoryPage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../signin/signup/splage.dart';
+Future<void> _clearSession() async {
+    await storage.delete(key: "token");
+    await storage.delete(key: "role");
+}
+
 
 class ProfilevitPage extends StatefulWidget {
   const ProfilevitPage({super.key});
@@ -79,7 +86,35 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                     _buildSectionHeader("SETTINGS"),
                     const SizedBox(height: 8),
                     _buildSettingsCard(),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Container(
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () => {
+                            _clearSession(),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => SplashPage()),
+                            ),
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryTeal,
+                            foregroundColor: Color(0xFFFFFFFF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            alignment: Alignment.center,
+                          ), 
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("log out"),
+                              Icon(Icons.logout_outlined),
+                            ],
+                          )),
+                      ), 
+                    )
                   ],
                 ),
               ),

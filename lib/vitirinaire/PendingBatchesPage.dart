@@ -4,6 +4,7 @@ import './VetInspectionPage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './object.dart';
+import './dashboardVet.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -96,7 +97,14 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
       backgroundColor: Color(0xFFF5F7F9),
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const InspectorDashboard(),
+              ),
+            ),  
+          },
           icon: Icon(Icons.arrow_back),
           color: Color(0xFF0F172A),
         ),

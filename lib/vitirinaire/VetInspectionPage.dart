@@ -749,15 +749,30 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
+
+                            if (_selectedSmell == null ||
+                                _selectedGillColor == null ||
+                                _selectedFleshFirmness == null ||
+                                _selectedEyeClarity == null ||
+                                _tempController.text.isEmpty || double.tryParse(_tempController.text) == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please complete all quality inspection fields"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }  
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => FailedvetPage(
                                   batch: widget.batch,
-                                  op1: _selectedSmell.toString(),
-                                  op2: _selectedGillColor.toString(),
-                                  op3: _selectedFleshFirmness.toString(),
-                                  op4: _selectedEyeClarity.toString(),
+                                  op1: _selectedSmell!,
+                                  op2: _selectedGillColor!,
+                                  op3: _selectedFleshFirmness!,
+                                  op4: _selectedEyeClarity!,
                                   op5: double.parse(_tempController.text),
                                   op6: _parasitesPresent,
                                   op7: _freshnessScore,
@@ -791,15 +806,30 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            
+                            if (_selectedSmell == null ||
+                                _selectedGillColor == null ||
+                                _selectedFleshFirmness == null ||
+                                _selectedEyeClarity == null ||
+                                _tempController.text.isEmpty || double.tryParse(_tempController.text) == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please complete all quality inspection fields"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SuccessedVetPage(
                                   batch: widget.batch,
-                                  op1: _selectedSmell.toString(),
-                                  op2: _selectedGillColor.toString(),
-                                  op3: _selectedFleshFirmness.toString(),
-                                  op4: _selectedEyeClarity.toString(),
+                                  op1: _selectedSmell!,
+                                  op2: _selectedGillColor!,
+                                  op3: _selectedFleshFirmness!,
+                                  op4: _selectedEyeClarity!,
                                   op5: double.parse(_tempController.text),
                                   op6: _parasitesPresent,
                                   op7: _freshnessScore,

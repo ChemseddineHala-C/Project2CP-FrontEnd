@@ -581,7 +581,7 @@ class UserItemCard extends StatelessWidget {
                                 ],
                               ),
                               Text(
-                                "${user.role.replaceAll('s', '')} ID: ${user.id}",
+                                "${user.role.compareTo("Fishermans") == 0 ? "Fisherman":user.role.replaceAll('s', '')} ID: ${user.id}",
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,

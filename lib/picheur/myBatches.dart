@@ -50,6 +50,7 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
       );
 
       if (response.statusCode == 200) {
+        print(response.body);
         List<dynamic> jsonArray = jsonDecode(response.body);
         return FishBatch.fromJsonList(jsonArray);
       } else {

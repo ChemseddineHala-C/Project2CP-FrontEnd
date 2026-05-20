@@ -5,12 +5,18 @@ import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import '../signin/cubit/themecubit.dart';
 import 'batchDetails.dart';
 import 'editeconsumer.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../signin/signup/splage.dart';
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<void> _clearSession() async {
+    await storage.delete(key: "token");
+    await storage.delete(key: "role");
+}
 class ProfileConsumerPage extends StatefulWidget {
 
   const ProfileConsumerPage({super.key});
@@ -70,7 +76,35 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
                     _buildSectionHeader("SETTINGS"),
                     const SizedBox(height: 8),
                     _buildSettingsCard(isDark),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Container(
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () => {
+                            _clearSession(),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => SplashPage()),
+                            ),
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFD5A439),
+                            foregroundColor: Color(0xFFFFFFFF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            alignment: Alignment.center,
+                          ), 
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("log out"),
+                              Icon(Icons.logout_outlined),
+                            ],
+                          )),
+                      ), 
+                    )
                   ],
                 ),
               ),
