@@ -332,7 +332,7 @@ class InspectionCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => BatchReportPage(id: inspection.id!.toInt())),
+                  MaterialPageRoute(builder: (context) => BatchReportPage(batchId: inspection.id!.toInt(), id: inspection.batchId!.toInt(),)),
                 );
               },
               icon: Icon(Icons.description_outlined, size: 18),

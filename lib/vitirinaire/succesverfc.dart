@@ -7,6 +7,7 @@ import '../signin/cubit/authstate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../vitirinaire/PendingBatchesPage.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -45,10 +46,10 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
 
   Future<void> submitInspection({
     required int batchId,
-    required String smell,
-    required String gillColor,
-    required String fleshFirmness,
-    required String eyeClarity,
+    required String? smell,
+    required String? gillColor,
+    required String? fleshFirmness,
+    required String? eyeClarity,
     required double internalTemperature,
     required bool parasitesPresent,
     required int freshnessScore,
@@ -57,6 +58,20 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
     required BuildContext context,
   }) async {
     try {
+      // if ((smell!.compareTo("null") == 0) ||
+      //     (gillColor!.compareTo("null") == 0) ||
+      //     (eyeClarity!.compareTo("null") == 0) ||
+      //     (fleshFirmness!.compareTo("null") == 0)) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text("All fields are required"),
+      //       backgroundColor: Colors.red,
+      //     ),
+      //   );
+      //   Navigator.pop(context);
+      //   return;
+      // }
+
       String? token = await _getToken();
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -95,16 +110,20 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
             backgroundColor: Colors.green,
           ),
         );
-        return;
+        //return;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed: ${response.body}"),
+            content: Text("${response.body}"),
             backgroundColor: Colors.red,
           ),
         );
-        return;
+        //return;
       }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PendingBatchesPage()),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
@@ -122,15 +141,14 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/inspections/${widget.batch.id}/certificate"),
-        headers: {
-          "Authorization": "Bearer $token",
-        },
+        Uri.parse(
+          "http://localhost:3000/api/inspections/${widget.batch.id}/certificate",
+        ),
+        headers: {"Authorization": "Bearer $token"},
       );
 
       print("STATUS: ${response.statusCode}");
       print("RESPONSE: ${response.body}");
-      
     } catch (e) {
       print("Error: $e");
     }
@@ -185,49 +203,49 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
         ),
         centerTitle: true,
       ),
-      body: _isLoading?
-        const Center(child: CircularProgressIndicator()):
-        SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatusCard(isDark),
-            const SizedBox(height: 32),
-            _buildSectionTitle("Batch Identity", isDark),
-            const SizedBox(height: 12),
-            _buildIdentityCard(isDark),
-            const SizedBox(height: 24),
-            _buildSectionTitle("Notes", isDark),
-            const SizedBox(height: 12),
-            _buildApprovedInputCard(
-              isDark,
-            ), //pour cause de fefutation de envoyer id de pecheur et le text
-            const SizedBox(height: 24),
-            _buildSectionTitle("Expiration Date", isDark),
-            const SizedBox(height: 12),
-            _buildExpirationCard("expiryDate", "timeLeft", isDark),
-            const SizedBox(height: 24),
-            _buildActionCard(
-              icon: Icons.picture_as_pdf_outlined,
-              title: "Digital certificate",
-              subtitle: "PDF format",
-              actionIcon: Icons.download_outlined,
-              onTap: () => {DownloadCer()},
-              isDark: isDark,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatusCard(isDark),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle("Batch Identity", isDark),
+                  const SizedBox(height: 12),
+                  _buildIdentityCard(isDark),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle("Notes", isDark),
+                  const SizedBox(height: 12),
+                  _buildApprovedInputCard(
+                    isDark,
+                  ), //pour cause de fefutation de envoyer id de pecheur et le text
+                  const SizedBox(height: 24),
+                  _buildSectionTitle("Expiration Date", isDark),
+                  const SizedBox(height: 12),
+                  _buildExpirationCard("expiryDate", "timeLeft", isDark),
+                  const SizedBox(height: 24),
+                  _buildActionCard(
+                    icon: Icons.picture_as_pdf_outlined,
+                    title: "Digital certificate",
+                    subtitle: "PDF format",
+                    actionIcon: Icons.download_outlined,
+                    onTap: () => {DownloadCer()},
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActionCard(
+                    icon: Icons.remove_red_eye_outlined,
+                    title: "View Batch Report",
+                    subtitle: "",
+                    actionIcon: Icons.open_in_new_outlined,
+                    onTap: () {},
+                    isDark: isDark,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            _buildActionCard(
-              icon: Icons.remove_red_eye_outlined,
-              title: "View Batch Report",
-              subtitle: "",
-              actionIcon: Icons.open_in_new_outlined,
-              onTap: () {},
-              isDark: isDark,
-            ),
-          ],
-        ),
-      ),
     );
   }
 

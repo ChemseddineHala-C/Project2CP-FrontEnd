@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 import 'objects.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class BatchDetailspage extends StatefulWidget {
   final FishBatch batch;
@@ -412,34 +421,38 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                   // ),
                   // const SizedBox(height: 15),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    height: 56,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF023E77),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
+                  if (widget.batch.status!.compareTo('pending') != 0)
+                    SizedBox(
+                      height: 56,
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          print(widget.batch.boatId);
+                          DownloadCer("${widget.batch.id}", context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF023E77),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.save_alt_outlined, size: 20),
+                            SizedBox(width: 10),
+                            Text(
+                              "Download Receipt (PDF)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.save_alt_outlined, size: 20),
-                          SizedBox(width: 10),
-                          Text(
-                            "Download Receipt (PDF)",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -611,6 +624,74 @@ class _BatchDetailsState extends State<BatchDetailspage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+Future<void> DownloadCer(String id, BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      print("No token found");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No token found"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show loading
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
+
+    final response = await http.get(
+      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("STATUS: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      // Linux Downloads folder
+      String homeDir = Platform.environment['HOME'] ?? '';
+      Directory downloadDir = Directory('$homeDir/Downloads');
+
+      // Create Downloads folder if it doesn't exist
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      // Save file
+      String fileName = "certificate_$id.pdf";
+      String filePath = '${downloadDir.path}/$fileName';
+      File file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Show success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Saved to: $filePath"),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      print("File saved to: $filePath");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed: ${response.statusCode}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } catch (e) {
+    print("Error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
     );
   }
 }

@@ -3,6 +3,9 @@ import './object.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:io';
+//import 'package:path_provider/path_provider.dart';
+//import 'package:file_picker/file_picker.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -11,7 +14,8 @@ Future<String?> _getToken() async {
 
 class BatchReportPage extends StatefulWidget {
   final int id;
-  const BatchReportPage({super.key, required this.id});
+  final int batchId;
+  const BatchReportPage({super.key, required this.batchId, required this.id});
 
   @override
   State<BatchReportPage> createState() => _BatchReportPageState();
@@ -64,7 +68,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
     setState(() {
       _isLoading = true;
     });
-    InspectionReport? report = await getInspectionReport(widget.id);
+    InspectionReport? report = await getInspectionReport(widget.batchId);
     setState(() {
       _report = report;
       _isLoading = false;
@@ -198,7 +202,10 @@ class _BatchReportPageState extends State<BatchReportPage> {
             children: [
               _infoTile("CATCH DATE", _formatDate(batchInfo.dateCaught)),
               const SizedBox(width: 12),
-              _infoTile("INSPECTION DATE", batchInfo.getFormattedInspectionDate()),
+              _infoTile(
+                "INSPECTION DATE",
+                batchInfo.getFormattedInspectionDate(),
+              ),
             ],
           ),
         ],
@@ -232,8 +239,9 @@ class _BatchReportPageState extends State<BatchReportPage> {
           children: [
             Text(
               title,
+              maxLines: 3,
               style: TextStyle(
-                fontSize: isMain ? 18 : 10,
+                fontSize: 10,
                 fontWeight: FontWeight.w800,
                 color: isMain
                     ? const Color(0xFF01A896)
@@ -247,7 +255,9 @@ class _BatchReportPageState extends State<BatchReportPage> {
                 fontFamily: 'Inter',
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isMain ? const Color(0xFF3F484C) : const Color(0xFF191C1D),
+                color: isMain
+                    ? const Color(0xFF3F484C)
+                    : const Color(0xFF191C1D),
               ),
             ),
           ],
@@ -258,7 +268,8 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
   Widget _buildInspectionDetailCard() {
     // ✅ التحقق من وجود البيانات
-    if (_report!.inspectorDetails == null || _report!.qualityInspection == null) {
+    if (_report!.inspectorDetails == null ||
+        _report!.qualityInspection == null) {
       return const SizedBox.shrink();
     }
 
@@ -301,11 +312,31 @@ class _BatchReportPageState extends State<BatchReportPage> {
           const SizedBox(height: 10),
           _freshnessBar((quality.freshnessScore ?? 0).toDouble()),
           _qualityCard(Icons.air, "SMELL", quality.smell ?? 'N/A'),
-          _qualityCard(Icons.visibility_outlined, "EYE CLARITY", quality.eyeClarity ?? 'N/A'),
-          _qualityCard(Icons.front_hand_outlined, "FLESH FIRMNESS", quality.fleshFirmness ?? 'N/A'),
-          _qualityCard(Icons.water_drop_outlined, "GILL COLOR", quality.gillColor ?? 'N/A'),
-          _qualityCard(Icons.thermostat, "TEMPERATURE", "${quality.internalTemperature ?? 0}°C"),
-          _qualityCard(Icons.bug_report, "PARASITES", (quality.parasitesPresent == true) ? "Present" : "Not Present"),
+          _qualityCard(
+            Icons.visibility_outlined,
+            "EYE CLARITY",
+            quality.eyeClarity ?? 'N/A',
+          ),
+          _qualityCard(
+            Icons.front_hand_outlined,
+            "FLESH FIRMNESS",
+            quality.fleshFirmness ?? 'N/A',
+          ),
+          _qualityCard(
+            Icons.water_drop_outlined,
+            "GILL COLOR",
+            quality.gillColor ?? 'N/A',
+          ),
+          _qualityCard(
+            Icons.thermostat,
+            "TEMPERATURE",
+            "${quality.internalTemperature ?? 0}°C",
+          ),
+          _qualityCard(
+            Icons.bug_report,
+            "PARASITES",
+            (quality.parasitesPresent == true) ? "Present" : "Not Present",
+          ),
         ],
       ),
     );
@@ -313,7 +344,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
   Widget _inspectorTile(String full_name, String ID, String picture) {
     // ✅ التحقق من صحة رابط الصورة
-    final imageUrl = picture.isNotEmpty 
+    final imageUrl = picture.isNotEmpty
         ? "http://localhost:3000/${picture.replaceFirst("src/", "")}"
         : null;
 
@@ -327,19 +358,23 @@ class _BatchReportPageState extends State<BatchReportPage> {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(40),  // ✅ شكل دائري
+            borderRadius: BorderRadius.circular(40), // ✅ شكل دائري
             child: imageUrl != null
                 ? Image.network(
                     imageUrl,
-                    width: 40,           // ✅ العرض
-                    height: 40,          // ✅ الارتفاع
+                    width: 40, // ✅ العرض
+                    height: 40, // ✅ الارتفاع
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         width: 40,
                         height: 40,
                         color: const Color(0xFFE2E8F0),
-                        child: const Icon(Icons.person_2_outlined, color: Color(0xFF01A896), size: 40),
+                        child: const Icon(
+                          Icons.person_2_outlined,
+                          color: Color(0xFF01A896),
+                          size: 40,
+                        ),
                       );
                     },
                     loadingBuilder: (context, child, loadingProgress) {
@@ -361,7 +396,11 @@ class _BatchReportPageState extends State<BatchReportPage> {
                       color: Color(0xFFE2E8F0),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.person_2_outlined, color: Color(0xFF01A896), size: 40),
+                    child: const Icon(
+                      Icons.person_2_outlined,
+                      color: Color(0xFF01A896),
+                      size: 40,
+                    ),
                   ),
           ),
           const SizedBox(width: 12),
@@ -532,7 +571,10 @@ class _BatchReportPageState extends State<BatchReportPage> {
       width: double.infinity,
       height: 55,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          print(widget.batchId);
+          DownloadCer("${widget.batchId}", context);
+        },
         icon: const Icon(Icons.picture_as_pdf_outlined),
         label: const Text(
           "Download Certificate (PDF)",
@@ -562,7 +604,7 @@ class Block extends StatelessWidget {
 
 Color _pointColor(String str) {
   Color _tmpColor = Colors.grey.shade300;
-  
+
   // ✅ للرائحة (Smell)
   if (str.contains("Neutral") || str.contains("Sea-like")) {
     _tmpColor = const Color(0xFFD7FFE1);
@@ -571,18 +613,20 @@ Color _pointColor(String str) {
   } else if (str.contains("Sour") || str.contains("Ammonia")) {
     _tmpColor = const Color(0xFFFFD7D7);
   }
-  
+
   // ✅ للون الخياشيم (Gill Color)
   if (str.contains("Bright Red")) {
     _tmpColor = const Color(0xFFD7FFE1);
   } else if (str.contains("Brownish") || str.contains("Dark Red")) {
     _tmpColor = const Color(0xFFFFFCD7);
-  } else if (str.contains("Gray") || str.contains("Green") || str.contains("Black")) {
+  } else if (str.contains("Gray") ||
+      str.contains("Green") ||
+      str.contains("Black")) {
     _tmpColor = const Color(0xFFFFD7D7);
   } else if (str.contains("Not a Mesure")) {
     _tmpColor = const Color(0xFFF2F2F2);
   }
-  
+
   // ✅ لقوام اللحم (Flesh Firmness)
   if (str.contains("Firm") && !str.contains("Slightly")) {
     _tmpColor = const Color(0xFFD7FFE1);
@@ -593,7 +637,7 @@ Color _pointColor(String str) {
   } else if (str.contains("Mushy")) {
     _tmpColor = const Color(0xFFFFD7D7);
   }
-  
+
   // ✅ لوضوح العين (Eye Clarity)
   if (str.contains("Clear") || str.contains("Bright")) {
     _tmpColor = const Color(0xFFD7FFE1);
@@ -604,7 +648,7 @@ Color _pointColor(String str) {
   } else if (str.contains("Sunken") || str.contains("Opaque")) {
     _tmpColor = const Color(0xFFFFD7D7);
   }
-  
+
   // ✅ لدرجة الحرارة (Temperature)
   if (str.contains("°C")) {
     try {
@@ -620,13 +664,81 @@ Color _pointColor(String str) {
       // إذا فشل التحويل، استخدم اللون الافتراضي
     }
   }
-  
+
   // ✅ للطفيليات (Parasites)
   if (str.contains("Not Present")) {
     _tmpColor = const Color(0xFFD7FFE1);
   } else if (str.contains("Present")) {
     _tmpColor = const Color(0xFFFFD7D7);
   }
-  
+
   return _tmpColor;
+}
+
+Future<void> DownloadCer(String id, BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      print("No token found");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No token found"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show loading
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
+
+    final response = await http.get(
+      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("STATUS: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      // Linux Downloads folder
+      String homeDir = Platform.environment['HOME'] ?? '';
+      Directory downloadDir = Directory('$homeDir/Downloads');
+
+      // Create Downloads folder if it doesn't exist
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      // Save file
+      String fileName = "certificate_$id.pdf";
+      String filePath = '${downloadDir.path}/$fileName';
+      File file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Show success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Saved to: $filePath"),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      print("File saved to: $filePath");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed: ${response.statusCode}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } catch (e) {
+    print("Error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+    );
+  }
 }
