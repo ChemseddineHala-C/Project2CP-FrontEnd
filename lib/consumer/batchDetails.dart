@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './batchReportPageC.dart';
+import './shoppingCartPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,7 +25,7 @@ class _BatchDetailsState extends State<BatchDetails> {
   bool _isLoading = true;
   BatchWithInspection? _batch;
 
-  double _quantity = 3.0;
+  double _quantity = 0.5;
   int _currentPhotoIndex = 0;
   late PageController _pageController;
   String _deliveryAddress = "Rue El wiam, Sidi Bel Abbes";
@@ -53,7 +54,9 @@ class _BatchDetailsState extends State<BatchDetails> {
     });
   }
 
-  static Future<BatchWithInspection?> getBatchWithInspection(int batchId) async {
+  static Future<BatchWithInspection?> getBatchWithInspection(
+    int batchId,
+  ) async {
     try {
       String? token = await _getToken();
       if (token == null) {
@@ -85,7 +88,84 @@ class _BatchDetailsState extends State<BatchDetails> {
     }
   }
 
-  // ✅ حساب السعر الإجمالي
+  static Future<void> addToCart({
+    required int batchId,
+    required double quantity,
+    required BuildContext context,
+  }) async {
+    if (batchId <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Batch ID invalide"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("La quantité doit être supérieure à 0"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Token non trouvé. Veuillez vous reconnecter."),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // ✅ إنشاء الطلب
+      final response = await http.post(
+        Uri.parse("http://localhost:3000/api/cart/items"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"batch_id": batchId, "quantity_kg": quantity}),
+      );
+
+      print("ADD TO CART STATUS: ${response.statusCode}");
+      print("ADD TO CART RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "✅ Ajouté au panier!"),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("❌ Erreur: ${response.body}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      print("Error adding to cart: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Erreur: $e"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+  }
+
   double get _totalPrice {
     if (_batch == null) return 0;
     return _quantity * (_batch!.pricePerKg ?? 0);
@@ -98,7 +178,7 @@ class _BatchDetailsState extends State<BatchDetails> {
     final created = _batch!.createdAt!;
     final expiryDate = created.add(const Duration(days: 3));
     final remaining = expiryDate.difference(now);
-    
+
     if (remaining.isNegative) return "Expired";
     final hoursLeft = remaining.inHours;
     if (hoursLeft < 24) return "${hoursLeft}H Left";
@@ -138,7 +218,9 @@ class _BatchDetailsState extends State<BatchDetails> {
               setState(() => _deliveryAddress = _addressController.text);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD5A43A)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD5A43A),
+            ),
             child: const Text("OK", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -295,7 +377,11 @@ class _BatchDetailsState extends State<BatchDetails> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(
-                  child: Icon(Icons.no_photography, size: 50, color: Colors.grey),
+                  child: Icon(
+                    Icons.no_photography,
+                    size: 50,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ],
@@ -322,7 +408,10 @@ class _BatchDetailsState extends State<BatchDetails> {
                 children: [
                   // Category Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0x33D5A439),
                       borderRadius: BorderRadius.circular(10),
@@ -411,7 +500,11 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.anchor, color: Color(0xFFDADADA), size: 18),
+                        const Icon(
+                          Icons.anchor,
+                          color: Color(0xFFDADADA),
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,7 +570,9 @@ class _BatchDetailsState extends State<BatchDetails> {
                               ),
                               const SizedBox(height: 6),
                               LinearPercentIndicator(
-                                percent: (_batch!.inspection?.freshnessScore ?? 0) / 100,
+                                percent:
+                                    (_batch!.inspection?.freshnessScore ?? 0) /
+                                    100,
                                 lineHeight: 6,
                                 backgroundColor: const Color(0xFFE2E8F0),
                                 progressColor: const Color(0xFFD5A439),
@@ -555,7 +650,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                   // Digital Certificate
                   GestureDetector(
                     onTap: () => {
-                      DownloadCer("${_batch!.inspection!.id}", context)
+                      DownloadCer("${_batch!.inspection!.id}", context),
                     },
                     child: Container(
                       padding: const EdgeInsets.all(11),
@@ -613,7 +708,10 @@ class _BatchDetailsState extends State<BatchDetails> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BatchReportPage(id: _batch!.inspection!.id!,batchId: _batch!.id!),
+                            builder: (context) => BatchReportPage(
+                              id: _batch!.inspection!.id!,
+                              batchId: _batch!.id!,
+                            ),
                           ),
                         );
                       }
@@ -808,7 +906,15 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            print("add to cart: ${_quantity}kg");
+                            addToCart(
+                              batchId: _batch!.id!,
+                              quantity: _quantity,
+                              context: context,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ShoppingCartPage()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFADADAD),
