@@ -304,7 +304,9 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
           IconButton(onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
           }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFFD5A439), size: 30)),
+          IconButton(onPressed: () {
+            context.read<AuthCubit>().fetchConsumerProfile();
+          }, icon: Icon(Icons.person, color: isDark ? const Color(0xFF01A896) : const Color(0xFFD5A439), size: 30)),
         ],
       ),
     );

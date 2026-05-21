@@ -301,13 +301,17 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child:
-                  IconButton(onPressed: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => NotificationVitPage()),
-                    );
-                  }, icon: const Icon(Icons.notifications_outlined),),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationVitPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.notifications_outlined),
+                  ),
                 ),
                 const Positioned(
                   right: 8,
@@ -539,7 +543,7 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
 
   Widget _buildDonutChartCard() {
     final status = _dashboardData!.inspectionStatus;
-    
+
     // Calculate total for validation
     final total = status.total;
     final approvedPct = status.approved.percentage;
@@ -668,10 +672,7 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
             Container(
               width: 10,
               height: 10,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
             Text(
@@ -736,7 +737,9 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              _loadDashboardData();
+            },
             icon: _navIcon(Icons.home_outlined, true),
           ),
           IconButton(

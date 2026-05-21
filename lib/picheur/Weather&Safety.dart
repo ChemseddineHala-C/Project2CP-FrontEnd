@@ -25,6 +25,9 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
   bool _weatherLoaded = false;
 
   Future<void> _getWeather() async {
+    setState(() {
+      _weatherLoaded = true;
+    });
     try {
       // Vérifier les permissions avant de demander la position
       LocationPermission permission = await Geolocator.checkPermission();
@@ -103,6 +106,9 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
     } catch (e) {
       debugPrint("Error fetching weather: $e");
     }
+    setState(() {
+      _weatherLoaded = false;
+    });
   }
 
   String _getUpdatedTime() {
@@ -152,106 +158,111 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
         shadowColor: Colors.black,
         elevation: 3,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "CURRENT WEATHER",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                ),
-                Text(
-                  _getUpdatedTime(),
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12,
+      body: _weatherLoaded
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "CURRENT WEATHER",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        _getUpdatedTime(),
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: WeatherInfo(
+                          title: "temp",
+                          value: "${_temp ?? "--"}°C",
+                          icon1: Icons.thermostat,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: WeatherInfo(
+                          title: "wind",
+                          value: "${_wind ?? "--"}m/s",
+                          icon1: Icons.air_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: WeatherInfo(
+                          title: "waves",
+                          value: "${_waveHeight ?? "--"}m",
+                          icon1: Icons.waves,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: WeatherInfo(
+                          title: "visibility",
+                          value: "${_visibility ?? "--"}km",
+                          icon1: Icons.visibility,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Navigation Map",
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                  ),
+                  const SizedBox(height: 336),
+                  const SizedBox(height: 20),
+                  _buildSOSButtons(),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: cardInfo(
+                          const Color(0xFF033F78),
+                          Icons.waves_outlined,
+                          "TIDE TIME",
+                          "High",
+                          _formatTime(_highTide),
+                          "Low",
+                          _formatTime(_lowTide),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: cardInfo(
+                          const Color(0xFFF97316),
+                          Icons.wb_sunny_outlined,
+                          "DAILY LIGHT",
+                          "RISE",
+                          _formatTime(_sunrise),
+                          "SET",
+                          _formatTime(_sunset),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: WeatherInfo(
-                    title: "temp",
-                    value: "${_temp ?? "--"}°C",
-                    icon1: Icons.thermostat,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: WeatherInfo(
-                    title: "wind",
-                    value: "${_wind ?? "--"}m/s",
-                    icon1: Icons.air_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: WeatherInfo(
-                    title: "waves",
-                    value: "${_waveHeight ?? "--"}m",
-                    icon1: Icons.waves,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: WeatherInfo(
-                    title: "visibility",
-                    value: "${_visibility ?? "--"}km",
-                    icon1: Icons.visibility,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Navigation Map",
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-            ),
-            const SizedBox(height: 336),
-            const SizedBox(height: 20),
-            _buildSOSButtons(),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: cardInfo(
-                    const Color(0xFF033F78),
-                    Icons.waves_outlined,
-                    "TIDE TIME",
-                    "High",
-                    _formatTime(_highTide),
-                    "Low",
-                    _formatTime(_lowTide),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: cardInfo(
-                    const Color(0xFFF97316),
-                    Icons.wb_sunny_outlined,
-                    "DAILY LIGHT",
-                    "RISE",
-                    _formatTime(_sunrise),
-                    "SET",
-                    _formatTime(_sunset),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -335,10 +346,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => WeatherSafetypage()),
-              );
+              _getWeather();
             },
             child: _navIcon(Icons.remove_red_eye_outlined, true),
           ),

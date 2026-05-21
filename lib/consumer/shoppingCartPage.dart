@@ -12,7 +12,6 @@ Future<String?> _getToken() async {
   return await storage.read(key: "token");
 }
 
-
 class CartApiService {
   static Future<Cart?> getCart() async {
     try {
@@ -105,8 +104,6 @@ class CartApiService {
   }
 }
 
-
-
 class ShoppingCartPage extends StatefulWidget {
   const ShoppingCartPage({super.key});
 
@@ -119,21 +116,20 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   Cart? _cart;
   bool _isUpdating = false;
 
-
   Future<void> placeOrder(BuildContext context) async {
     try {
-        Cart? cart = await CartApiService.getCart();
-    if (cart == null || cart.items == null || cart.items!.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Your cart is empty"),
-            backgroundColor: Colors.red,
-          ),
-        );
+      Cart? cart = await CartApiService.getCart();
+      if (cart == null || cart.items == null || cart.items!.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Your cart is empty"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
       }
-      return;
-    }
 
       String? token = await _getToken();
       if (token == null) {
@@ -164,14 +160,15 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("${data['message']}, orderId:${data['order_id']}, Total:${data['total_price']}DA"),
+              content: Text(
+                "${data['message']}, orderId:${data['order_id']}, Total:${data['total_price']}DA",
+              ),
               backgroundColor: Colors.green,
             ),
           );
         }
 
         _fetchCart();
-        
       } else {
         final data = jsonDecode(response.body);
         if (context.mounted) {
@@ -187,10 +184,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       print("Error placing order: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error: $e"),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
         );
       }
     }
@@ -717,7 +711,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              _fetchCart();
+            },
             icon: Icon(
               Icons.shopping_cart,
               color: isDark ? Colors.white54 : const Color(0xFFD5A439),
@@ -868,4 +864,3 @@ class Cart {
     );
   }
 }
-

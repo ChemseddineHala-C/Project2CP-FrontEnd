@@ -562,10 +562,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
-              );
+              context.read<AuthCubit>().fetchProfile();
             },
             icon: Icon(
               Icons.person,
