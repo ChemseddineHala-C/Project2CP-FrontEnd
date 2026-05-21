@@ -1,5 +1,6 @@
 import 'package:fishapp/consumer/batchDetails.dart';
 import 'package:fishapp/consumer/myOrderPage.dart';
+import 'package:fishapp/consumer/notifieCons.dart';
 import 'package:fishapp/consumer/profilconsumer.dart';
 import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
@@ -165,11 +166,13 @@ class _HomePageCState extends State<HomePageC> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.notifications,
-                    color: Colors.black,
-                    size: 22,
-                  ),
+                  child:
+                  IconButton(onPressed: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => NotificationConsPage()),
+                    );
+                  }, icon: const Icon(Icons.notifications_outlined),),
                 ),
                 const Positioned(
                   right: 8,
