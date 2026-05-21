@@ -4,10 +4,14 @@ import 'package:fishapp/consumer/profilconsumer.dart';
 import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 import './batchDetails.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../signin/cubit/themecubit.dart';
-import '../signin/cubit/authstate.dart';
-import '../signin/cubit/authcubit.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class HomePageC extends StatefulWidget {
   const HomePageC({super.key});
@@ -18,31 +22,102 @@ class HomePageC extends StatefulWidget {
 
 class _HomePageCState extends State<HomePageC> {
   final TextEditingController _searchController = TextEditingController();
-  // Place this with your other variables (like _isLoading)
   String _selectedCategory = "All";
-  bool _isLoading = false;
-  List<ProductItem> _mockProducts = [];
+  Customer? _customer;
+  bool _isLoading = true;
 
-  void _onSearchChanged(String value) {
+  static Future<Customer?> getCustomerProfile() async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse("http://localhost:3000/api/batches/market"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return Customer.fromJson(decoded);
+      } else {
+        print("Failed to get customer profile");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching customer profile: $e");
+      return null;
+    }
+  }
+
+ 
+  Future<void> _fetchCustomer() async {
     setState(() {
-      // This empty setState triggers the _filteredProducts getter to re-calculate
+      _isLoading = true;
+    });  
+    Customer? customer = await getCustomerProfile();
+    _customer = customer;
+    setState(() {
+      _isLoading = false;
     });
   }
 
-  List<ProductItem> get _filteredProducts {
+  @override
+  void initState() {
+    super.initState();
+    _fetchCustomer();
+  }
+
+  Widget _buildProfilePhoto() {
+    final photoUrl = _customer?.getProfilePhotoUrl();
+    
+    // ✅ التحقق من null وعدم وجود قيمة
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      return CircleAvatar(
+        radius: 22,
+        backgroundColor: const Color(0xFFF1F5F9),
+        backgroundImage: NetworkImage(photoUrl),
+        onBackgroundImageError: (_, __) {},
+      );
+    }
+    
+    // ✅ حالة عدم وجود صورة
+    return const CircleAvatar(
+      radius: 22,
+      backgroundColor: Color(0xFFF1F5F9),
+      child: Icon(Icons.person, color: Color(0xFF023E77)),
+    );
+  }
+
+  
+  void _onSearchChanged(String value) {
+    setState(() {}); // فقط لإعادة بناء الواجهة بعد تغيير النص
+  }
+
+
+ 
+  List<CustomerBatch> get _filteredProducts {
+    if (_customer?.batches == null) return [];
+    
     final query = _searchController.text.toLowerCase();
-
-    return _mockProducts.where((product) {
+    
+    return _customer!.batches!.where((batch) {
       // 1. Check Category Match
-      bool matchesCategory =
-          _selectedCategory == "All" ||
-          product.category.toLowerCase() == _selectedCategory.toLowerCase();
-
-      // 2. Check Search Match (Fish Name or Fisher Name)
-      bool matchesSearch =
-          product.name.toLowerCase().contains(query) ||
-          product.fisher.toLowerCase().contains(query);
-
+      bool matchesCategory = _selectedCategory == "All" ||
+          (batch.category?.toLowerCase() == _selectedCategory.toLowerCase());
+      
+      // 2. Check Search Match (Fish Name or Fisherman Name)
+      bool matchesSearch = (batch.fishName?.toLowerCase().contains(query) ?? false) ||
+          (batch.fishermanName?.toLowerCase().contains(query) ?? false);
+      
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -59,20 +134,19 @@ class _HomePageCState extends State<HomePageC> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: Color(0xFFF1F5F9),
-              child: Icon(Icons.waves, color: Color(0xFF023E77)), // Logo placeholder
-            ),
+            _buildProfilePhoto(),
             const SizedBox(width: 12),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Welcome back,", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                const Text(
+                  "Welcome back,",
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 Text(
-                  "Mr. Ahmed",
-                  style: TextStyle(
+                  _customer?.fullName ?? "Customer",
+                  style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 18,
                     fontFamily: "Inter",
@@ -83,7 +157,6 @@ class _HomePageCState extends State<HomePageC> {
               ],
             ),
             const Spacer(),
-            // Notification Icon with Red Badge
             Stack(
               children: [
                 Container(
@@ -92,19 +165,25 @@ class _HomePageCState extends State<HomePageC> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.notifications, color: Colors.black, size: 22),
+                  child: const Icon(
+                    Icons.notifications,
+                    color: Colors.black,
+                    size: 22,
+                  ),
                 ),
                 const Positioned(
                   right: 8,
                   top: 8,
                   child: CircleAvatar(radius: 4, backgroundColor: Colors.red),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
-      body: SafeArea(
+      body: _isLoading?
+        const Center(child: CircularProgressIndicator()): 
+        SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -221,11 +300,10 @@ class _HomePageCState extends State<HomePageC> {
   }
 
   Widget _buildCategories() {
-    // Data structure matching your "image_47141a.png"
     final List<Map<String, dynamic>> categories = [
       {"name": "All", "icon": Icons.grid_view_rounded},
       {"name": "Marine Fish", "icon": Icons.tsunami},
-      {"name": "Freshwater", "icon": Icons.water},
+      {"name": "Freshwater Fish", "icon": Icons.water},
       {"name": "Molluscs", "icon": Icons.set_meal_outlined},
       {"name": "Crustaceans", "icon": Icons.waves},
     ];
@@ -301,6 +379,7 @@ class _HomePageCState extends State<HomePageC> {
     );
   }
 
+  // ✅ موجودة وصحيحة
   Widget _buildCatchOfTheDayBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -319,8 +398,8 @@ class _HomePageCState extends State<HomePageC> {
     );
   }
 
+  // ✅ التعديل الصحيح
   Widget _buildProductGrid() {
-    // Use the filtered list here
     final productsToShow = _filteredProducts;
 
     if (productsToShow.isEmpty) {
@@ -346,87 +425,106 @@ class _HomePageCState extends State<HomePageC> {
     );
   }
 
-  Widget _buildProductCard(ProductItem item) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              child: Container(
-                width: double.infinity,
-                color: const Color(0xFFF1F5F9),
-                child: Image.asset(item.image, fit: BoxFit.cover),
+  
+  Widget _buildProductCard(CustomerBatch batch) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BatchDetails(id: batch.id!),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  color: const Color(0xFFF1F5F9),
+                  child: batch.getFirstPhotoUrl().isNotEmpty
+                      ? Image.network(
+                          batch.getFirstPhotoUrl(),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.broken_image, size: 40);
+                          },
+                        )
+                      : const Icon(Icons.filter_sharp, size: 40, color: Colors.grey),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.category,
-                  style: const TextStyle(
-                    fontFamily: 'work sanc',
-                    color: Color(0xFFD5A439),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
-                ),
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontFamily: 'work sanc',
-                    color: Color(0xFF111618),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  "By ${item.fisher}",
-                  style: const TextStyle(
-                    fontFamily: 'work sanc',
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "${item.price} DA",
-                      style: const TextStyle(
-                        fontFamily: '',
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFD5A439),
-                        fontSize: 13,
-                      ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    batch.category ?? "Category",
+                    style: const TextStyle(
+                      fontFamily: 'work sanc',
+                      color: Color(0xFFD5A439),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0,
                     ),
-                    const CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Color(0xFFD5A439),
-                      child: Icon(
-                        Icons.add_shopping_cart,
-                        color: Colors.white,
-                        size: 14,
-                      ),
+                  ),
+                  Text(
+                    batch.fishName ?? "Unknown",
+                    style: const TextStyle(
+                      fontFamily: 'work sanc',
+                      color: Color(0xFF111618),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  Text(
+                    "By ${batch.fishermanName ?? "Unknown"}",
+                    style: const TextStyle(
+                      fontFamily: 'work sanc',
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 10,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "${batch.pricePerKg ?? 0} DA",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFD5A439),
+                          fontSize: 13,
+                        ),
+                      ),
+                      const CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Color(0xFFD5A439),
+                        child: Icon(
+                          Icons.add_shopping_cart,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -459,16 +557,95 @@ class _HomePageCState extends State<HomePageC> {
   }
 }
 
-class ProductItem {
-  final String name, category, fisher, image;
-  final double price;
-  ProductItem({
-    required this.name,
-    required this.category,
-    required this.fisher,
-    required this.price,
-    required this.image,
+
+class CustomerBatch {
+  final int? id;
+  final String? fishName;
+  final String? category;
+  final double? pricePerKg;
+  final String? fishermanName;
+  final String? fishermanPhoto;
+  final List<String>? photo;
+
+  CustomerBatch({
+    this.id,
+    this.fishName,
+    this.category,
+    this.pricePerKg,
+    this.fishermanName,
+    this.fishermanPhoto,
+    this.photo,
   });
+
+  factory CustomerBatch.fromJson(Map<String, dynamic> json) {
+  
+    List<String> photoList = [];
+    if (json['photo'] != null) {
+      if (json['photo'] is List) {
+        photoList = List<String>.from(json['photo']);
+      } else if (json['photo'] is Map) {
+        photoList = (json['photo'] as Map).values.map((e) => e.toString()).toList();
+      } else if (json['photo'] is String) {
+        photoList = [json['photo']];
+      }
+    }
+
+    return CustomerBatch(
+      id: json['id'] as int?,
+      fishName: json['fish_name'] as String?,
+      category: json['category'] as String?,
+      pricePerKg: (json['price_per_kg'] as num?)?.toDouble(),
+      fishermanName: json['fisherman_name'] as String?,
+      fishermanPhoto: json['fisherman_photo'] as String?,
+      photo: photoList,
+    );
+  }
+
+  // ✅ دالة للحصول على رابط صورة الصياد
+  String getFishermanPhotoUrl() {
+    if (fishermanPhoto == null || fishermanPhoto!.isEmpty) return '';
+    return "http://localhost:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
+  }
+
+
+  String getFirstPhotoUrl() {
+    if (photo == null || photo!.isEmpty) return '';
+    return "http://localhost:3000/${photo![0].replaceFirst("src/", "")}";
+  }
+}
+
+
+class Customer {
+  final String? fullName;
+  final String? profilePhoto;
+  final List<CustomerBatch>? batches;
+
+  Customer({
+    this.fullName,
+    this.profilePhoto,
+    this.batches,
+  });
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    List<CustomerBatch> batchList = [];
+    if (json['batches'] != null && json['batches'] is List) {
+      batchList = (json['batches'] as List)
+          .map((batch) => CustomerBatch.fromJson(batch))
+          .toList();
+    }
+
+    return Customer(
+      fullName: json['customer']['full_name'] as String?,
+      profilePhoto: json['customer']['profile_photo'] as String?,
+      batches: batchList,
+    );
+  }
+
+  
+  String getProfilePhotoUrl() {
+    if (profilePhoto == null || profilePhoto!.isEmpty) return '';
+    return "http://localhost:3000/${profilePhoto!.replaceFirst("src/", "")}";
+  }
 }
 
 // Spacing utility re-used from your original files

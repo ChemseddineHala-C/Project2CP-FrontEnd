@@ -1,37 +1,116 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
+import './batchReportPageC.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
 
-import '../vitirinaire/batchReportPageV.dart';
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class BatchDetails extends StatefulWidget {
-  const BatchDetails({super.key});
+  final int id;
+  const BatchDetails({super.key, required this.id});
 
   @override
   State<BatchDetails> createState() => _BatchDetailsState();
 }
 
 class _BatchDetailsState extends State<BatchDetails> {
-  final MarketBatch _batch = MarketBatch(
-    category: "MARINE FISH",
-    fishName: "Sea Bream",
-    pricePerKg: 2450.00,
-    availableKg: 12.5,
-    arrivalDate: "Mar 31, 2026 3:12 PM",
-    freshnessScore: 85,
-    shelfLifeHours: 14,
-    photos: ["images/fish1.png", "images/fish2.png", "images/fish3.jpg"],
-    deliveryAddress: "Rue El wiam, Sidi Bel Abbes",
-  );
+  bool _isLoading = true;
+  BatchWithInspection? _batch;
 
   double _quantity = 3.0;
   int _currentPhotoIndex = 0;
-  PageController _pageController = PageController();
-
-  double get _totalPrice => _quantity * _batch.pricePerKg;
-
-  //
+  late PageController _pageController;
   String _deliveryAddress = "Rue El wiam, Sidi Bel Abbes";
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _fetchBatch();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchBatch() async {
+    setState(() {
+      _isLoading = true;
+    });
+    BatchWithInspection? batch = await getBatchWithInspection(widget.id);
+    setState(() {
+      _batch = batch;
+      _isLoading = false;
+    });
+  }
+
+  static Future<BatchWithInspection?> getBatchWithInspection(int batchId) async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse("http://localhost:3000/api/batches/$batchId"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return BatchWithInspection.fromJson(decoded);
+      } else {
+        print("Failed to get batch");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching batch: $e");
+      return null;
+    }
+  }
+
+  // ✅ حساب السعر الإجمالي
+  double get _totalPrice {
+    if (_batch == null) return 0;
+    return _quantity * (_batch!.pricePerKg ?? 0);
+  }
+
+  // ✅ حساب وقت التخزين المتبقي (3 أيام من تاريخ الإنشاء)
+  String get _shelfLifeLeft {
+    if (_batch?.createdAt == null) return "N/A";
+    final now = DateTime.now();
+    final created = _batch!.createdAt!;
+    final expiryDate = created.add(const Duration(days: 3));
+    final remaining = expiryDate.difference(now);
+    
+    if (remaining.isNegative) return "Expired";
+    final hoursLeft = remaining.inHours;
+    if (hoursLeft < 24) return "${hoursLeft}H Left";
+    final daysLeft = remaining.inDays;
+    return "${daysLeft}D Left";
+  }
+
+  // ✅ تنسيق التاريخ
+  String _formatDate(DateTime? date) {
+    if (date == null) return "N/A";
+    return "${date.year}-${date.month}-${date.day} ${date.hour}:${date.minute}";
+  }
 
   void _editDeliveryAddress() {
     TextEditingController _addressController = TextEditingController(
@@ -41,7 +120,7 @@ class _BatchDetailsState extends State<BatchDetails> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Delivery Address"),
+        title: const Text("Delivery Address"),
         content: TextFormField(
           controller: _addressController,
           decoration: InputDecoration(
@@ -52,15 +131,15 @@ class _BatchDetailsState extends State<BatchDetails> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: Colors.black)),
+            child: const Text("Cancel", style: TextStyle(color: Colors.black)),
           ),
           ElevatedButton(
             onPressed: () {
               setState(() => _deliveryAddress = _addressController.text);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFD5A43A)),
-            child: Text("OK", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD5A43A)),
+            child: const Text("OK", style: TextStyle(color: Colors.white)),
           ),
         ],
         backgroundColor: Colors.white,
@@ -70,16 +149,74 @@ class _BatchDetailsState extends State<BatchDetails> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7F9),
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+            color: const Color(0xFF0F172A),
+          ),
+          title: const Text(
+            "Batch Details",
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontFamily: "Inter",
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              letterSpacing: -0.6,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          elevation: 3,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_batch == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7F9),
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+            color: const Color(0xFF0F172A),
+          ),
+          title: const Text(
+            "Batch Details",
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontFamily: "Inter",
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              letterSpacing: -0.6,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          elevation: 3,
+        ),
+        body: const Center(child: Text("Batch not found")),
+      );
+    }
+
+    final photoUrls = _batch!.getAllPhotoUrls();
+
     return Scaffold(
-      backgroundColor: Color(0xFFF5F7F9),
+      backgroundColor: const Color(0xFFF5F7F9),
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back),
-          color: Color(0xFF0F172A),
+          icon: const Icon(Icons.arrow_back),
+          color: const Color(0xFF0F172A),
         ),
-        title: Text(
-          "batch Details",
+        title: const Text(
+          "Batch Details",
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontFamily: "Inter",
@@ -95,61 +232,86 @@ class _BatchDetailsState extends State<BatchDetails> {
         elevation: 3,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Block(),
+            const Block(),
 
-            SizedBox(
-              height: 220,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _batch.photos.length,
-                onPageChanged: (index) {
-                  setState(() => _currentPhotoIndex = index);
-                },
-
-                itemBuilder: (context, index) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(_batch.photos[index], fit: BoxFit.cover),
+            // ✅ Photo Carousel
+            if (photoUrls.isNotEmpty) ...[
+              SizedBox(
+                height: 220,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: photoUrls.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentPhotoIndex = index);
+                  },
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        photoUrls[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, size: 50),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            Block(),
+              const Block(),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _batch.photos.length,
-                    (index) => Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: index == _currentPhotoIndex
-                        ? Color(0xFFD5A43A)
-                        : Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(4),
+              // ✅ Photo Indicators
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  photoUrls.length,
+                  (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: index == _currentPhotoIndex
+                          ? const Color(0xFFD5A43A)
+                          : const Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ] else ...[
+              Container(
+                height: 220,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(
+                  child: Icon(Icons.no_photography, size: 50, color: Colors.grey),
+                ),
+              ),
+            ],
 
-            Block(),
+            const Block(),
 
+            // ✅ Main Info Card
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(0, -1),
+                    color: Colors.grey.withOpacity(0.1),
+                    offset: const Offset(0, -1),
                     spreadRadius: 0,
                     blurRadius: 5,
                   ),
@@ -160,14 +322,14 @@ class _BatchDetailsState extends State<BatchDetails> {
                 children: [
                   // Category Badge
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Color(0x33D5A439),
+                      color: const Color(0x33D5A439),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      _batch.category,
-                      style: TextStyle(
+                      _batch!.category ?? "Category",
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         color: Color(0xFFD5A439),
                         fontSize: 10,
@@ -176,7 +338,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ),
                   ),
 
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
                   // Fish Name + Price
                   Row(
@@ -187,8 +349,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _batch.fishName,
-                              style: TextStyle(
+                              _batch!.fishName ?? "Unknown",
+                              style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 20,
@@ -197,8 +359,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                               ),
                             ),
                             Text(
-                              "${_batch.availableKg} Kg Available",
-                              style: TextStyle(
+                              "${_batch!.remainingQuantityKg?.toStringAsFixed(1) ?? "0"} Kg Available",
+                              style: const TextStyle(
                                 fontFamily: 'Inter',
                                 color: Color(0xFF9C9C9C),
                                 fontSize: 11,
@@ -213,8 +375,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "${_batch.pricePerKg.toStringAsFixed(2)} DA",
-                            style: TextStyle(
+                            "${_batch!.pricePerKg?.toStringAsFixed(2) ?? "0"} DA",
+                            style: const TextStyle(
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w700,
                               fontSize: 20,
@@ -222,7 +384,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                               letterSpacing: -0.6,
                             ),
                           ),
-                          Text(
+                          const Text(
                             "Per Kilogram",
                             style: TextStyle(
                               fontFamily: 'Inter',
@@ -236,25 +398,25 @@ class _BatchDetailsState extends State<BatchDetails> {
                       ),
                     ],
                   ),
-                  //Block(),
-                  Divider(),
-                  Block(),
-                  // Arrival
+                  const Divider(),
+                  const Block(),
+
+                  // Arrival (Created At)
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFDADADA)),
+                      border: Border.all(color: const Color(0xFFDADADA)),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.anchor, color: Color(0xFFDADADA), size: 18),
-                        SizedBox(width: 8),
+                        const Icon(Icons.anchor, color: Color(0xFFDADADA), size: 18),
+                        const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               "Arrival",
                               style: TextStyle(
                                 color: Color(0xFF9C9C9C),
@@ -265,8 +427,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                               ),
                             ),
                             Text(
-                              _batch.arrivalDate,
-                              style: TextStyle(
+                              _formatDate(_batch!.createdAt),
+                              style: const TextStyle(
                                 color: Color(0xFF334155),
                                 fontSize: 15,
                                 fontFamily: 'Inter',
@@ -280,7 +442,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ),
                   ),
 
-                  Block(),
+                  const Block(),
 
                   // Freshness Score + Shelf Life
                   Row(
@@ -288,15 +450,15 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         flex: 2,
                         child: Container(
-                          padding: EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFDADADA)),
+                            border: Border.all(color: const Color(0xFFDADADA)),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
+                              const Text(
                                 "Overall Freshness Score",
                                 style: TextStyle(
                                   fontFamily: 'Inter',
@@ -306,43 +468,42 @@ class _BatchDetailsState extends State<BatchDetails> {
                                 ),
                               ),
                               Text(
-                                "${_batch.freshnessScore}/100",
-                                style: TextStyle(
+                                "${_batch!.inspection?.freshnessScore ?? 0}/100",
+                                style: const TextStyle(
                                   color: Color(0xFFD5A439),
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                 ),
                               ),
-
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               LinearPercentIndicator(
-                                percent: _batch.freshnessScore / 100,
+                                percent: (_batch!.inspection?.freshnessScore ?? 0) / 100,
                                 lineHeight: 6,
-                                backgroundColor: Color(0xFFE2E8F0),
-                                progressColor: Color(0xFFD5A439),
-                                barRadius: Radius.circular(4),
+                                backgroundColor: const Color(0xFFE2E8F0),
+                                progressColor: const Color(0xFFD5A439),
+                                barRadius: const Radius.circular(4),
                                 padding: EdgeInsets.zero,
                               ),
                             ],
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.all(11),
+                          padding: const EdgeInsets.all(11),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFDADADA)),
+                            border: Border.all(color: const Color(0xFFDADADA)),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Column(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.access_time_filled,
                                 color: Color(0xFFCDCDCD),
                                 size: 18,
                               ),
-                              Text(
+                              const Text(
                                 "Shelf Life",
                                 style: TextStyle(
                                   color: Color(0xFF9C9C9C),
@@ -353,8 +514,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                                 ),
                               ),
                               Text(
-                                "${_batch.shelfLifeHours}H Left",
-                                style: TextStyle(
+                                _shelfLifeLeft,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 11,
                                   color: Color(0xFF334155),
@@ -372,17 +533,18 @@ class _BatchDetailsState extends State<BatchDetails> {
               ),
             ),
 
-            Block(),
+            const Block(),
 
+            // ✅ Documents Card
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(0, -1),
+                    color: Colors.grey.withOpacity(0.1),
+                    offset: const Offset(0, -1),
                     spreadRadius: 0,
                     blurRadius: 5,
                   ),
@@ -392,24 +554,26 @@ class _BatchDetailsState extends State<BatchDetails> {
                 children: [
                   // Digital Certificate
                   GestureDetector(
-                    onTap: () => {},
+                    onTap: () => {
+                      DownloadCer("${_batch!.inspection!.id}", context)
+                    },
                     child: Container(
-                      padding: EdgeInsets.all(11),
+                      padding: const EdgeInsets.all(11),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFDADADA)),
+                        border: Border.all(color: const Color(0xFFDADADA)),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.article_outlined,
                             color: Color(0xFFD5A439),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                              children: const [
                                 Text(
                                   "Digital certificate",
                                   style: TextStyle(
@@ -420,7 +584,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                                   ),
                                 ),
                                 Text(
-                                  "PDF format - 1.2 MB",
+                                  "PDF format",
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 12,
@@ -431,7 +595,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                               ],
                             ),
                           ),
-                          Icon(
+                          const Icon(
                             Icons.download_outlined,
                             color: Color(0xFFA2AFC1),
                           ),
@@ -440,32 +604,34 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ),
                   ),
 
-                  Block(),
+                  const Block(),
 
                   // View Batch Report
                   GestureDetector(
                     onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => BatchReportPage(),
-                      //   ),
-                      // );
+                      if (_batch!.id != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BatchReportPage(id: _batch!.inspection!.id!,batchId: _batch!.id!),
+                          ),
+                        );
+                      }
                     },
                     child: Container(
-                      padding: EdgeInsets.all(11),
+                      padding: const EdgeInsets.all(11),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFDADADA)),
+                        border: Border.all(color: const Color(0xFFDADADA)),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.remove_red_eye_outlined,
                             color: Color(0xFFD5A439),
                           ),
-                          SizedBox(width: 12),
-                          Text(
+                          const SizedBox(width: 12),
+                          const Text(
                             "View Batch Report",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -474,8 +640,8 @@ class _BatchDetailsState extends State<BatchDetails> {
                               fontFamily: 'Inter',
                             ),
                           ),
-                          Spacer(),
-                          Icon(
+                          const Spacer(),
+                          const Icon(
                             Icons.open_in_new_sharp,
                             color: Color(0xFFA2AFC1),
                           ),
@@ -487,18 +653,18 @@ class _BatchDetailsState extends State<BatchDetails> {
               ),
             ),
 
-            Block(),
+            const Block(),
 
-            // ── Buy Section ───────────────────────
+            // ✅ Buy Section
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(0, -1),
+                    color: Colors.grey.withOpacity(0.1),
+                    offset: const Offset(0, -1),
                     spreadRadius: 0,
                     blurRadius: 5,
                   ),
@@ -510,10 +676,10 @@ class _BatchDetailsState extends State<BatchDetails> {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(5),
+                        padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: Color(0xFFF6F7F8),
-                          borderRadius: BorderRadiusGeometry.circular(20),
+                          color: const Color(0xFFF6F7F8),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
@@ -526,42 +692,43 @@ class _BatchDetailsState extends State<BatchDetails> {
                               child: Container(
                                 width: 32,
                                 height: 32,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.remove,
                                   size: 18,
                                   color: Colors.black,
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             Text(
-                              "${_quantity}kg",
-                              style: TextStyle(
+                              "${_quantity.toStringAsFixed(1)}kg",
+                              style: const TextStyle(
                                 fontFamily: 'work sanc',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                                 color: Color(0xFF334155),
                               ),
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {
-                                if (_quantity < _batch.availableKg) {
+                                final maxKg = _batch!.remainingQuantityKg ?? 0;
+                                if (_quantity + 0.5 <= maxKg) {
                                   setState(() => _quantity += 0.5);
                                 }
                               },
                               child: Container(
                                 width: 32,
                                 height: 32,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Color(0xFFD5A439),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.add,
                                   size: 18,
                                   color: Colors.white,
@@ -571,20 +738,20 @@ class _BatchDetailsState extends State<BatchDetails> {
                           ],
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
                             "${_totalPrice.toStringAsFixed(2)} DA",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'work sanc',
                               fontWeight: FontWeight.w700,
                               fontSize: 22,
                               color: Color(0xFFD5A439),
                             ),
                           ),
-                          Text(
+                          const Text(
                             "Total Price",
                             style: TextStyle(
                               color: Color(0xFF9C9C9C),
@@ -597,18 +764,18 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ],
                   ),
 
-                  Block(),
+                  const Block(),
 
                   // Delivery Address
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.location_on_outlined,
                         color: Color(0xFFD5A439),
                         size: 18,
                       ),
-                      SizedBox(width: 6),
-                      Text(
+                      const SizedBox(width: 6),
+                      const Text(
                         "Delivery to: ",
                         style: TextStyle(
                           color: Color(0xFF334155),
@@ -619,12 +786,12 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         child: Text(
                           _deliveryAddress,
-                          style: TextStyle(fontSize: 13),
+                          style: const TextStyle(fontSize: 13),
                         ),
                       ),
                       GestureDetector(
-                        onTap: _editDeliveryAddress, // ← هنا
-                        child: Icon(
+                        onTap: _editDeliveryAddress,
+                        child: const Icon(
                           Icons.edit_outlined,
                           color: Color(0xFFA2AFC1),
                           size: 24,
@@ -633,7 +800,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                     ],
                   ),
 
-                  Block(),
+                  const Block(),
 
                   // Buttons
                   Row(
@@ -641,31 +808,31 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            print("add");
+                            print("add to cart: ${_quantity}kg");
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFADADAD),
+                            backgroundColor: const Color(0xFFADADAD),
                             foregroundColor: Colors.white,
-                            minimumSize: Size(double.infinity, 52),
+                            minimumSize: const Size(double.infinity, 52),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Text("Add to cart"),
+                          child: const Text("Add to cart"),
                         ),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            print("buy");
+                            print("buy now: ${_quantity}kg");
                           },
-                          icon: Icon(Icons.chevron_right),
-                          label: Text("Buy now"),
+                          icon: const Icon(Icons.chevron_right),
+                          label: const Text("Buy now"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFD5A439),
+                            backgroundColor: const Color(0xFFD5A439),
                             foregroundColor: Colors.white,
-                            minimumSize: Size(double.infinity, 52),
+                            minimumSize: const Size(double.infinity, 52),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -684,6 +851,7 @@ class _BatchDetailsState extends State<BatchDetails> {
   }
 }
 
+// ✅ MarketBatch (keep as is for reference)
 class MarketBatch {
   final String category;
   final String fishName;
@@ -722,10 +890,215 @@ class MarketBatch {
   }
 }
 
+// ✅ Inspection Model
+class BatchInspection {
+  final int? id;
+  final int? freshnessScore;
+  final String? inspectionDecision;
+  final DateTime? inspectedAt;
+
+  BatchInspection({
+    this.id,
+    this.freshnessScore,
+    this.inspectionDecision,
+    this.inspectedAt,
+  });
+
+  factory BatchInspection.fromJson(Map<String, dynamic> json) {
+    return BatchInspection(
+      id: json['id'] as int?,
+      freshnessScore: json['freshness_score'] as int?,
+      inspectionDecision: json['inspection_decision'] as String?,
+      inspectedAt: json['inspected_at'] != null
+          ? DateTime.tryParse(json['inspected_at'])
+          : null,
+    );
+  }
+
+  String getFormattedInspectedAt() {
+    if (inspectedAt == null) return 'N/A';
+    return "${inspectedAt!.year}-${inspectedAt!.month}-${inspectedAt!.day} ${inspectedAt!.hour}:${inspectedAt!.minute}";
+  }
+}
+
+// ✅ BatchWithInspection Model
+class BatchWithInspection {
+  final int? id;
+  final int? fishermanId;
+  final String? category;
+  final String? fishName;
+  final String? catchMethod;
+  final double? quantityKg;
+  final double? remainingQuantityKg;
+  final double? pricePerKg;
+  final List<String>? photo;
+  final double? latitude;
+  final double? longitude;
+  final String? additionalNotes;
+  final String? status;
+  final DateTime? createdAt;
+  final String? fishermanName;
+  final String? boatName;
+  final BatchInspection? inspection;
+
+  BatchWithInspection({
+    this.id,
+    this.fishermanId,
+    this.category,
+    this.fishName,
+    this.catchMethod,
+    this.quantityKg,
+    this.remainingQuantityKg,
+    this.pricePerKg,
+    this.photo,
+    this.latitude,
+    this.longitude,
+    this.additionalNotes,
+    this.status,
+    this.createdAt,
+    this.fishermanName,
+    this.boatName,
+    this.inspection,
+  });
+
+  factory BatchWithInspection.fromJson(Map<String, dynamic> json) {
+    List<String> photoList = [];
+    if (json['photo'] != null && json['photo'] is List) {
+      photoList = List<String>.from(json['photo']);
+    }
+
+    return BatchWithInspection(
+      id: json['id'] as int?,
+      fishermanId: json['fisherman_id'] as int?,
+      category: json['category'] as String?,
+      fishName: json['fish_name'] as String?,
+      catchMethod: json['catch_method'] as String?,
+      quantityKg: (json['quantity_kg'] as num?)?.toDouble(),
+      remainingQuantityKg: (json['remaining_quantity_kg'] as num?)?.toDouble(),
+      pricePerKg: (json['price_per_kg'] as num?)?.toDouble(),
+      photo: photoList,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      additionalNotes: json['additional_notes'] as String?,
+      status: json['status'] as String?,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      fishermanName: json['fisherman_name'] as String?,
+      boatName: json['boat_name'] as String?,
+      inspection: json['inspection'] != null
+          ? BatchInspection.fromJson(json['inspection'])
+          : null,
+    );
+  }
+
+  String getFirstPhotoUrl() {
+    if (photo == null || photo!.isEmpty) return '';
+    return "http://localhost:3000/${photo![0].replaceFirst("src/", "")}";
+  }
+
+  List<String> getAllPhotoUrls() {
+    if (photo == null || photo!.isEmpty) return [];
+    return photo!
+        .map((p) => "http://localhost:3000/${p.replaceFirst("src/", "")}")
+        .toList();
+  }
+
+  String get inspectionDecisionText {
+    switch (inspection?.inspectionDecision?.toLowerCase()) {
+      case 'approved':
+        return 'موافق عليه';
+      case 'rejected':
+        return 'مرفوض';
+      default:
+        return 'قيد المراجعة';
+    }
+  }
+
+  Color get inspectionDecisionColor {
+    switch (inspection?.inspectionDecision?.toLowerCase()) {
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.orange;
+    }
+  }
+}
+
 class Block extends StatelessWidget {
   const Block({super.key});
   @override
   Widget build(BuildContext context) {
     return const SizedBox(height: 20);
+  }
+}
+
+Future<void> DownloadCer(String id, BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      print("No token found");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No token found"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show loading
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
+
+    final response = await http.get(
+      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("STATUS: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      // Linux Downloads folder
+      String homeDir = Platform.environment['HOME'] ?? '';
+      Directory downloadDir = Directory('$homeDir/Downloads');
+
+      // Create Downloads folder if it doesn't exist
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+
+      // Save file
+      String fileName = "certificate_$id.pdf";
+      String filePath = '${downloadDir.path}/$fileName';
+      File file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Show success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Saved to: $filePath"),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      print("File saved to: $filePath");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed: ${response.statusCode}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } catch (e) {
+    print("Error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+    );
   }
 }
