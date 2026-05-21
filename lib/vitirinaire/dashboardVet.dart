@@ -1,4 +1,5 @@
 import 'package:fishapp/vitirinaire/inspectionHistoryPage.dart';
+import 'package:fishapp/vitirinaire/notifieVit.dart';
 import 'package:fishapp/vitirinaire/profilevit.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -300,11 +301,13 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.notifications,
-                    color: Colors.black,
-                    size: 22,
-                  ),
+                  child:
+                  IconButton(onPressed: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => NotificationVitPage()),
+                    );
+                  }, icon: const Icon(Icons.notifications_outlined),),
                 ),
                 const Positioned(
                   right: 8,
