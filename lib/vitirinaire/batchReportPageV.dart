@@ -33,7 +33,6 @@ class _BatchReportPageState extends State<BatchReportPage> {
         return null;
       }
 
-      // ✅ تصحيح الرابط (إزالة الشرطة المائلة الزائدة)
       final response = await http.get(
         Uri.parse("http://localhost:3000/api/inspections/$batchId/report"),
         headers: {
