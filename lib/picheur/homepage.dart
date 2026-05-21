@@ -1,3 +1,4 @@
+import 'package:fishapp/picheur/notificationph.dart';
 import 'package:fishapp/picheur/profil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -175,10 +176,15 @@ class _HomePagePState extends State<HomePageP> {
                 ),
               ],
             ),
-            child: const Stack(
+            child: Stack(
               children: [
-                Icon(Icons.notifications_outlined),
-                Positioned(
+                IconButton(onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationPage()),
+                  );
+                }, icon: const Icon(Icons.notifications_outlined),),
+                const Positioned(
                   right: 2,
                   top: 2,
                   child: CircleAvatar(radius: 4, backgroundColor: Colors.red),
