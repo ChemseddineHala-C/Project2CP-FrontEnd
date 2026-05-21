@@ -59,11 +59,10 @@ class _HomePageCState extends State<HomePageC> {
     }
   }
 
- 
   Future<void> _fetchCustomer() async {
     setState(() {
       _isLoading = true;
-    });  
+    });
     Customer? customer = await getCustomerProfile();
     _customer = customer;
     setState(() {
@@ -79,8 +78,7 @@ class _HomePageCState extends State<HomePageC> {
 
   Widget _buildProfilePhoto() {
     final photoUrl = _customer?.getProfilePhotoUrl();
-    
-    // ✅ التحقق من null وعدم وجود قيمة
+
     if (photoUrl != null && photoUrl.isNotEmpty) {
       return CircleAvatar(
         radius: 22,
@@ -89,7 +87,7 @@ class _HomePageCState extends State<HomePageC> {
         onBackgroundImageError: (_, __) {},
       );
     }
-    
+
     // ✅ حالة عدم وجود صورة
     return const CircleAvatar(
       radius: 22,
@@ -98,27 +96,26 @@ class _HomePageCState extends State<HomePageC> {
     );
   }
 
-  
   void _onSearchChanged(String value) {
     setState(() {}); // فقط لإعادة بناء الواجهة بعد تغيير النص
   }
 
-
- 
   List<CustomerBatch> get _filteredProducts {
     if (_customer?.batches == null) return [];
-    
+
     final query = _searchController.text.toLowerCase();
-    
+
     return _customer!.batches!.where((batch) {
       // 1. Check Category Match
-      bool matchesCategory = _selectedCategory == "All" ||
+      bool matchesCategory =
+          _selectedCategory == "All" ||
           (batch.category?.toLowerCase() == _selectedCategory.toLowerCase());
-      
+
       // 2. Check Search Match (Fish Name or Fisherman Name)
-      bool matchesSearch = (batch.fishName?.toLowerCase().contains(query) ?? false) ||
+      bool matchesSearch =
+          (batch.fishName?.toLowerCase().contains(query) ?? false) ||
           (batch.fishermanName?.toLowerCase().contains(query) ?? false);
-      
+
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -166,13 +163,17 @@ class _HomePageCState extends State<HomePageC> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child:
-                  IconButton(onPressed: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => NotificationConsPage()),
-                    );
-                  }, icon: const Icon(Icons.notifications_outlined),),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationConsPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.notifications_outlined),
+                  ),
                 ),
                 const Positioned(
                   right: 8,
@@ -184,33 +185,33 @@ class _HomePageCState extends State<HomePageC> {
           ],
         ),
       ),
-      body: _isLoading?
-        const Center(child: CircularProgressIndicator()): 
-        SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //_buildHeader(),
-              //const Block(),
-              _buildSearchBar(),
-              const Block(),
-              _buildCategories(),
-              const Block(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _sectionTitle("Fresh Arrivals"),
-                  _buildCatchOfTheDayBadge(),
-                ],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //_buildHeader(),
+                    //const Block(),
+                    _buildSearchBar(),
+                    const Block(),
+                    _buildCategories(),
+                    const Block(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _sectionTitle("Fresh Arrivals"),
+                        _buildCatchOfTheDayBadge(),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildProductGrid(),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildProductGrid(),
-            ],
-          ),
-        ),
-      ),
+            ),
       bottomNavigationBar: _buildBottomNavBar(false),
     );
   }
@@ -428,15 +429,12 @@ class _HomePageCState extends State<HomePageC> {
     );
   }
 
-  
   Widget _buildProductCard(CustomerBatch batch) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => BatchDetails(id: batch.id!),
-          ),
+          MaterialPageRoute(builder: (context) => BatchDetails(id: batch.id!)),
         );
       },
       child: Container(
@@ -464,7 +462,11 @@ class _HomePageCState extends State<HomePageC> {
                             return const Icon(Icons.broken_image, size: 40);
                           },
                         )
-                      : const Icon(Icons.filter_sharp, size: 40, color: Colors.grey),
+                      : const Icon(
+                          Icons.filter_sharp,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                 ),
               ),
             ),
@@ -531,6 +533,7 @@ class _HomePageCState extends State<HomePageC> {
       ),
     );
   }
+
   Widget _buildBottomNavBar(bool isDark) {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -538,28 +541,68 @@ class _HomePageCState extends State<HomePageC> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(onPressed: () {
-          }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Color(0xFFD5A439), size: 30)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrdersPage()));
-          }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
-          }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
-          }, icon: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(
+            onPressed: () {
+              _fetchCustomer();
+            },
+            icon: Icon(
+              Icons.home_outlined,
+              color: isDark ? Colors.white54 : Color(0xFFD5A439),
+              size: 30,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyOrdersPage()),
+              );
+            },
+            icon: Icon(
+              Icons.list_alt_outlined,
+              color: isDark ? Colors.white54 : Colors.grey,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ShoppingCartPage()),
+              );
+            },
+            icon: Icon(
+              Icons.shopping_cart,
+              color: isDark ? Colors.white54 : Colors.grey,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileConsumerPage()),
+              );
+            },
+            icon: Icon(
+              Icons.person,
+              color: isDark ? Colors.white54 : Colors.grey,
+            ),
+          ),
         ],
       ),
     );
   }
 }
-
 
 class CustomerBatch {
   final int? id;
@@ -581,13 +624,14 @@ class CustomerBatch {
   });
 
   factory CustomerBatch.fromJson(Map<String, dynamic> json) {
-  
     List<String> photoList = [];
     if (json['photo'] != null) {
       if (json['photo'] is List) {
         photoList = List<String>.from(json['photo']);
       } else if (json['photo'] is Map) {
-        photoList = (json['photo'] as Map).values.map((e) => e.toString()).toList();
+        photoList = (json['photo'] as Map).values
+            .map((e) => e.toString())
+            .toList();
       } else if (json['photo'] is String) {
         photoList = [json['photo']];
       }
@@ -610,24 +654,18 @@ class CustomerBatch {
     return "http://localhost:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
   }
 
-
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
     return "http://localhost:3000/${photo![0].replaceFirst("src/", "")}";
   }
 }
 
-
 class Customer {
   final String? fullName;
   final String? profilePhoto;
   final List<CustomerBatch>? batches;
 
-  Customer({
-    this.fullName,
-    this.profilePhoto,
-    this.batches,
-  });
+  Customer({this.fullName, this.profilePhoto, this.batches});
 
   factory Customer.fromJson(Map<String, dynamic> json) {
     List<CustomerBatch> batchList = [];
@@ -644,7 +682,6 @@ class Customer {
     );
   }
 
-  
   String getProfilePhotoUrl() {
     if (profilePhoto == null || profilePhoto!.isEmpty) return '';
     return "http://localhost:3000/${profilePhoto!.replaceFirst("src/", "")}";

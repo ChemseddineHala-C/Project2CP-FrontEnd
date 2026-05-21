@@ -274,7 +274,9 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
             icon: _navIcon(Icons.home, false),
           ),
           IconButton(
-            onPressed: () {}, // Déjà sur cette page
+            onPressed: () {
+              _fetchBatches();
+            }, // Déjà sur cette page
             icon: _navIcon(Icons.anchor, true),
           ),
           IconButton(

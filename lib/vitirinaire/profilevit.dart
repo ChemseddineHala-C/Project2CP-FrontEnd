@@ -507,7 +507,9 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
             },
             icon: _navIcon(Icons.access_time, false),
           ),
-          IconButton(onPressed: () {}, icon: _navIcon(Icons.person, true)),
+          IconButton(onPressed: () {
+            context.read<AuthCubit>().fetchvitProfile();
+          }, icon: _navIcon(Icons.person, true)),
         ],
       ),
     );

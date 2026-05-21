@@ -2,7 +2,117 @@ import 'package:fishapp/consumer/homePage.dart';
 import 'package:fishapp/consumer/profilconsumer.dart';
 import 'package:fishapp/consumer/shoppingCartPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
+
+// ==================== MODELS ====================
+
+class OrderItem {
+  final int? id;
+  final int? batchId;
+  final double? quantityKg;
+  final double? unitPrice;
+  final double? subtotal;
+  final String? fishName;
+  final String? category;
+  final List<String>? photo;
+
+  OrderItem({
+    this.id,
+    this.batchId,
+    this.quantityKg,
+    this.unitPrice,
+    this.subtotal,
+    this.photo,
+    this.fishName,
+    this.category,
+  });
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    List<String> photoList = [];
+    if (json['photo'] != null) {
+      if (json['photo'] is List) {
+        photoList = List<String>.from(json['photo']);
+      } else if (json['photo'] is String) {
+        photoList = [json['photo']];
+      }
+    }
+
+    return OrderItem(
+      id: json['id'] as int?,
+      batchId: json['batch_id'] as int?,
+      quantityKg: (json['quantity_kg'] as num?)?.toDouble(),
+      unitPrice: (json['unit_price'] as num?)?.toDouble(),
+      subtotal: (json['subtotal'] as num?)?.toDouble(),
+      fishName: json['fish_name'] as String?,
+      category: json['category'] as String?,
+      photo: photoList,
+    );
+  }
+
+  String getFirstPhotoUrl() {
+    if (photo == null || photo!.isEmpty) return '';
+    String rawPath = photo![0];
+    // Remove leading "src" safely
+    String cleanPath = rawPath.startsWith("src/")
+        ? rawPath.substring(3)
+        : (rawPath.startsWith("/") ? rawPath : "/$rawPath");
+    return "http://localhost:3000$cleanPath";
+  }
+}
+
+class Order {
+  final int? id;
+  final int? customerId;
+  final double? totalPrice;
+  final double? deliveryFee;
+  final String? status;
+  final String? deliveryAddress;
+  final DateTime? createdAt;
+  final List<OrderItem> items;
+
+  Order({
+    this.id,
+    this.customerId,
+    this.totalPrice,
+    this.deliveryFee,
+    this.status,
+    this.deliveryAddress,
+    this.createdAt,
+    this.items = const [],
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    List<OrderItem> itemList = [];
+    if (json['items'] != null && json['items'] is List) {
+      itemList = (json['items'] as List)
+          .map((item) => OrderItem.fromJson(item))
+          .toList();
+    }
+
+    return Order(
+      id: json['id'] as int?,
+      customerId: json['customer_id'] as int?,
+      totalPrice: (json['total_price'] as num?)?.toDouble(),
+      deliveryFee: (json['delivery_fee'] as num?)?.toDouble(),
+      status: json['status'] as String?,
+      deliveryAddress: json['delivery_address'] as String?,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      items: itemList,
+    );
+  }
+}
+
+// ==================== PAGE ====================
 
 class MyOrdersPage extends StatefulWidget {
   const MyOrdersPage({super.key});
@@ -12,33 +122,89 @@ class MyOrdersPage extends StatefulWidget {
 }
 
 class _MyOrdersPageState extends State<MyOrdersPage> {
-  // --- BACKEND HANDLING VARIABLES ---
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
   String _selectedFilter = "All";
-  bool _isLoading = false;
-  List<OrderItem> _orders = [];
-
-  void _updateSearchQuery(String value) {
-    setState(() {
-      _searchQuery = value;
-    });
-  }
+  bool _isLoading = true;
+  List<Order> _orders = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchOrders();
   }
 
+  static Future<List<Order>> getOrders() async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return [];
+      }
 
-  List<OrderItem> get _filteredOrders {
-    return _orders.where((order) {
-      // Check if the name contains the search text
-      bool matchesSearch = order.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      final response = await http.get(
+        Uri.parse("http://localhost:3000/api/orders"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
 
-      // Check if the status matches the selected chip
-      bool matchesFilter = _selectedFilter == "All" ||
-          order.status == _selectedFilter.toUpperCase();
+      print("GET ORDERS STATUS: ${response.statusCode}");
+      print("GET ORDERS RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is List) {
+          List<Order> orders = [];
+          for (var item in decoded) {
+            try {
+              orders.add(Order.fromJson(item));
+            } catch (e) {
+              print("Error parsing order: $e");
+            }
+          }
+          return orders;
+        }
+      }
+      return [];
+    } catch (e) {
+      print("ERROR getOrders: $e");
+      return [];
+    }
+  }
+
+  Future<void> _fetchOrders() async {
+    setState(() => _isLoading = true);
+    final orders = await getOrders();
+    setState(() {
+      _orders = orders;
+      _isLoading = false;
+    });
+  }
+
+  /// Flatten all orders into individual (Order, OrderItem) pairs for card display
+  List<({Order order, OrderItem item})> get _allPairs {
+    List<({Order order, OrderItem item})> pairs = [];
+    for (var order in _orders) {
+      for (var item in order.items) {
+        pairs.add((order: order, item: item));
+      }
+    }
+    return pairs;
+  }
+
+  List<({Order order, OrderItem item})> get _filteredPairs {
+    return _allPairs.where((pair) {
+      final matchesSearch =
+          pair.item.fishName?.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ??
+          false;
+
+      final matchesFilter =
+          _selectedFilter == "All" ||
+          (pair.order.status?.toLowerCase() == _selectedFilter.toLowerCase());
 
       return matchesSearch && matchesFilter;
     }).toList();
@@ -57,103 +223,107 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
           "My Orders",
           style: TextStyle(
             color: Color(0xFF0F172A),
-            fontFamily: "Inter",
             fontWeight: FontWeight.w700,
-            fontSize: 24,
-            letterSpacing: -0.6,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
-        shadowColor: Colors.black,
         elevation: 3,
+        shadowColor: Colors.black12,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Search Bar - Styled like your myBatches.dart
-            TextFormField(
-              controller: _searchController,
-              onChanged: _updateSearchQuery,
-              decoration: InputDecoration(
-                hintText: "Search batches...",
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const Block(),
-            // Filter Row
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  "All",
-                  "Delivered",
-                  "Pending",
-                  "Processing",
-                ].map((filter) => _buildFilterChip(filter)).toList(),
-              ),
-            ),
-            const Block(),
-            if (_filteredOrders.isEmpty)
-              Container(
-                width: double.infinity,
+          : RefreshIndicator(
+              onRefresh: _fetchOrders,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                child: Column(
+                  children: [
+                    // Search bar
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                      decoration: InputDecoration(
+                        hintText: "Search by fish name...",
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.grey,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(13),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Filter chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          "All",
+                          "Delivered",
+                          "Pending",
+                          "Processing",
+                        ].map(_buildFilterChip).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Cards
+                    if (_filteredPairs.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'No orders found.',
+                          style: TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _filteredPairs.length,
+                        itemBuilder: (context, index) {
+                          final pair = _filteredPairs[index];
+                          return OrderCard(order: pair.order, item: pair.item);
+                        },
+                      ),
+                  ],
                 ),
-                child: const Text(
-                  'No Orderss found for that name.',
-                  style: TextStyle(
-                    color: Color(0xFF475569),
-                    fontSize: 14,
-                  ),
-                ),
-              )
-            else
-            // Orders List
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _filteredOrders.length,
-                itemBuilder: (context, index) =>
-                    OrderCard(order: _filteredOrders[index]),
               ),
-            // Skeleton loader placeholder (as seen in your image)
-            //const OrderSkeleton(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNavBar(false),
+            ),
+      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
   Widget _buildFilterChip(String filter) {
-    bool isSelected = _selectedFilter == filter;
+    final isSelected = _selectedFilter == filter;
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = filter),
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFD5A439)
-              : Colors.white, // Golden color from image
+          color: isSelected ? const Color(0xFFD5A439) : Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           filter,
           style: TextStyle(
-            fontFamily: 'Inter',
             color: isSelected ? Colors.white : const Color(0xFF475569),
             fontWeight: FontWeight.w500,
           ),
@@ -161,121 +331,231 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       ),
     );
   }
-  Widget _buildBottomNavBar(bool isDark) {
+
+  Widget _buildBottomNavBar() {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       height: 70,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => HomePageC()));
-          }, icon: Icon(Icons.home_outlined, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {
-          }, icon: Icon(Icons.list_alt_outlined, color: isDark ? Colors.white54 : Color(0xFFD5A439), size: 30)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage()));
-          }, icon: Icon(Icons.shopping_cart, color: isDark ? Colors.white54 : Colors.grey)),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileConsumerPage()));
-          }, icon: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey)),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => HomePageC()),
+            ),
+            icon: const Icon(Icons.home_outlined, color: Colors.grey),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.list_alt_outlined,
+              color: Color(0xFFD5A439),
+              size: 30,
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ShoppingCartPage()),
+            ),
+            icon: const Icon(Icons.shopping_cart, color: Colors.grey),
+          ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ProfileConsumerPage()),
+            ),
+            icon: const Icon(Icons.person, color: Colors.grey),
+          ),
         ],
       ),
     );
   }
 }
 
+// ==================== ORDER CARD ====================
+
 class OrderCard extends StatelessWidget {
-  final OrderItem order;
-  const OrderCard({super.key, required this.order});
+  final Order order;
+  final OrderItem item;
+
+  const OrderCard({super.key, required this.order, required this.item});
+
+  /// Total price = subtotal * delivery_fee
+  double get _cardTotal => (item.subtotal ?? 0) * (order.deliveryFee ?? 0);
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return "N/A";
+    final months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    final h = date.hour.toString().padLeft(2, '0');
+    final m = date.minute.toString().padLeft(2, '0');
+    return "${months[date.month - 1]} ${date.day}, $h:$m";
+  }
+
+  Color _statusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case "delivered":
+        return const Color(0xFF047857);
+      case "pending":
+        return const Color(0xFFB45309);
+      case "processing":
+        return const Color(0xFF094BB4);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _statusBgColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case "delivered":
+        return const Color(0xFFD1FAE5);
+      case "pending":
+        return const Color(0xFFFEF3C7);
+      case "processing":
+        return const Color(0xFFC7DCFE);
+      default:
+        return Colors.grey.shade200;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final status = order.status ?? "pending";
+    final photoUrl = item.getFirstPhotoUrl();
+    photoUrl.replaceAll('"', '');
+    photoUrl.replaceAll(']', '');
+    photoUrl.replaceAll('[]', '');
+    print(photoUrl);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Fish image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 70,
+              height: 70,
+              color: Colors.grey[100],
+              child: photoUrl.isNotEmpty
+                  ? Image.network(
+                      photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.broken_image,
+                        size: 30,
+                        color: Colors.grey,
+                      ),
+                    )
+                  : const Icon(Icons.set_meal, size: 30, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Name + date
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.fishName ?? "Unknown",
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "• ${_formatDate(order.createdAt)}",
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item.category ?? "",
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Status + qty + price
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  color: Colors.grey[100],
-                  child: Image.asset(
-                    order.images.isNotEmpty
-                        ? order.images[0]
-                        : "images/grey.jpg",
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ), // Placeholder for Image.asset
+              // Status badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _statusBgColor(status),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusColor(status),
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              // Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      order.name,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        color: Color(0xFF0F172A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      "• ${order.date}",
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        color: Color(0xFF64748B),
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _actionButton(order.status),
-                  ],
-                ),
+              const SizedBox(height: 12),
+
+              // Quantity
+              Text(
+                "${(item.quantityKg ?? 0).toStringAsFixed(1)} kg",
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
               ),
-              // Status & Price
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _statusChip(order.status),
-                  const SizedBox(height: 16),
-                  Text(
-                    "${order.weight} kg",
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 12,
-                    ),
-                  ),
-                  Text(
-                    "${order.totalPrice} DA",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFD5A439),
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 2),
+
+              // Total = subtotal × delivery_fee
+              Text(
+                "${_cardTotal.toStringAsFixed(2)} DA",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFD5A439),
+                  fontSize: 15,
+                ),
               ),
             ],
           ),
@@ -283,118 +563,10 @@ class OrderCard extends StatelessWidget {
       ),
     );
   }
-
-  Widget _statusChip(String status) {
-    Color color, bgColor;
-    switch (status) {
-      case "DELIVERED":
-        color = const Color(0xFF047857);
-        bgColor = const Color(0xFFD1FAE5);
-        break;
-      case "PENDING":
-        color = const Color(0xFFB45309);
-        bgColor = const Color(0xFFFEF3C7);
-        break;
-      case "PROCESSING":
-        color = const Color(0xFF094BB4);
-        bgColor = const Color(0xFFC7DCFE);
-        break;
-      default:
-        color = Colors.grey;
-        bgColor = Colors.grey;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _actionButton(String status) {
-    String label = status == "DELIVERED"
-        ? "Reorder"
-        : (status == "PENDING" ? "Cancel" : "Track Order");
-    return OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: BorderSide(color: Colors.grey[300]!),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(color: Colors.black, fontSize: 12),
-      ),
-    );
-  }
 }
 
-// Visual Rhythm: Re-using your Block widget
 class Block extends StatelessWidget {
   const Block({super.key});
   @override
   Widget build(BuildContext context) => const SizedBox(height: 20);
-}
-
-// Placeholder for the bottom card in your image
-class OrderSkeleton extends StatelessWidget {
-  const OrderSkeleton({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(width: 100, height: 12, color: Colors.grey[200]),
-                const SizedBox(height: 8),
-                Container(width: 150, height: 12, color: Colors.grey[200]),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class OrderItem {
-  final String name, date, status;
-  final List<String> images;
-  final double weight, totalPrice;
-  OrderItem({
-    required this.name,
-    required this.date,
-    required this.status,
-    required this.weight,
-    required this.totalPrice,
-    required this.images,
-  });
 }

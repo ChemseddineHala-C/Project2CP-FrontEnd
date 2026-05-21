@@ -34,9 +34,7 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
 
       final response = await http.get(
         Uri.parse("http://localhost:3000/api/inspections/history"),
-        headers: {
-          "Authorization": "Bearer $token",
-        },
+        headers: {"Authorization": "Bearer $token"},
       );
 
       print("GET INSPECTIONS STATUS: ${response.statusCode}");
@@ -110,7 +108,9 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
             icon: _navIcon(Icons.home_outlined, false),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              _fetchInspections();
+            },
             icon: _navIcon(Icons.access_time_outlined, true),
           ),
           IconButton(
@@ -134,7 +134,6 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
       size: 28,
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -162,80 +161,81 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
         shadowColor: Colors.black,
         elevation: 3,
       ),
-      body: _isLoading?
-        const Center(child: CircularProgressIndicator()):
-        SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ["ALL", "APPROVED", "REJECTED"]
-                    .map(
-                      (filter) => GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _selectedFilter == filter
-                                ? const Color(0xFF01A896)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            filter,
-                            style: TextStyle(
-                              color: _selectedFilter == filter
-                                  ? Colors.white
-                                  : const Color(0xFF334155),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ["ALL", "APPROVED", "REJECTED"]
+                          .map(
+                            (filter) => GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedFilter = filter;
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _selectedFilter == filter
+                                      ? const Color(0xFF01A896)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  filter,
+                                  style: TextStyle(
+                                    color: _selectedFilter == filter
+                                        ? Colors.white
+                                        : const Color(0xFF334155),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
                             ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+
+                  Block(),
+
+                  Text(
+                    "RECENT INSPECTIONS",
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+
+                  Block(),
+
+                  _isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: _filteredInspections.length,
+                          itemBuilder: (context, index) => InspectionCard(
+                            inspection: _filteredInspections[index],
                           ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                ],
               ),
             ),
-
-            Block(),
-
-            Text(
-              "RECENT INSPECTIONS",
-              style: TextStyle(
-                fontFamily: 'Inter',
-                color: Color(0xFF64748B),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
-            ),
-
-            Block(),
-
-            _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: _filteredInspections.length,
-                    itemBuilder: (context, index) =>
-                        InspectionCard(inspection: _filteredInspections[index]),
-                  ),
-          ],
-        ),
-      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -332,7 +332,12 @@ class InspectionCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => BatchReportPage(batchId: inspection.id!.toInt(), id: inspection.batchId!.toInt(),)),
+                  MaterialPageRoute(
+                    builder: (context) => BatchReportPage(
+                      batchId: inspection.id!.toInt(),
+                      id: inspection.batchId!.toInt(),
+                    ),
+                  ),
                 );
               },
               icon: Icon(Icons.description_outlined, size: 18),
@@ -353,7 +358,6 @@ class InspectionCard extends StatelessWidget {
     );
   }
 }
-
 
 class Block extends StatelessWidget {
   const Block({super.key});

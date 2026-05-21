@@ -965,7 +965,9 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              context.read<AuthCubit>().fetchadmin();
+            },
             icon: Icon(
               Icons.home,
               color: activeIndex == 0

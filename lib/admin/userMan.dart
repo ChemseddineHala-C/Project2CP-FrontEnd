@@ -407,14 +407,15 @@ class _UserManagementPageState extends State<UserManagementPage> {
           ),
           IconButton(
             onPressed: () {
-              if (activeIndex != 1) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserManagementPage(),
-                  ),
-                );
-              }
+              // if (activeIndex != 1) {
+              //   Navigator.pushReplacement(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => const UserManagementPage(),
+              //     ),
+              //   );
+              // }
+              _fetchUsers();
             },
             icon: Icon(
               Icons.people,
@@ -581,7 +582,7 @@ class UserItemCard extends StatelessWidget {
                                 ],
                               ),
                               Text(
-                                "${user.role.compareTo("Fishermans") == 0 ? "Fisherman":user.role.replaceAll('s', '')} ID: ${user.id}",
+                                "${user.role.compareTo("Fishermans") == 0 ? "Fisherman" : user.role.replaceAll('s', '')} ID: ${user.id}",
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,
