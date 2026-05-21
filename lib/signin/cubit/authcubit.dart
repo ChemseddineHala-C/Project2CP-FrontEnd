@@ -1619,4 +1619,28 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
+  Future<void> noti() async {
+    try {
+      emit(AuthLoading());
+      String? token = await _getToken();
+      if (token == null) {
+        emit(AuthError("No token found"));
+        return;
+      }
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/notifications",
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print(data);
+        emit(ProfileLoaded(data));
+      } else {
+        emit(AuthError("Failed to load profile"));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
 }
