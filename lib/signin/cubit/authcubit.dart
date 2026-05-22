@@ -1459,6 +1459,12 @@ class AuthCubit extends Cubit<AuthState> {
     required String emailvet,
     required String passwordvet,
     required String homePortvet,
+    required String full_name,
+    required String national_id,
+    required String phone_number,
+    required String specialization,
+    required String license_number,
+    required String license_expiry_date,
   }) async {
     try {
       emit(SetupLoading());
@@ -1474,6 +1480,11 @@ class AuthCubit extends Cubit<AuthState> {
           "emailvet": emailvet,
           "passwordvet": passwordvet,
           "homePortvet": homePortvet,
+          "full_name": full_name,
+          "national_id": national_id,
+          "phone_number": phone_number,
+          "specialization": specialization,
+          "license_number": license_number,
         },
       );
       // final response = await http.post(
