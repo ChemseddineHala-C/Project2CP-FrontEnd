@@ -1475,7 +1475,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "POST",
-        "$_baseUrl/auth/code_verification",
+        "$_baseUrl/admin/vets",
         body: {
           "emailvet": emailvet,
           "passwordvet": passwordvet,
