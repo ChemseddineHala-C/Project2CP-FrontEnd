@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
             ),
             dividerTheme: const DividerThemeData(color: Colors.white12),
           ),
-          home: const NotificationPage()
+          home: const SplashPage()
           //SplashPage(),
           // RoleSelectionPage()
           // SplashPage(),

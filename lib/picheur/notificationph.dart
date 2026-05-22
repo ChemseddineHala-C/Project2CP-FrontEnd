@@ -72,7 +72,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         onPressed: () {},
                         child: Text(
                           "Mark all as read",
-                          style: TextStyle(color: Colors.blue[800]),
+                          style: TextStyle(color: Color(0xFF0F68E6)),
                         ),
                       ),
                     ),
@@ -85,8 +85,8 @@ class _NotificationPageState extends State<NotificationPage> {
                       ...notifications.map((notif) =>
                           _buildNotifCard(notif, isDark)).toList(),
 
-                    const SizedBox(height: 20),
-                    _buildEmptyState(),
+                    // const SizedBox(height: 20),
+                    // _buildEmptyState(),
                   ],
                 ),
               ),
@@ -124,11 +124,11 @@ class _NotificationPageState extends State<NotificationPage> {
       decoration: BoxDecoration(
         color: isRead
             ? (isDark ? Colors.white10 : Colors.white)
-            : (isDark ? Colors.blue.withOpacity(0.1) : Colors.blue.shade50),
+            : (isDark ? Colors.blue.withOpacity(0.1) : const Color.fromARGB(255, 255, 255, 255)),
         borderRadius: BorderRadius.circular(14),
         border: Border(
           left: BorderSide(
-            color: isRead ? Colors.transparent : Colors.blue,
+            color: isRead ? Colors.transparent : Color(0xFF0F68E6),
             width: 4,
           ),
         ),
@@ -177,7 +177,7 @@ class _NotificationPageState extends State<NotificationPage> {
               if (!isRead)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: CircleAvatar(radius: 4, backgroundColor: Colors.blue),
+                  child: CircleAvatar(radius: 4, backgroundColor: Color(0xFF0F68E6)),
                 ),
             ],
           ),
