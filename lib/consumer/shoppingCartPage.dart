@@ -820,7 +820,6 @@ class CartItem {
     if (photo == null || photo!.isEmpty) return '';
 
     String rawPath = photo![0];
-
     String cleanPath = rawPath
         .replaceAll('"', '')
         .replaceAll('[', '')
