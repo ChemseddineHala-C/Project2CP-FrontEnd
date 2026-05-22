@@ -626,11 +626,11 @@ class _HomePagePState extends State<HomePageP> {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard("TOTAL EARNINGS", totalEarnings, "2.5", isDark),
+          child: _buildStatCard("TOTAL EARNINGS", totalEarnings, "DA", isDark),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildStatCard("TOTAL WEIGHT", totalWeight, "1.5", isDark),
+          child: _buildStatCard("TOTAL WEIGHT", totalWeight, "KG", isDark),
         ),
       ],
     );
@@ -665,7 +665,7 @@ class _HomePagePState extends State<HomePageP> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.trending_up, size: 14, color: Colors.green),
+              //const Icon(Icons.trending_up, size: 14, color: Colors.green),
               const SizedBox(width: 4),
               Text(
                 trend,

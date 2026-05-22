@@ -54,7 +54,6 @@ class _NotificationVitPageState extends State<NotificationVitPage> {
           }
 
           if (state is ProfileLoaded) {
-            // ✅ Récupérer la liste
             final List<dynamic> notifications =
                 state.user["notifications"] ?? [];
 
@@ -73,22 +72,21 @@ class _NotificationVitPageState extends State<NotificationVitPage> {
                         onPressed: () {},
                         child: Text(
                           "Mark all as read",
-                          style: TextStyle(color: Colors.blue[800]),
+                          style: TextStyle(color: Color(0xFF01A896)),
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 8),
 
-                    // ✅ Liste des notifications
                     if (notifications.isEmpty)
                       _buildEmptyState()
                     else
                       ...notifications.map((notif) =>
                           _buildNotifCard(notif, isDark)).toList(),
 
-                    const SizedBox(height: 20),
-                    _buildEmptyState(),
+                    // const SizedBox(height: 20),
+                    // _buildEmptyState(),
                   ],
                 ),
               ),
@@ -127,11 +125,11 @@ class _NotificationVitPageState extends State<NotificationVitPage> {
       decoration: BoxDecoration(
         color: isRead
             ? (isDark ? Colors.white10 : Colors.white)
-            : (isDark ? Colors.blue.withOpacity(0.1) : Colors.blue.shade50),
+            : (isDark ? Colors.blue.withOpacity(0.1) : const Color.fromARGB(255, 255, 255, 255)),
         borderRadius: BorderRadius.circular(14),
         border: Border(
           left: BorderSide(
-            color: isRead ? Colors.transparent : Colors.blue,
+            color: isRead ? Colors.transparent : Color(0xFF01A896),
             width: 4,
           ),
         ),
@@ -181,7 +179,7 @@ class _NotificationVitPageState extends State<NotificationVitPage> {
               if (!isRead)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),
-                  child: CircleAvatar(radius: 4, backgroundColor: Colors.blue),
+                  child: CircleAvatar(radius: 4, backgroundColor: Color(0xFF01A896)),
                 ),
             ],
           ),

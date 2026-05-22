@@ -443,7 +443,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                             Icon(Icons.save_alt_outlined, size: 20),
                             SizedBox(width: 10),
                             Text(
-                              "Download Receipt (PDF)",
+                              "Download Report (PDF)",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
@@ -453,6 +453,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                         ),
                       ),
                     ),
+                  SizedBox(height: 20,),
                 ],
               ),
             ),
