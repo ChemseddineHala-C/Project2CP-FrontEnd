@@ -5,6 +5,7 @@ import './userMan.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 
+
 class HomepageadminPage extends StatefulWidget {
   const HomepageadminPage({super.key});
 
@@ -76,6 +77,25 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ),
               ],
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 15),
+                child: Material(
+                  color: const Color(0x1A0F68E6),
+                  borderRadius: BorderRadius.circular(50),
+                  child: InkWell(
+                    onTap: () {},
+                    borderRadius: BorderRadius.circular(50),
+                    child: const SizedBox(
+                      width: 42,
+                      height: 42,
+                      child: Icon(Icons.logout_outlined, color: Color(0xFF023E77))
+                      //Icon(Icons.add, color: Color(0xFF023E77)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           body: _buildBody(context, state, isDark, batchVolume, activities),
           bottomNavigationBar: _buildBottomNavBar(isDark, 0),
