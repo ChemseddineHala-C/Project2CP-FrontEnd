@@ -16,6 +16,12 @@ class _AddvetState extends State<Addvet> {
   final _emailvetController = TextEditingController();
   final _passwordvetController = TextEditingController();
   final _homePortvetController = TextEditingController();
+  final _full_nameController=TextEditingController();
+  final _national_idController=TextEditingController();
+  final _phone_numberController=TextEditingController();
+  final _specializationController=TextEditingController();
+  final _license_numberController=TextEditingController();
+  final _license_expiry_dateController=TextEditingController();
   bool _obscurePassword = true;
   bool _sendCredentials = true;
 
@@ -24,13 +30,19 @@ class _AddvetState extends State<Addvet> {
     _emailvetController.dispose();
     _passwordvetController.dispose();
     _homePortvetController.dispose();
+    _full_nameController.dispose();
+    _national_idController.dispose();
+    _phone_numberController.dispose();
+    _specializationController.dispose();
+    _license_numberController.dispose();
+    _license_expiry_dateController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_emailvetController.text.isEmpty ||
         _passwordvetController.text.isEmpty ||
-        _homePortvetController.text.isEmpty) {
+        _homePortvetController.text.isEmpty || _full_nameController.text.isEmpty || _national_idController.text.isEmpty || _phone_numberController.text.isEmpty || _specializationController.text.isEmpty || _license_numberController.text.isEmpty || _license_expiry_dateController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please fill all required fields"),
@@ -45,6 +57,12 @@ class _AddvetState extends State<Addvet> {
       emailvet: _emailvetController.text.trim(),
       passwordvet: _passwordvetController.text.trim(),
       homePortvet: _homePortvetController.text.trim(),
+      full_name: _full_nameController.text.trim(),
+      national_id: _national_idController.text.trim(),
+      phone_number: _phone_numberController.text.trim(),
+      specialization: _specializationController.text.trim(),
+      license_number: _license_numberController.text.trim(),
+      license_expiry_date: _license_expiry_dateController.text.trim(),
     );
   }
 
@@ -104,6 +122,24 @@ class _AddvetState extends State<Addvet> {
                     _label("Home Port"),
                     customTextField("Enter Home port", _homePortvetController, isDark),
                     const SizedBox(height: 30),
+                    _label("Full Name"),
+                    customTextField("Enter Full Name", _full_nameController, isDark),
+                    const SizedBox(height: 16),
+                    _label("National ID"),
+                    customTextField("Enter National ID", _national_idController, isDark),
+                    const SizedBox(height: 16),
+                    _label("Phone Number"),
+                    customTextField("Enter Phone Number", _phone_numberController, isDark),
+                    const SizedBox(height: 16),
+                    _label("Specialization"),
+                    customTextField("Enter Specialization", _specializationController, isDark),
+                    const SizedBox(height: 16),
+                    _label("License Number"),
+                    customTextField("Enter License Number", _license_numberController, isDark),
+                    const SizedBox(height: 16),
+                    _label("License Expiry Date"),
+                    customTextField("Enter License Expiry Date", _license_expiry_dateController, isDark),
+                    const SizedBox(height: 16),
                     _buildCheckbox(isLoading),
                     const SizedBox(height: 30),
                     SizedBox(
