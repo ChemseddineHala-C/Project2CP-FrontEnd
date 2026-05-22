@@ -1,3 +1,4 @@
+import 'package:fishapp/picheur/notificationph.dart';
 import 'package:fishapp/signin/cubit/authcubit.dart';
 import 'package:fishapp/signin/cubit/themecubit.dart';
 import 'package:fishapp/signin/signup/splage.dart';
@@ -84,7 +85,7 @@ class MyApp extends StatelessWidget {
             ),
             dividerTheme: const DividerThemeData(color: Colors.white12),
           ),
-          home: const SplashPage(), 
+          home: const NotificationPage()
           //SplashPage(),
           // RoleSelectionPage()
           // SplashPage(),
