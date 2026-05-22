@@ -1180,8 +1180,8 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "PUT",
-        "$_baseUrl/change-password",
-        body: {"currentPassword": currentPassword, "password": password},
+        "$_baseUrl/users/change-password",
+        body: {"current_password": currentPassword, "new_password": password, "confirm_password": password},
       );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/change-password"),
@@ -1219,11 +1219,8 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "PUT",
-        "$_baseUrl/auth/update-profile",
-        body: {
-          "currentpasswordVit": currentpasswordVit,
-          "passwordVit": passwordVit,
-        },
+        "$_baseUrl/users/change-password",
+        body: {"current_password": currentpasswordVit, "new_password": passwordVit, "confirm_password": passwordVit},
       );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/update-profile"),
@@ -1261,11 +1258,8 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "PUT",
-        "$_baseUrl/auth/update-profile",
-        body: {
-          "currentpaaswordCons": currentpasswordCons,
-          "passwordCons": passwordCons,
-        },
+        "$_baseUrl/users/change-password",
+        body: {"current_password": currentpasswordCons, "new_password": passwordCons, "confirm_password": passwordCons},
       );
       // final response = await http.put(
       //   Uri.parse("$_baseUrl/auth/update-profile"),
