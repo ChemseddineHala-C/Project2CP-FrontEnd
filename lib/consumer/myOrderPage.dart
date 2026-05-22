@@ -40,8 +40,10 @@ class OrderItem {
     if (json['photo'] != null) {
       if (json['photo'] is List) {
         photoList = List<String>.from(json['photo']);
+        print("it's list");
       } else if (json['photo'] is String) {
         photoList = [json['photo']];
+        print("it's string");
       }
     }
 
@@ -59,11 +61,17 @@ class OrderItem {
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
+
     String rawPath = photo![0];
-    // Remove leading "src" safely
-    String cleanPath = rawPath.startsWith("src/")
-        ? rawPath.substring(3)
-        : (rawPath.startsWith("/") ? rawPath : "/$rawPath");
+    String cleanPath = rawPath
+        .replaceAll('"', '')
+        .replaceAll('[', '')
+        .replaceAll(']', '')
+        .split(",")[0]
+        .replaceFirst('src', '');
+
+    print(cleanPath);
+
     return "http://localhost:3000$cleanPath";
   }
 }
@@ -394,7 +402,7 @@ class OrderCard extends StatelessWidget {
   const OrderCard({super.key, required this.order, required this.item});
 
   /// Total price = subtotal * delivery_fee
-  double get _cardTotal => (item.subtotal ?? 0) * (order.deliveryFee ?? 0);
+  double get _cardTotal => (item.subtotal ?? 0) + (order.deliveryFee ?? 0);
 
   String _formatDate(DateTime? date) {
     if (date == null) return "N/A";
@@ -447,10 +455,6 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = order.status ?? "pending";
     final photoUrl = item.getFirstPhotoUrl();
-    photoUrl.replaceAll('"', '');
-    photoUrl.replaceAll(']', '');
-    photoUrl.replaceAll('[]', '');
-    print(photoUrl);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -473,6 +477,8 @@ class OrderCard extends StatelessWidget {
               child: photoUrl.isNotEmpty
                   ? Image.network(
                       photoUrl,
+                      width: 80,
+                      height: 80,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.broken_image,
@@ -557,8 +563,10 @@ class OrderCard extends StatelessWidget {
                   fontSize: 15,
                 ),
               ),
+              
             ],
           ),
+          
         ],
       ),
     );
