@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -634,65 +636,71 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     String? token = await _getToken();
     if (token == null) {
       print("No token found");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("No token found"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No token found"), backgroundColor: Colors.red),
+        );
+      }
       return;
     }
 
-    // Show loading
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
-
-    final response = await http.get(
-      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
-      headers: {"Authorization": "Bearer $token"},
-    );
-
-    print("STATUS: ${response.statusCode}");
-
-    if (response.statusCode == 200) {
-      // Linux Downloads folder
-      String homeDir = Platform.environment['HOME'] ?? '';
-      Directory downloadDir = Directory('$homeDir/Downloads');
-
-      // Create Downloads folder if it doesn't exist
-      if (!await downloadDir.exists()) {
-        await downloadDir.create(recursive: true);
-      }
-
-      // Save file
-      String fileName = "certificate_$id.pdf";
-      String filePath = '${downloadDir.path}/$fileName';
-      File file = File(filePath);
-      await file.writeAsBytes(response.bodyBytes);
-
-      // Show success
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Saved to: $filePath"),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
-        ),
-      );
-
-      print("File saved to: $filePath");
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed: ${response.statusCode}"),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text("Downloading certificate..."),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
         ),
       );
     }
+
+    final response = await http.get(
+      Uri.parse("http://localhost:3000/api/inspections/batch/$id/certificate"),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("DOWNLOAD STATUS: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      // ✅ حفظ الملف في Download folder على Android
+      final directory = await getApplicationDocumentsDirectory();
+      final downloadsPath = '${directory?.path}/Download';
+      final downloadsDir = Directory(downloadsPath);
+      
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+      
+      final file = File('$downloadsPath/certificate_$id.pdf');
+      await file.writeAsBytes(response.bodyBytes);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Saved to: ${file.path}"),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      
+      print("File saved to: ${file.path}");
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed: ${response.statusCode}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   } catch (e) {
     print("Error: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+    }
   }
 }
