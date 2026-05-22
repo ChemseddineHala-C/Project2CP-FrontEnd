@@ -1621,20 +1621,17 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest(
-        "GET",
-        "$_baseUrl/notifications",
-      );
+      final response = await _authorizedRequest("GET", "$_baseUrl/notifications");
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print(data);
-        emit(ProfileLoaded(data));
+        final List<dynamic> data = jsonDecode(response.body);
+        print("NOTIFICATIONS: $data");
+        emit(ProfileLoaded({"notifications": data}));
       } else {
-        emit(AuthError("Failed to load profile"));
+        emit(ProfileError("Failed to load notifications"));
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(ProfileError(e.toString()));
     }
   }
 }
