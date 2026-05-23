@@ -5,6 +5,7 @@ import 'dart:convert';
 import './Admin_Pecheur.dart';
 import './admin_vit.dart';
 import './homepageadmin.dart';
+import './addvet.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -280,7 +281,14 @@ class _UserManagementPageState extends State<UserManagementPage> {
               color: const Color(0x1A0F68E6),
               borderRadius: BorderRadius.circular(50),
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Addvet(),
+                    ),
+                  );
+                },
                 borderRadius: BorderRadius.circular(50),
                 child: const SizedBox(
                   width: 42,

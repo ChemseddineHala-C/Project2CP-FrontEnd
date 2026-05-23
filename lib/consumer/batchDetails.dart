@@ -112,7 +112,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       );
       return;
     }
-
+    print("$batchId");
     try {
       String? token = await _getToken();
       if (token == null) {
@@ -165,6 +165,87 @@ class _BatchDetailsState extends State<BatchDetails> {
       return;
     }
   }
+
+  static Future<void> buyNow({
+    required int batchId,
+    required double quantity,
+    required BuildContext context,
+  }) async {
+    if (batchId <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Batch ID invalide"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("La quantité doit être supérieure à 0"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    print("$batchId");
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Token non trouvé. Veuillez vous reconnecter."),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // ✅ إنشاء الطلب
+      final response = await http.post(
+        Uri.parse("http://localhost:3000/api/orders/buy-now"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"batch_id": batchId, "quantity_kg": quantity}),
+      );
+
+      print("ADD TO CART STATUS: ${response.statusCode}");
+      print("ADD TO CART RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "✅ Ajouté au panier!"),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("❌ Erreur: ${response.body}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      print("Error adding to cart: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Erreur: $e"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+  }
+
+
+
 
   double get _totalPrice {
     if (_batch == null) return 0;
@@ -913,7 +994,9 @@ class _BatchDetailsState extends State<BatchDetails> {
                             );
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => ShoppingCartPage()),
+                              MaterialPageRoute(
+                                builder: (context) => ShoppingCartPage(),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -931,7 +1014,7 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            print("buy now: ${_quantity}kg");
+                            buyNow(batchId: _batch!.id!, quantity: _quantity, context: context);
                           },
                           icon: const Icon(Icons.chevron_right),
                           label: const Text("Buy now"),
@@ -1208,3 +1291,5 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     );
   }
 }
+
+

@@ -93,7 +93,6 @@ class _AddvetState extends State<Addvet> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Account created successfully!"), backgroundColor: Colors.green),
             );
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const SetupVitpage()));
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message), backgroundColor: Colors.red),

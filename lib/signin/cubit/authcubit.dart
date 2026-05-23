@@ -1475,16 +1475,17 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final response = await _authorizedRequest(
         "POST",
-        "$_baseUrl/admin/vets",
+        "$_baseUrl/admins/vets",
         body: {
-          "emailvet": emailvet,
-          "passwordvet": passwordvet,
-          "homePortvet": homePortvet,
+          "email": emailvet,
+          "password": passwordvet,
           "full_name": full_name,
           "national_id": national_id,
           "phone_number": phone_number,
           "specialization": specialization,
           "license_number": license_number,
+          "license_expiry_date": license_expiry_date,
+          "home_port": homePortvet,
         },
       );
       // final response = await http.post(
