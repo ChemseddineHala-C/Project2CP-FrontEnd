@@ -398,7 +398,6 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
 class OrderCard extends StatelessWidget {
   final Order order;
   final OrderItem item;
-
   const OrderCard({super.key, required this.order, required this.item});
 
   /// Total price = subtotal * delivery_fee
@@ -455,7 +454,6 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = order.status ?? "pending";
     final photoUrl = item.getFirstPhotoUrl();
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
