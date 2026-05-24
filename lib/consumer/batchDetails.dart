@@ -7,6 +7,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import './myOrderPage.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -243,9 +246,6 @@ class _BatchDetailsState extends State<BatchDetails> {
       return;
     }
   }
-
-
-
 
   double get _totalPrice {
     if (_batch == null) return 0;
@@ -1014,7 +1014,11 @@ class _BatchDetailsState extends State<BatchDetails> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            buyNow(batchId: _batch!.id!, quantity: _quantity, context: context);
+                            buyNow(
+                              batchId: _batch!.id!,
+                              quantity: _quantity,
+                              context: context,
+                            );
                           },
                           icon: const Icon(Icons.chevron_right),
                           label: const Text("Buy now"),
@@ -1226,70 +1230,174 @@ class Block extends StatelessWidget {
 
 Future<void> DownloadCer(String id, BuildContext context) async {
   try {
+    // 1. Check for token
     String? token = await _getToken();
     if (token == null) {
       print("No token found");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("No token found"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return;
     }
 
-    // Show loading
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
+    // 2. Request storage permission (for Android)
+    if (Platform.isAndroid) {
+      PermissionStatus status = await Permission.storage.request();
 
+      // For Android 11+ (API 30+) need manage external storage permission
+      if (await Permission.manageExternalStorage.isDenied) {
+        status = await Permission.manageExternalStorage.request();
+      }
+
+      if (!status.isGranted) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Please grant storage permission to download the file",
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    // 3. Show loading message
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(width: 12),
+              Text("Downloading certificate..."),
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+
+    // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://192.168.1.94:3000/api/inspections/$id/certificate"),
+      Uri.parse(
+        "http://192.168.1.94:3000/api/inspections/batch/$id/certificate",
+      ),
       headers: {"Authorization": "Bearer $token"},
     );
 
-    print("STATUS: ${response.statusCode}");
+    print("DOWNLOAD STATUS: ${response.statusCode}");
 
+    // 5. Handle response
     if (response.statusCode == 200) {
-      // Linux Downloads folder
-      String homeDir = Platform.environment['HOME'] ?? '';
-      Directory downloadDir = Directory('$homeDir/Downloads');
+      // Get the correct downloads folder path
+      String? downloadsPath;
 
-      // Create Downloads folder if it doesn't exist
-      if (!await downloadDir.exists()) {
-        await downloadDir.create(recursive: true);
+      if (Platform.isAndroid) {
+        // Correct way to get Download folder path on Android
+        downloadsPath = '/storage/emulated/0/Download';
+
+        // Check if folder exists, create if not
+        final downloadDir = Directory(downloadsPath);
+        if (!await downloadDir.exists()) {
+          await downloadDir.create(recursive: true);
+        }
+      } else if (Platform.isIOS) {
+        // For iOS, use documents directory
+        final directory = await getApplicationDocumentsDirectory();
+        downloadsPath = directory.path;
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        downloadsPath = directory.path;
       }
 
-      // Save file
-      String fileName = "certificate_$id.pdf";
-      String filePath = '${downloadDir.path}/$fileName';
-      File file = File(filePath);
+      // Create filename with timestamp to avoid duplication
+      String fileName =
+          "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      String filePath = "$downloadsPath/$fileName";
+
+      // Save the file
+      final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
 
-      // Show success
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Saved to: $filePath"),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      // Check file size to ensure it was saved correctly
+      int fileSize = await file.length();
+      print("File saved: $filePath, Size: $fileSize bytes");
 
-      print("File saved to: $filePath");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("✅ Certificate downloaded successfully"),
+                Text(
+                  "Saved to: Download/$fileName",
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      print("✅ File saved successfully to: $filePath");
+    } else if (response.statusCode == 401) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Session expired, please login again"),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } else if (response.statusCode == 404) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Certificate not found for this ID"),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
     } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Download failed: Error ${response.statusCode}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    print("Error in DownloadCer: $e");
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Failed: ${response.statusCode}"),
+          content: Text("Error: ${e.toString()}"),
           backgroundColor: Colors.red,
         ),
       );
     }
-  } catch (e) {
-    print("Error: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
-    );
   }
 }
-
-

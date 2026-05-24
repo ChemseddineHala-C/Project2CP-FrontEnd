@@ -278,6 +278,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                           "Delivered",
                           "Pending",
                           "Processing",
+                          "Cancelled"
                         ].map(_buildFilterChip).toList(),
                       ),
                     ),
@@ -469,14 +470,14 @@ class OrderCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Container(
-              width: 70,
-              height: 70,
+              width: 100,
+              height: 100,
               color: Colors.grey[100],
               child: photoUrl.isNotEmpty
                   ? Image.network(
                       photoUrl,
-                      width: 80,
-                      height: 80,
+                      width: 100,
+                      height: 100,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.broken_image,
@@ -518,6 +519,43 @@ class OrderCard extends StatelessWidget {
                     fontSize: 11,
                   ),
                 ),
+                SizedBox(height: 4),
+
+                if (status.compareTo("delivered") != 0 && status.compareTo("cancelled") != 0)
+                  InkWell(
+                    onTap: () {
+                      status.compareTo("pending") == 0
+                          ? {cancelOrder(item.id!, context),
+                          }
+                          : ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Not supported yet"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusGeometry.all(
+                          Radius.circular(25),
+                        ),
+                        border: BoxBorder.all(
+                          color: const Color.fromARGB(255, 194, 192, 192),
+                        ),
+                      ),
+                      child: Text(
+                        "${status.compareTo("pending") == 0 ? "Cancel" : "Track Order"}",
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: status.compareTo("pending") == 0
+                              ? Colors.red
+                              : const Color.fromARGB(255, 117, 117, 117),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -561,10 +599,8 @@ class OrderCard extends StatelessWidget {
                   fontSize: 15,
                 ),
               ),
-              
             ],
           ),
-          
         ],
       ),
     );
@@ -575,4 +611,50 @@ class Block extends StatelessWidget {
   const Block({super.key});
   @override
   Widget build(BuildContext context) => const SizedBox(height: 20);
+}
+
+void cancelOrder(int id, BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.put(
+      Uri.parse("http://192.168.1.94:3000/api/orders/$id/cancel"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Order cancelled successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    print("Error in cancelOrder: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
