@@ -3,12 +3,18 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import '../signin/signup/splage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class EditProfilePage extends StatefulWidget {
-
   const EditProfilePage({super.key});
 
   @override
@@ -113,12 +119,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
           "Edit Profile",
           style: TextStyle(
             // color: Color(0xFF011A33),
-              fontWeight: FontWeight.bold),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back,
+          icon: const Icon(
+            Icons.arrow_back,
             // color: Colors.black
           ),
         ),
@@ -132,11 +140,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
             _homePortController.text = state.user["home_port"] ?? "";
             _boatNameController.text = state.user["boat_name"] ?? "";
             _capacityController.text = state.user["capacity"] ?? "";
-            _isInitialized = true; // Empêche d'écraser les saisies de l'utilisateur
+            _isInitialized =
+                true; // Empêche d'écraser les saisies de l'utilisateur
           }
           if (state is ProfileUpdatedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile updated successfully"),
+              const SnackBar(
+                content: Text("Profile updated successfully"),
                 // backgroundColor: Colors.green
               ),
             );
@@ -144,7 +154,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           }
           if (state is ProfileError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message),
+              SnackBar(
+                content: Text(state.message),
                 // backgroundColor: Colors.red
               ),
             );
@@ -159,7 +170,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildProfileImage(state,isDark),
+                _buildProfileImage(state, isDark),
                 const SizedBox(height: 24),
                 _buildPersonalInfoCard(isDark),
                 const SizedBox(height: 20),
@@ -167,7 +178,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 const SizedBox(height: 24),
                 _buildDeactivateButton(),
                 const SizedBox(height: 16),
-                _buildSaveButton(state,isDark),
+                _buildSaveButton(state, isDark),
                 const SizedBox(height: 12),
                 _buildCancelButton(),
               ],
@@ -178,58 +189,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  // Widget _buildProfileImage(AuthState state,bool isDark) {
-  //   String? networkImage;
-  //   if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
-  //
-  //   return Column(
-  //     children: [
-  //       Stack(
-  //         children: [
-  //           GestureDetector(
-  //             onTap: _pickImage,
-  //             child: Container(
-  //               padding: const EdgeInsets.all(4),
-  //               decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
-  //               child: CircleAvatar(
-  //                 radius: 65,
-  //                 backgroundColor:isDark? Colors.white12: Color(0xFFE3F2FD),
-  //                 backgroundImage: _imageFile != null
-  //                     ? FileImage(_imageFile!)
-  //                     : (networkImage != null
-  //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('https://192.168.1.94:3000/uploads/fishermen/me/photo')) as ImageProvider,
-  //               ),
-  //             ),
-  //           ),
-  //           Positioned(
-  //             bottom: 5,
-  //             right: 5,
-  //             child: GestureDetector(
-  //               onTap: _pickImage,
-  //               child: Container(
-  //                 padding: const EdgeInsets.all(4),
-  //                 decoration: const BoxDecoration(
-  //                   color: Color(0xFF013D73),
-  //                   shape: BoxShape.circle,
-  //                 ),
-  //                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-  //               ),
-  //             ),
-  //           )
-  //         ],
-  //       ),
-  //       const SizedBox(height: 12),
-  //       GestureDetector(
-  //         onTap: _pickImage,
-  //         child: const Text(
-  //           "Change Profile Photo",
-  //           style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
+
   Widget _buildProfileImage(AuthState state, bool isDark) {
     String? networkImage;
     if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
@@ -242,16 +202,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onTap: () => _pickFile("profile_photo"), // ✅ corrigé
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  shape: BoxShape.circle,
+                ),
                 child: CircleAvatar(
                   radius: 65,
-                  backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
+                  backgroundColor: isDark
+                      ? Colors.white12
+                      : const Color(0xFFE3F2FD),
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage('http://192.168.1.94:3000'+networkImage.toString().replaceFirst('src',''))
-                      : const NetworkImage('https://192.168.1.94:3000/uploads/fishermen/me/photo'))
-                  as ImageProvider,
+                                ? NetworkImage(
+                                    'http://192.168.1.94:3000' +
+                                        networkImage.toString().replaceFirst(
+                                          'src',
+                                          '',
+                                        ),
+                                  )
+                                : const NetworkImage(
+                                    'https://192.168.1.94:3000/uploads/fishermen/me/photo',
+                                  ))
+                            as ImageProvider,
                 ),
               ),
             ),
@@ -266,10 +239,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     color: Color(0xFF013D73),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -277,9 +254,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onTap: () => _pickFile("profile_photo"), // ✅ corrigé
           child: const Text(
             "Change Profile Photo",
-            style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+              color: Color(0xFF013D73),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -289,9 +270,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       isDark: isDark,
       title: "PERSONAL INFORMATION",
       children: [
-        _buildTextField("Full Name", _nameController,isDark),
+        _buildTextField("Full Name", _nameController, isDark),
         const SizedBox(height: 16),
-        _buildTextField("Phone Number", _phoneController,isDark),
+        _buildTextField("Phone Number", _phoneController, isDark),
         const SizedBox(height: 16),
         _buildTextField(
           "Email Address",
@@ -314,11 +295,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
       isDark: isDark,
       title: "VESSEL & HOME PORT",
       children: [
-        _buildTextField("Home Port", _homePortController,isDark, prefixIcon: Icons.location_on_outlined),
+        _buildTextField(
+          "Home Port",
+          _homePortController,
+          isDark,
+          prefixIcon: Icons.location_on_outlined,
+        ),
         const SizedBox(height: 16),
-        _buildTextField("Boat Name", _boatNameController,isDark, prefixIcon: Icons.directions_boat_outlined),
+        _buildTextField(
+          "Boat Name",
+          _boatNameController,
+          isDark,
+          prefixIcon: Icons.directions_boat_outlined,
+        ),
         const SizedBox(height: 16),
-        _buildTextField("Fuel tank capacity(Litre)", _capacityController,isDark, prefixIcon: Icons.local_gas_station_outlined),
+        _buildTextField(
+          "Fuel tank capacity(Litre)",
+          _capacityController,
+          isDark,
+          prefixIcon: Icons.local_gas_station_outlined,
+        ),
       ],
     );
   }
@@ -329,28 +325,35 @@ class _EditProfilePageState extends State<EditProfilePage> {
       children: [
         const Icon(Icons.delete_outline, color: Color(0xFFFF5252), size: 20),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            deactivateAccount(context);
+          },
           child: const Text(
             "Deactivate Account",
-            style: TextStyle(color: Color(0xFFFF5252), fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Color(0xFFFF5252),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSaveButton(AuthState state,bool isDark) {
+  Widget _buildSaveButton(AuthState state, bool isDark) {
     return ElevatedButton(
-      onPressed: state is AuthLoading ? null : () {
-        context.read<AuthCubit>().updateProfile(
-          name: _nameController.text,
-          phone: _phoneController.text,
-          homePort: _homePortController.text,
-          profileImage: _imageFile,
-          boatName: _boatNameController.text,
-          fuel:_capacityController.text,
-        );
-      },
+      onPressed: state is AuthLoading
+          ? null
+          : () {
+              context.read<AuthCubit>().updateProfile(
+                name: _nameController.text,
+                phone: _phoneController.text,
+                homePort: _homePortController.text,
+                profileImage: _imageFile,
+                boatName: _boatNameController.text,
+                fuel: _capacityController.text,
+              );
+            },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF013D73),
         minimumSize: const Size(double.infinity, 56),
@@ -360,16 +363,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
       child: state is AuthLoading
           ? const CircularProgressIndicator(color: Colors.white)
           : const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle_outline, color: Colors.white),
-          SizedBox(width: 8),
-          Text(
-            "Save Changes",
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  "Save Changes",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -378,34 +385,69 @@ class _EditProfilePageState extends State<EditProfilePage> {
       onPressed: () => Navigator.pop(context),
       child: const Text(
         "Cancel",
-        style: TextStyle(color: Color(0xFF7B8D9E), fontWeight: FontWeight.bold, fontSize: 16),
+        style: TextStyle(
+          color: Color(0xFF7B8D9E),
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,bool isDark, {bool enabled = true, IconData? prefixIcon, IconData? suffixIcon}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    bool enabled = true,
+    IconData? prefixIcon,
+    IconData? suffixIcon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color:isDark?Colors.white70: const Color(0xFF4A5568), fontSize: 13)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: enabled,
-          style: TextStyle(color:isDark? Colors.white:(enabled ? Colors.black : const Color(0xFF7B8D9E))),
+          style: TextStyle(
+            color: isDark
+                ? Colors.white
+                : (enabled ? Colors.black : const Color(0xFF7B8D9E)),
+          ),
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: const Color(0xFF013D73)) : null,
-            suffixIcon: suffixIcon != null ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18) : null,
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, color: const Color(0xFF013D73))
+                : null,
+            suffixIcon: suffixIcon != null
+                ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18)
+                : null,
             filled: true,
-            fillColor:isDark? Colors.white12:( enabled ? Colors.white : const Color(0xFFF8FAFB)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            fillColor: isDark
+                ? Colors.white12
+                : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
           ),
         ),
@@ -413,7 +455,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _cardContainer({required String title, required List<Widget> children,required bool isDark}) {
+  Widget _cardContainer({
+    required String title,
+    required List<Widget> children,
+    required bool isDark,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -422,10 +468,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04), // Correction withValues -> withOpacity
+            color: Colors.black.withOpacity(
+              0.04,
+            ), // Correction withValues -> withOpacity
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -433,12 +481,68 @@ class _EditProfilePageState extends State<EditProfilePage> {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, color:isDark?Colors.white54: const Color(0xFF718096), fontSize: 14, letterSpacing: 0.5),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white54 : const Color(0xFF718096),
+              fontSize: 14,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 20),
           ...children,
         ],
       ),
     );
+  }
+}
+
+void deactivateAccount(BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse("http://192.168.1.94:3000/api/users/me"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Account deactivated successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => SplashPage()),
+      (route) => false,
+    );
+  } catch (e) {
+    print("Error in deactivateAccount: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

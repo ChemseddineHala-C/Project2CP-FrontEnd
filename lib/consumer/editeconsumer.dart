@@ -1,28 +1,41 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:file_picker/file_picker.dart';  
-
+import 'package:file_picker/file_picker.dart';
+import '../signin/signup/splage.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class EditConsumerProfilePage extends StatefulWidget {
   const EditConsumerProfilePage({super.key});
 
   @override
-  State<EditConsumerProfilePage> createState() => _EditConsumerProfilePageState();
+  State<EditConsumerProfilePage> createState() =>
+      _EditConsumerProfilePageState();
 }
 
 class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   final TextEditingController _consumernameController = TextEditingController();
-  final TextEditingController _consumerphoneController = TextEditingController();
-  final TextEditingController _consumeremailController = TextEditingController();
-  final TextEditingController _consumerhomePortController = TextEditingController();
-  final TextEditingController _consumerboatNameController = TextEditingController();
-  final TextEditingController _consumerdelivery_addressController = TextEditingController();
+  final TextEditingController _consumerphoneController =
+      TextEditingController();
+  final TextEditingController _consumeremailController =
+      TextEditingController();
+  final TextEditingController _consumerhomePortController =
+      TextEditingController();
+  final TextEditingController _consumerboatNameController =
+      TextEditingController();
+  final TextEditingController _consumerdelivery_addressController =
+      TextEditingController();
 
   File? _imageFile;
-  bool _isInitialized = false;  // ✅ حذف ImagePicker
+  bool _isInitialized = false; // ✅ حذف ImagePicker
 
   @override
   void initState() {
@@ -40,6 +53,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     _consumerdelivery_addressController.dispose();
     super.dispose();
   }
+
   double _completionPercent = 0.0;
 
   void _updateCompletionPercent() {
@@ -68,23 +82,8 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       _completionPercent = filled / total;
     });
   }
-  // Future<void> _pickImage() async {
-  //   try {
-  //     final XFile? pickedFile = await _pickerconsumer.pickImage(
-  //       source: ImageSource.gallery,
-  //       maxWidth: 1000,
-  //       maxHeight: 1000,
-  //       imageQuality: 85,
-  //     );
-  //     if (pickedFile != null) {
-  //       setState(() {
-  //         _imageFile = File(pickedFile.path);
-  //       });
-  //     }
-  //   } catch (e) {
-  //     debugPrint("Error picking image: $e");
-  //   }
-  // }
+
+
   Future<void> _pickFile(String type) async {
     try {
       FilePickerResult? result = await FilePicker.pickFiles(
@@ -105,7 +104,9 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         });
 
         String fileName = result.files.single.name;
-        String fileType = fileName.toLowerCase().contains('.pdf') ? 'PDF' : 'Image';
+        String fileType = fileName.toLowerCase().contains('.pdf')
+            ? 'PDF'
+            : 'Image';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('OK $fileType: $fileName'),
@@ -147,7 +148,8 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
             _consumerphoneController.text = state.user["phone_number"] ?? "";
             _consumeremailController.text = state.user["email"] ?? "";
             _consumerhomePortController.text = state.user["nearby_port"] ?? "";
-            _consumerdelivery_addressController.text = state.user["delivery_address"] ?? "";
+            _consumerdelivery_addressController.text =
+                state.user["delivery_address"] ?? "";
             _isInitialized = true;
           }
           if (state is ProfileUpdatedSuccess) {
@@ -157,9 +159,9 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
             Navigator.pop(context);
           }
           if (state is ProfileError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         builder: (context, state) {
@@ -190,58 +192,6 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  // Widget _buildProfileImage(AuthState state,bool isDark) {
-  //   String? networkImage;
-  //   if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
-  //
-  //   return Column(
-  //     children: [
-  //       Stack(
-  //         children: [
-  //           GestureDetector(
-  //             onTap: _pickImage,
-  //             child: Container(
-  //               padding: const EdgeInsets.all(4),
-  //               decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
-  //               child: CircleAvatar(
-  //                 radius: 65,
-  //                 backgroundColor:isDark? Colors.white12: Color(0xFFE3F2FD),
-  //                 backgroundImage: _imageFile != null
-  //                     ? FileImage(_imageFile!)
-  //                     : (networkImage != null
-  //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('https://192.168.1.94:3000/uploads/fishermen/me/photo')) as ImageProvider,
-  //               ),
-  //             ),
-  //           ),
-  //           Positioned(
-  //             bottom: 5,
-  //             right: 5,
-  //             child: GestureDetector(
-  //               onTap: _pickImage,
-  //               child: Container(
-  //                 padding: const EdgeInsets.all(4),
-  //                 decoration: const BoxDecoration(
-  //                   color: Color(0xFFD5A439),
-  //                   shape: BoxShape.circle,
-  //                 ),
-  //                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-  //               ),
-  //             ),
-  //           )
-  //         ],
-  //       ),
-  //       const SizedBox(height: 12),
-  //       GestureDetector(
-  //         onTap: _pickImage,
-  //         child: const Text(
-  //           "Change Profile Photo",
-  //           style: TextStyle(color: Color(0xFFD5A439), fontWeight: FontWeight.bold, fontSize: 14),
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
   Widget _buildProfileImage(AuthState state, bool isDark) {
     String? networkImage;
     if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
@@ -254,16 +204,29 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
               onTap: () => _pickFile("profile_photo"), // ✅ corrigé
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Theme.of(context).cardColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  shape: BoxShape.circle,
+                ),
                 child: CircleAvatar(
                   radius: 65,
-                  backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
+                  backgroundColor: isDark
+                      ? Colors.white12
+                      : const Color(0xFFE3F2FD),
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage('http://192.168.1.94:3000'+networkImage.toString().replaceFirst('src',''))
-                      : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo')) 
-                  as ImageProvider,
+                                ? NetworkImage(
+                                    'http://192.168.1.94:3000' +
+                                        networkImage.toString().replaceFirst(
+                                          'src',
+                                          '',
+                                        ),
+                                  )
+                                : const NetworkImage(
+                                    'http://192.168.1.94:3000/uploads/fishermen/me/photo',
+                                  ))
+                            as ImageProvider,
                 ),
               ),
             ),
@@ -278,10 +241,14 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                     color: Color(0xFF013D73),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -289,9 +256,13 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
           onTap: () => _pickFile("profile_photo"), // ✅ corrigé
           child: const Text(
             "Change Profile Photo",
-            style: TextStyle(color: Color(0xFF013D73), fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+              color: Color(0xFF013D73),
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -326,9 +297,19 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       isDark: isDark,
       title: "ADDITIONAL INFORMATION",
       children: [
-        _buildTextField("Home Port", _consumerhomePortController, isDark, prefixIcon: Icons.location_on_outlined),
+        _buildTextField(
+          "Home Port",
+          _consumerhomePortController,
+          isDark,
+          prefixIcon: Icons.location_on_outlined,
+        ),
         const SizedBox(height: 16),
-        _buildTextField("Delivery Address", _consumerdelivery_addressController, isDark, prefixIcon: Icons.location_on_outlined),
+        _buildTextField(
+          "Delivery Address",
+          _consumerdelivery_addressController,
+          isDark,
+          prefixIcon: Icons.location_on_outlined,
+        ),
       ],
     );
   }
@@ -339,10 +320,15 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       children: [
         const Icon(Icons.delete_outline, color: Color(0xFFFF5252), size: 20),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            deactivateAccount(context);
+          },
           child: const Text(
             "Deactivate Account",
-            style: TextStyle(color: Color(0xFFFF5252), fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Color(0xFFFF5252),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -351,17 +337,19 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
 
   Widget _buildSaveButton(AuthState state, bool isDark) {
     return ElevatedButton(
-      onPressed: state is AuthLoading ? null : () {
-        // ✅ إضافة profileImage إلى الدالة
-        context.read<AuthCubit>().updateProfileConsumer(
-          name_cons: _consumernameController.text,
-          phone_cons: _consumerphoneController.text,
-          homePort_cons: _consumerhomePortController.text,
-          boatName_cons: _consumerboatNameController.text,
-          delivery_address: _consumerdelivery_addressController.text,
-          profileImage: _imageFile,  // ✅ إضافة الصورة
-        );
-      },
+      onPressed: state is AuthLoading
+          ? null
+          : () {
+              // ✅ إضافة profileImage إلى الدالة
+              context.read<AuthCubit>().updateProfileConsumer(
+                name_cons: _consumernameController.text,
+                phone_cons: _consumerphoneController.text,
+                homePort_cons: _consumerhomePortController.text,
+                boatName_cons: _consumerboatNameController.text,
+                delivery_address: _consumerdelivery_addressController.text,
+                profileImage: _imageFile, // ✅ إضافة الصورة
+              );
+            },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFD5A439),
         minimumSize: const Size(double.infinity, 56),
@@ -377,7 +365,11 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                 SizedBox(width: 8),
                 Text(
                   "Save Changes",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -389,34 +381,69 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
       onPressed: () => Navigator.pop(context),
       child: const Text(
         "Cancel",
-        style: TextStyle(color: Color(0xFF7B8D9E), fontWeight: FontWeight.bold, fontSize: 16),
+        style: TextStyle(
+          color: Color(0xFF7B8D9E),
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool enabled = true, IconData? prefixIcon, IconData? suffixIcon}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    bool enabled = true,
+    IconData? prefixIcon,
+    IconData? suffixIcon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF4A5568), fontSize: 13)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           enabled: enabled,
-          style: TextStyle(color: isDark ? Colors.white : (enabled ? Colors.black : const Color(0xFF7B8D9E))),
+          style: TextStyle(
+            color: isDark
+                ? Colors.white
+                : (enabled ? Colors.black : const Color(0xFF7B8D9E)),
+          ),
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: const Color(0xFFD5A439)) : null,
-            suffixIcon: suffixIcon != null ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18) : null,
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, color: const Color(0xFFD5A439))
+                : null,
+            suffixIcon: suffixIcon != null
+                ? Icon(suffixIcon, color: const Color(0xFFBDC8D1), size: 18)
+                : null,
             filled: true,
-            fillColor: isDark ? Colors.white12 : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            fillColor: isDark
+                ? Colors.white12
+                : (enabled ? Colors.white : const Color(0xFFF8FAFB)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: isDark ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: isDark
+                  ? BorderSide.none
+                  : const BorderSide(color: Color(0xFFE2E8F0)),
             ),
           ),
         ),
@@ -424,7 +451,11 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
     );
   }
 
-  Widget _cardContainer({required String title, required List<Widget> children, required bool isDark}) {
+  Widget _cardContainer({
+    required String title,
+    required List<Widget> children,
+    required bool isDark,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -436,7 +467,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -444,12 +475,68 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white54 : const Color(0xFF718096), fontSize: 14, letterSpacing: 0.5),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white54 : const Color(0xFF718096),
+              fontSize: 14,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 20),
           ...children,
         ],
       ),
     );
+  }
+}
+
+void deactivateAccount(BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse("http://192.168.1.94:3000/api/users/me"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Account deactivated successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => SplashPage()),
+      (route) => false,
+    );
+  } catch (e) {
+    print("Error in deactivateAccount: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

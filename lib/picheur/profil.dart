@@ -539,18 +539,6 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             icon: const Icon(Icons.anchor, color: Colors.grey),
           ),
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => MyBatchesPage()),
-          //     );
-          //   },
-          //   icon: const Icon(
-          //     Icons.shopping_basket_outlined,
-          //     color: Colors.grey,
-          //   ),
-          // ),
           IconButton(
             onPressed: () {
               Navigator.push(

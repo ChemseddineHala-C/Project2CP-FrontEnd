@@ -406,22 +406,6 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                             ],
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Row(
-                  //   children: [
-                  //     const Icon(Icons.history, color: Color(0xFF023E77)),
-                  //     const SizedBox(width: 5),
-                  //     const Text(
-                  //       "Status History",
-                  //       style: TextStyle(
-                  //         color: Color(0xFF0F172A),
-                  //         fontWeight: FontWeight.bold,
-                  //         fontSize: 20,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 15),
                   const SizedBox(height: 20),
                   if (widget.batch.status!.compareTo('pending') != 0)
                     SizedBox(
@@ -507,52 +491,6 @@ class _BatchDetailsState extends State<BatchDetailspage> {
     );
   }
 
-  //   Widget _buildTimelineTile(int index) {
-  //     return Row(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Column(
-  //           children: [
-  //             Container(
-  //               width: 16,
-  //               height: 16,
-  //               decoration: BoxDecoration(
-  //                 color: index == 0
-  //                     ? const Color(0xFF023E77)
-  //                     : const Color(0xFFC4D3E0),
-  //                 shape: BoxShape.circle,
-  //                 border: Border.all(color: Colors.white, width: 3),
-  //               ),
-  //             ),
-  //             if (index != events.length - 1)
-  //               Container(width: 2, height: 50, color: const Color(0xFF023E77)),
-  //           ],
-  //         ),
-  //         const SizedBox(width: 12),
-  //         Expanded(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text(
-  //                 events[index]["title"]!,
-  //                 style: const TextStyle(
-  //                   fontWeight: FontWeight.bold,
-  //                   fontSize: 16,
-  //                 ),
-  //               ),
-  //               Text(
-  //                 events[index]["subtitle"]!,
-  //                 style: const TextStyle(color: Colors.grey, fontSize: 14),
-  //               ),
-  //               const SizedBox(height: 20),
-  //             ],
-  //           ),
-  //         ),
-  //       ],
-  //     );
-  //   }
-  // }
-
   Widget _statusCard(String status) {
     final normalizedStatus = status.toLowerCase();
     Color bgColor;
@@ -630,80 +568,6 @@ class _BatchDetailsState extends State<BatchDetailspage> {
     );
   }
 }
-
-// Future<void> DownloadCer(String id, BuildContext context) async {
-//   try {
-//     String? token = await _getToken();
-//     if (token == null) {
-//       print("No token found");
-//       if (context.mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(content: Text("No token found"), backgroundColor: Colors.red),
-//         );
-//       }
-//       return;
-//     }
-
-//     if (context.mounted) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(
-//           content: Text("Downloading certificate..."),
-//           backgroundColor: Colors.blue,
-//           duration: Duration(seconds: 2),
-//         ),
-//       );
-//     }
-
-//     final response = await http.get(
-//       Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
-//       headers: {"Authorization": "Bearer $token"},
-//     );
-
-//     print("DOWNLOAD STATUS: ${response.statusCode}");
-
-//     if (response.statusCode == 200) {
-//       // ✅ حفظ الملف في Download folder على Android
-//       final directory = await getApplicationDocumentsDirectory();
-//       final downloadsPath = '${directory?.path}/Download';
-//       final downloadsDir = Directory(downloadsPath);
-      
-//       if (!await downloadsDir.exists()) {
-//         await downloadsDir.create(recursive: true);
-//       }
-      
-//       final file = File('$downloadsPath/certificate_$id.pdf');
-//       await file.writeAsBytes(response.bodyBytes);
-      
-//       if (context.mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("Saved to: ${file.path}"),
-//             backgroundColor: Colors.green,
-//             duration: const Duration(seconds: 3),
-//           ),
-//         );
-//       }
-      
-//       print("File saved to: ${file.path}");
-//     } else {
-//       if (context.mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("Failed: ${response.statusCode}"),
-//             backgroundColor: Colors.red,
-//           ),
-//         );
-//       }
-//     }
-//   } catch (e) {
-//     print("Error: $e");
-//     if (context.mounted) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
-//       );
-//     }
-//   }
-// }
 
 Future<void> DownloadCer(String id, BuildContext context) async {
   try {

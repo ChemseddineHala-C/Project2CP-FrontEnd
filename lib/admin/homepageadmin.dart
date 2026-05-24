@@ -107,7 +107,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                         Icons.logout_outlined,
                         color: Color(0xFF023E77),
                       ),
-                      //Icon(Icons.add, color: Color(0xFF023E77)),
                     ),
                   ),
                 ),
@@ -358,31 +357,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
-              // Container(
-              //   padding: const EdgeInsets.symmetric(
-              //     horizontal: 10,
-              //     vertical: 5,
-              //   ),
-              //   decoration: BoxDecoration(
-              //     color: badgeBg,
-              //     borderRadius: BorderRadius.circular(20),
-              //   ),
-              //   child: Row(
-              //     mainAxisSize: MainAxisSize.min,
-              //     children: [
-              //       Icon(Icons.arrow_upward, color: badgeColor, size: 12),
-              //       const SizedBox(width: 2),
-              //       Text(
-              //         badge,
-              //         style: TextStyle(
-              //           color: badgeColor,
-              //           fontSize: 12,
-              //           fontWeight: FontWeight.bold,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
           const SizedBox(height: 14),
@@ -1028,16 +1002,6 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
               size: 26,
             ),
           ),
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: Icon(
-          //     Icons.person_outline,
-          //     color: activeIndex == 2
-          //         ? (isDark ? const Color(0xFF023E77) : const Color(0xFF013D73))
-          //         : (isDark ? Colors.white54 : Colors.grey),
-          //     size: 28,
-          //   ),
-          // ),
         ],
       ),
     );

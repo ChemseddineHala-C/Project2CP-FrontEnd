@@ -8,7 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import '../signin/cubit/themecubit.dart';
-import 'batchDetails.dart';
+//import 'batchDetails.dart';
 import 'editeconsumer.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../signin/signup/splage.dart';

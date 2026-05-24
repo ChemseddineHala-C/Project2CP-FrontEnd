@@ -193,8 +193,6 @@ class _HomePageCState extends State<HomePageC> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //_buildHeader(),
-                    //const Block(),
                     _buildSearchBar(),
                     const Block(),
                     _buildCategories(),
@@ -213,54 +211,6 @@ class _HomePageCState extends State<HomePageC> {
               ),
             ),
       bottomNavigationBar: _buildBottomNavBar(false),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        const CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.white,
-          child: Icon(
-            Icons.waves,
-            color: Color(0xFF023E77),
-          ), // Placeholder for Logo
-        ),
-        const SizedBox(width: 12),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Welcome back,",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-            Text(
-              "Mr. Ahmed",
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                fontFamily: "Inter",
-                letterSpacing: -0.6,
-              ),
-            ),
-          ],
-        ),
-        const Spacer(),
-        Stack(
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.notifications, color: Colors.black),
-            ),
-            const Positioned(
-              right: 12,
-              top: 12,
-              child: CircleAvatar(radius: 4, backgroundColor: Colors.red),
-            ),
-          ],
-        ),
-      ],
     );
   }
 

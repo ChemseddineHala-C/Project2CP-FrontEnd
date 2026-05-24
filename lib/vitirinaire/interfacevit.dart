@@ -36,20 +36,7 @@ class _InterfacevitpageState extends State<Interfacevitpage> {
       body:Column(
         children: [
           const SizedBox(height: 16),
-          // Container(
-          //   width: 300,
-          //   height: 300,
-          //   decoration: BoxDecoration(
-          //     shape: BoxShape.circle,
-          //     border: Border.all(color: Colors.transparent, width: 6),
-          //   ),
-          //   child: SvgPicture.asset(
-          //     assessment,
-          //     width: 300,
-          //     height: 300,
-          //     fit: BoxFit.cover,
-          //   ),
-          // ),
+          
           ClipOval(
             child: SvgPicture.asset(
               assessment,
