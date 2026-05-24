@@ -72,7 +72,7 @@ class OrderItem {
 
     print(cleanPath);
 
-    return "http://localhost:3000$cleanPath";
+    return "http://192.168.1.94:3000$cleanPath";
   }
 }
 
@@ -151,7 +151,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/orders"),
+        Uri.parse("http://192.168.1.94:3000/api/orders"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",

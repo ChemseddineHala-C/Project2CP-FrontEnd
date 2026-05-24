@@ -13,7 +13,7 @@ final FlutterSecureStorage storage = const FlutterSecureStorage();
 // ==================== API SERVICE ====================
 class InspectorApiService {
   static const String baseUrl =
-      'http://localhost:3000/api'; // Update with your base URL
+      'http://192.168.1.94:3000/api'; // Update with your base URL
 
   static Future<String?> _getToken() async {
     return await storage.read(key: "token");
@@ -214,7 +214,7 @@ class _InspectorDashboardState extends State<InspectorDashboard> {
     if (photoPath == null || photoPath.isEmpty) return '';
     String cleanPath = photoPath.replaceFirst('src/', '');
     if (!cleanPath.startsWith('http')) {
-      cleanPath = 'http://localhost:3000/$cleanPath';
+      cleanPath = 'http://192.168.1.94:3000/$cleanPath';
     }
     return cleanPath;
   }

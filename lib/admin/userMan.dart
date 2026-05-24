@@ -75,7 +75,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
   String _getApiEndpoint(String role, String userId, String action) {
     final roleKey = role == 'Fisherman' ? 'fishermen' : 'veterinarians';
-    return 'http://localhost:3000/api/$roleKey/$userId/$action';
+    return 'http://192.168.1.94:3000/api/$roleKey/$userId/$action';
   }
 
   Future<void> _approveUser(UserCardData user) async {
@@ -168,7 +168,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
 
     if (profilePhoto.startsWith('src/') || profilePhoto.contains('/uploads/')) {
-      return 'http://localhost:3000/$profilePhoto';
+      return 'http://192.168.1.94:3000/$profilePhoto';
     }
 
     return 'images/fish1.png';
@@ -182,7 +182,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/users"),
+        Uri.parse("http://192.168.1.94:3000/api/users"),
         headers: {"Authorization": "Bearer $token"},
       );
 
@@ -546,20 +546,20 @@ class UserItemCard extends StatelessWidget {
               child: user.image.startsWith('http')
                   ? Image.network(
                       user.image,
-                      width: 100,
-                      height: 90,
+                      width: 70,
+                      height: 80,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Image.asset(
                         'images/fish1.png',
-                        width: 100,
-                        height: 90,
+                        width: 70,
+                        height: 80,
                         fit: BoxFit.cover,
                       ),
                     )
                   : Image.asset(
                       user.image,
-                      width: 100,
-                      height: 90,
+                      width: 70,
+                      height: 80,
                       fit: BoxFit.cover,
                     ),
             ),
@@ -583,7 +583,7 @@ class UserItemCard extends StatelessWidget {
                                     user.name,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontSize: 10,
                                     ),
                                   ),
                                   _statusBadge(user.status),
@@ -593,7 +593,7 @@ class UserItemCard extends StatelessWidget {
                                 "${user.role.compareTo("Fishermans") == 0 ? "Fisherman" : user.role.replaceAll('s', '')} ID: ${user.id}",
                                 style: const TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 12,
+                                  fontSize: 10,
                                 ),
                               ),
                             ],
@@ -627,7 +627,7 @@ class UserItemCard extends StatelessWidget {
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Not found"),
+                                    content: Text("Not found",style: TextStyle(fontSize: 10),),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -644,7 +644,8 @@ class UserItemCard extends StatelessWidget {
                                   ? "Full Profile"
                                   : "View Details",
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
+                                fontSize: 10,
                                 color: Color(0xFF0C6780),
                                 fontWeight: FontWeight.bold,
                               ),
@@ -712,7 +713,7 @@ class UserItemCard extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -747,7 +748,7 @@ class UserItemCard extends StatelessWidget {
         displayStatus,
         style: TextStyle(
           color: textColor,
-          fontSize: 10,
+          fontSize: 8,
           fontWeight: FontWeight.bold,
         ),
       ),

@@ -210,7 +210,7 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
   //                     ? FileImage(_imageFile!)
   //                     : (networkImage != null
   //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('https://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
+  //                     : const NetworkImage('https://192.168.1.94:3000/uploads/fishermen/me/photo')) as ImageProvider,
   //               ),
   //             ),
   //           ),
@@ -261,8 +261,8 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
                       : (networkImage != null
-                      ? NetworkImage('http://localhost:3000'+networkImage.toString().replaceFirst('src',''))
-                      : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo')) 
+                      ? NetworkImage('http://192.168.1.94:3000'+networkImage.toString().replaceFirst('src',''))
+                      : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo')) 
                   as ImageProvider,
                 ),
               ),

@@ -79,7 +79,7 @@ class _AddvetState extends State<Addvet> {
           icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : const Color(0xFF011A33)),
         ),
         title: Text(
-          "Add Vetirinair",
+          "Add Veterinarian",
           style: TextStyle(
             color: isDark ? Colors.white : const Color(0xFF011A33),
             fontWeight: FontWeight.bold,
@@ -134,10 +134,10 @@ class _AddvetState extends State<Addvet> {
                     customTextField("Enter Specialization", _specializationController, isDark),
                     const SizedBox(height: 16),
                     _label("License Number"),
-                    customTextField("Enter License Number", _license_numberController, isDark),
+                    customTextField("LIC-00-1122", _license_numberController, isDark),
                     const SizedBox(height: 16),
                     _label("License Expiry Date"),
-                    customTextField("Enter License Expiry Date", _license_expiry_dateController, isDark),
+                    customTextField("YYYY-MM-DD", _license_expiry_dateController, isDark),
                     const SizedBox(height: 16),
                     _buildCheckbox(isLoading),
                     const SizedBox(height: 30),

@@ -87,7 +87,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                   'src',
                   '',
                 );
-                return 'http://localhost:3000' + fp;
+                return 'http://192.168.1.94:3000' + fp;
               }
               return '';
             }
@@ -252,7 +252,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://localhost:3000' +
+                      'http://192.168.1.94:3000' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -427,13 +427,14 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                 ),
                 Text(
                   (filename != null && filename.isNotEmpty)
-                      ? filename
+                      ? filename.split('/')[5]
                       : 'No file',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
               ],
             ),
           ),
+          SizedBox(width: 8),
           ElevatedButton(
             onPressed: (filename != null && filename.isNotEmpty)
                 ? () {
@@ -519,10 +520,10 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
 }
 
 void openFile(BuildContext context, String url) {
+  print(url);
   final isPdf = url.toLowerCase().endsWith('.pdf');
   final isImage =
       url.toLowerCase().endsWith('.jpeg') || url.toLowerCase().endsWith('.png');
-
   Navigator.push(
     context,
     MaterialPageRoute(

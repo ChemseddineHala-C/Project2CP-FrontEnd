@@ -42,7 +42,7 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/batches/me"),
+        Uri.parse("http://192.168.1.94:3000/api/batches/me"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -381,7 +381,7 @@ Widget BatchCard(FishBatch batch) {
               borderRadius: BorderRadius.circular(8),
               child: imageUrl != null
                   ? Image.network(
-                      "http://localhost:3000$imageUrl",
+                      "http://192.168.1.94:3000$imageUrl",
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
