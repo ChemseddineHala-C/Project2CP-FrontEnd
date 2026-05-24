@@ -59,20 +59,6 @@ class _FailedvetPageState extends State<FailedvetPage> {
   }) async {
     try {
 
-      // if ((smell!.compareTo("null") == 0) ||
-      //     (gillColor!.compareTo("null") == 0) ||
-      //     (eyeClarity!.compareTo("null") == 0) ||
-      //     (fleshFirmness!.compareTo("null") == 0)) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text("All fields are required"),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      //   Navigator.pop(context);
-      //   return;
-      // }
-
       String? token = await _getToken();
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -17,12 +17,13 @@ class vetInspectionPage extends StatefulWidget {
 
 class _VetInspectionPageState extends State<vetInspectionPage> {
   final Completer<GoogleMapController> _mapController = Completer();
-  late LatLng    _catchLocation;
+  late LatLng _catchLocation;
   late Set<Marker> _markers;
 
   Future<void> _openInGoogleMaps() async {
-    final url = 'https://www.google.com/maps/search/?api=1'
-                '&query=${widget.batch.latitude},${widget.batch.longitude}';
+    final url =
+        'https://www.google.com/maps/search/?api=1'
+        '&query=${widget.batch.latitude},${widget.batch.longitude}';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
@@ -32,16 +33,22 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
   void initState() {
     super.initState();
 
-    _catchLocation = LatLng(widget.batch.latitude!, widget.batch.longitude!);
+    if (widget.batch.latitude != null && widget.batch.longitude != null) {
+      _catchLocation = LatLng(widget.batch.latitude!, widget.batch.longitude!);
 
-    _markers = {
-      Marker(
-        markerId: MarkerId('catch_location'),
-        position: _catchLocation,
-        infoWindow: InfoWindow(title: 'Catch Location'),
-      )
-    };
+      _markers = {
+        Marker(
+          markerId: MarkerId('catch_location'),
+          position: _catchLocation,
+          infoWindow: InfoWindow(title: 'Catch Location'),
+        ),
+      };
+    } else {
+      _catchLocation = LatLng(35.6971, -0.6308); 
+      _markers = {};
+    }
   }
+
   //variables
   String? _selectedSmell;
   String? _selectedGillColor;
@@ -246,18 +253,18 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                   child: GoogleMap(
                     initialCameraPosition: CameraPosition(
                       target: _catchLocation,
-                      zoom:   12
+                      zoom: 12,
                     ),
                     onMapCreated: (controller) {
                       _mapController.complete(controller);
                     },
-                    markers:                _markers,
-                    zoomControlsEnabled:    false,
+                    markers: _markers,
+                    zoomControlsEnabled: false,
                     myLocationButtonEnabled: false,
-                    scrollGesturesEnabled:  false,
-                    zoomGesturesEnabled:    false,
-                    rotateGesturesEnabled:  false,
-                    tiltGesturesEnabled:    false,
+                    scrollGesturesEnabled: false,
+                    zoomGesturesEnabled: false,
+                    rotateGesturesEnabled: false,
+                    tiltGesturesEnabled: false,
                   ),
                 ),
               ),
@@ -805,20 +812,22 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-
                             if (_selectedSmell == null ||
                                 _selectedGillColor == null ||
                                 _selectedFleshFirmness == null ||
                                 _selectedEyeClarity == null ||
-                                _tempController.text.isEmpty || double.tryParse(_tempController.text) == null) {
+                                _tempController.text.isEmpty ||
+                                double.tryParse(_tempController.text) == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Please complete all quality inspection fields"),
+                                  content: Text(
+                                    "Please complete all quality inspection fields",
+                                  ),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                               return;
-                            }  
+                            }
 
                             Navigator.push(
                               context,
@@ -862,15 +871,17 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            
                             if (_selectedSmell == null ||
                                 _selectedGillColor == null ||
                                 _selectedFleshFirmness == null ||
                                 _selectedEyeClarity == null ||
-                                _tempController.text.isEmpty || double.tryParse(_tempController.text) == null) {
+                                _tempController.text.isEmpty ||
+                                double.tryParse(_tempController.text) == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Please complete all quality inspection fields"),
+                                  content: Text(
+                                    "Please complete all quality inspection fields",
+                                  ),
                                   backgroundColor: Colors.red,
                                 ),
                               );

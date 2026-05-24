@@ -191,6 +191,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       }
 
       final decoded = jsonDecode(response.body);
+      print(decoded);
       if (decoded is! List) {
         return [];
       }
@@ -254,11 +255,6 @@ class _UserManagementPageState extends State<UserManagementPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        // leading: IconButton(
-        //   onPressed: () => Navigator.pop(context),
-        //   icon: Icon(Icons.arrow_back),
-        //   color: Color(0xFF0F172A),
-        // ),
         title: Text(
           "User Management",
           style: TextStyle(
@@ -284,9 +280,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => Addvet(),
-                    ),
+                    MaterialPageRoute(builder: (context) => Addvet()),
                   );
                 },
                 borderRadius: BorderRadius.circular(50),
@@ -415,14 +409,6 @@ class _UserManagementPageState extends State<UserManagementPage> {
           ),
           IconButton(
             onPressed: () {
-              // if (activeIndex != 1) {
-              //   Navigator.pushReplacement(
-              //     context,
-              //     MaterialPageRoute(
-              //       builder: (context) => const UserManagementPage(),
-              //     ),
-              //   );
-              // }
               _fetchUsers();
             },
             icon: Icon(
@@ -433,14 +419,6 @@ class _UserManagementPageState extends State<UserManagementPage> {
               size: 26,
             ),
           ),
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: Icon(
-          //     Icons.person_outline,
-          //     color: isDark ? Colors.white54 : Colors.grey,
-          //     size: 28,
-          //   ),
-          // ),
         ],
       ),
     );
@@ -627,7 +605,10 @@ class UserItemCard extends StatelessWidget {
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Not found",style: TextStyle(fontSize: 10),),
+                                    content: Text(
+                                      "Not found",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -676,7 +657,9 @@ class UserItemCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           // Trashbin IconButton
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              deactivateAccountUser(user.id, context);
+                            },
                             icon: const Icon(
                               Icons.delete_outline,
                               color: Color(0xFFBA1A1A),
@@ -765,4 +748,50 @@ class UserCardData {
     required this.status,
     required this.image,
   });
+}
+
+void deactivateAccountUser(String id, BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse("http://192.168.1.94:3000/api/users/$id"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Account deactivated successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    print("Error in deactivateAccount: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }

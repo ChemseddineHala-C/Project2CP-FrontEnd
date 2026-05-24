@@ -525,7 +525,8 @@ class OrderCard extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       status.compareTo("pending") == 0
-                          ? {cancelOrder(item.id!, context),
+                          ? {
+                            cancelOrder(item.id!, context),
                           }
                           : ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

@@ -38,23 +38,6 @@ class _InterfaceconsumerpageState extends State<Interfaceconsumerpage> {
       body:Column(
         children: [
           const SizedBox(height: 16),
-          // Container(
-          //   width: 300,
-          //   height: 300,
-          //   decoration: BoxDecoration(
-          //     shape: BoxShape.circle,
-          //     border: Border.all(color: Colors.white, width: 6),
-          //     image: DecorationImage(
-          //       image: SvgPicture.asset(
-          //         assetname,
-          //         width: 300,
-          //         height: 300,
-          //       ),
-          //       // AssetImage("images/sea.png"),
-          //       fit: BoxFit.cover,
-          //     ),
-          //   ),
-          // ),
           Container(
             width: 300,
             height: 300,

@@ -2,9 +2,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart'; // ✅ changed from image_picker
-
+import '../signin/signup/splage.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class EditProfilevitPage extends StatefulWidget {
   const EditProfilevitPage({super.key});
@@ -206,64 +213,6 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
     );
   }
 
-  // Widget _buildProfileImage(AuthState state,bool isDark) {
-  //   String? networkImage;
-  //   if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
-  //   return Column(
-  //     children: [
-  //       Stack(
-  //         children: [
-  //           GestureDetector(
-  //             onTap: _pickImage,
-  //             child: Container(
-  //               padding: const EdgeInsets.all(4),
-  //               decoration: BoxDecoration(
-  //                   color: Theme.of(context).cardColor,
-  //                   shape: BoxShape.circle
-  //               ),
-  //               child: CircleAvatar(
-  //                 radius: 65,
-  //                 backgroundColor: isDark ? Colors.white12 : const Color(0xFFE3F2FD),
-  //                 backgroundImage:
-  //                 _imageFile != null
-  //                     ? FileImage(_imageFile!)
-  //                     : (networkImage != null
-  //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo')) as ImageProvider,
-  //                 // _imageFile != null
-  //                 //     ? FileImage(_imageFile!)
-  //                 //     : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo') as ImageProvider,
-  //               ),
-  //             ),
-  //           ),
-  //           Positioned(
-  //             bottom: 5,
-  //             right: 5,
-  //             child: GestureDetector(
-  //               onTap: _pickImage,
-  //               child: Container(
-  //                 padding: const EdgeInsets.all(4),
-  //                 decoration: const BoxDecoration(
-  //                   color: Color(0xFF00A896),
-  //                   shape: BoxShape.circle,
-  //                 ),
-  //                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-  //               ),
-  //             ),
-  //           )
-  //         ],
-  //       ),
-  //       const SizedBox(height: 12),
-  //       GestureDetector(
-  //         onTap: _pickImage,
-  //         child: const Text(
-  //           "Change Profile Photo",
-  //           style: TextStyle(color: Color(0xFF00A896), fontWeight: FontWeight.bold, fontSize: 14),
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
   Widget _buildProfileImage(AuthState state, bool isDark) {
     String? networkImage;
     if (state is ProfileLoaded) networkImage = state.user["profile_photo"];
@@ -392,7 +341,9 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
       children: [
         const Icon(Icons.delete_outline, color: Color(0xFFFF5252), size: 20),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            deactivateAccount(context);
+          },
           child: const Text(
             "Deactivate Account",
             style: TextStyle(
@@ -551,5 +502,56 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         ],
       ),
     );
+  }
+}
+
+void deactivateAccount(BuildContext context) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse("http://192.168.1.94:3000/api/users/me"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Account deactivated successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => SplashPage()),
+      (route) => false,
+    );
+  } catch (e) {
+    print("Error in deactivateAccount: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

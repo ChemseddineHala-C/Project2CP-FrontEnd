@@ -4,6 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<String?> _getToken() async {
+  return await storage.read(key: "token");
+}
 
 class Adminpecheurinfo extends StatefulWidget {
   final String id;
@@ -210,7 +218,8 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                       ],
                     ),
                     const SizedBox(height: 32),
-                    _buildActionButtons(),
+                    if (user["account_status"]?.toString() == "pending")
+                      _buildActionButtons(),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -466,7 +475,10 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => const Adminvitinfo()));
+              statusAccount(widget.id, context, "reject");
+              setState(() {
+                
+              });
             },
             icon: const Icon(Icons.block, color: Colors.white, size: 20),
             label: const Text(
@@ -490,7 +502,10 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => const Adminvetinfo()));
+              statusAccount(widget.id, context, "approve");
+              setState(() {
+                
+              });
             },
             icon: const Icon(
               Icons.check_circle_outline,
@@ -543,4 +558,49 @@ void openFile(BuildContext context, String url) {
       ),
     ),
   );
+}
+
+void statusAccount(String id, BuildContext context, String action) async {
+  try {
+    String? token = await _getToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final response = await http.put(
+      Uri.parse("http://192.168.1.94:3000/api/fishermen/$id/$action"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("OK"), backgroundColor: Colors.green),
+        );
+      }
+      return;
+    }
+  } catch (e) {
+    print("$e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
