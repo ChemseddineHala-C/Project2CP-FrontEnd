@@ -4,7 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import './userMan.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../signin/signup/splage.dart';
 
+final FlutterSecureStorage storage = const FlutterSecureStorage();
+Future<void> _clearSession() async {
+  await storage.delete(key: "token");
+  await storage.delete(key: "role");
+}
 
 class HomepageadminPage extends StatefulWidget {
   const HomepageadminPage({super.key});
@@ -81,15 +88,25 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
               Padding(
                 padding: const EdgeInsets.only(right: 15),
                 child: Material(
-                  color: const Color(0x1A0F68E6),
+                  //color: const Color(0x1A0F68E6),
                   borderRadius: BorderRadius.circular(50),
                   child: InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      _clearSession();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SplashPage()),
+                      );
+                    },
+                    splashColor: Color(0x1A0F68E6),
                     borderRadius: BorderRadius.circular(50),
                     child: const SizedBox(
                       width: 42,
                       height: 42,
-                      child: Icon(Icons.logout_outlined, color: Color(0xFF023E77))
+                      child: Icon(
+                        Icons.logout_outlined,
+                        color: Color(0xFF023E77),
+                      ),
                       //Icon(Icons.add, color: Color(0xFF023E77)),
                     ),
                   ),
@@ -341,31 +358,31 @@ class _HomeAdminPageState extends State<HomepageadminPage> {
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: badgeBg,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_upward, color: badgeColor, size: 12),
-                    const SizedBox(width: 2),
-                    Text(
-                      badge,
-                      style: TextStyle(
-                        color: badgeColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(
+              //     horizontal: 10,
+              //     vertical: 5,
+              //   ),
+              //   decoration: BoxDecoration(
+              //     color: badgeBg,
+              //     borderRadius: BorderRadius.circular(20),
+              //   ),
+              //   child: Row(
+              //     mainAxisSize: MainAxisSize.min,
+              //     children: [
+              //       Icon(Icons.arrow_upward, color: badgeColor, size: 12),
+              //       const SizedBox(width: 2),
+              //       Text(
+              //         badge,
+              //         style: TextStyle(
+              //           color: badgeColor,
+              //           fontSize: 12,
+              //           fontWeight: FontWeight.bold,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
           const SizedBox(height: 14),

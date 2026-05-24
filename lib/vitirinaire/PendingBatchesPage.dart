@@ -33,7 +33,7 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/inspections/pending"),
+        Uri.parse("http://192.168.1.94:3000/api/inspections/pending"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",

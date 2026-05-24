@@ -154,7 +154,7 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
           CircleAvatar(
             radius: 50,
             backgroundColor: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
-            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://localhost:3000"+user["profile_photo"].replaceFirst('src','')) : null,
+            backgroundImage: user["profile_photo"] != null ? NetworkImage("http://192.168.1.94:3000"+user["profile_photo"].replaceFirst('src','')) : null,
             child: user["profile_photo"] == null ? Icon(Icons.person, size: 60, color: isDark ? Colors.white : const Color(0xFFD5A439)) : null,
           ),
           const SizedBox(height: 12),

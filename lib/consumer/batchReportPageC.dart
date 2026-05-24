@@ -34,7 +34,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
       // ✅ تصحيح الرابط (إزالة الشرطة المائلة الزائدة)
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/inspections/$batchId/report"),
+        Uri.parse("http://192.168.1.94:3000/api/inspections/$batchId/report"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -344,7 +344,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
   Widget _inspectorTile(String full_name, String ID, String picture) {
     // ✅ التحقق من صحة رابط الصورة
     final imageUrl = picture.isNotEmpty
-        ? "http://localhost:3000/${picture.replaceFirst("src/", "")}"
+        ? "http://192.168.1.94:3000/${picture.replaceFirst("src/", "")}"
         : null;
 
     return Container(
@@ -698,7 +698,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     }
 
     final response = await http.get(
-      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
+      Uri.parse("http://192.168.1.94:3000/api/inspections/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -817,7 +817,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://localhost:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "http://192.168.1.94:3000/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 

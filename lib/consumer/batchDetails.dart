@@ -65,7 +65,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       }
 
       final response = await http.get(
-        Uri.parse("http://localhost:3000/api/batches/$batchId"),
+        Uri.parse("http://192.168.1.94:3000/api/batches/$batchId"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -127,7 +127,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://localhost:3000/api/cart/items"),
+        Uri.parse("http://192.168.1.94:3000/api/cart/items"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -205,7 +205,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://localhost:3000/api/orders/buy-now"),
+        Uri.parse("http://192.168.1.94:3000/api/orders/buy-now"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -1183,13 +1183,13 @@ class BatchWithInspection {
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
-    return "http://localhost:3000/${photo![0].replaceFirst("src/", "")}";
+    return "http://192.168.1.94:3000/${photo![0].replaceFirst("src/", "")}";
   }
 
   List<String> getAllPhotoUrls() {
     if (photo == null || photo!.isEmpty) return [];
     return photo!
-        .map((p) => "http://localhost:3000/${p.replaceFirst("src/", "")}")
+        .map((p) => "http://192.168.1.94:3000/${p.replaceFirst("src/", "")}")
         .toList();
   }
 
@@ -1244,7 +1244,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     ).showSnackBar(const SnackBar(content: Text("Downloading certificate...")));
 
     final response = await http.get(
-      Uri.parse("http://localhost:3000/api/inspections/$id/certificate"),
+      Uri.parse("http://192.168.1.94:3000/api/inspections/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 

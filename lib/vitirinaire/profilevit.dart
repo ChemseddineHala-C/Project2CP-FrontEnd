@@ -178,7 +178,7 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                 user["profile_photo"] != null &&
                     user["profile_photo"].toString().isNotEmpty
                 ? NetworkImage(
-                    "http://localhost:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
+                    "http://192.168.1.94:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
                   )
                 : null,
             child:

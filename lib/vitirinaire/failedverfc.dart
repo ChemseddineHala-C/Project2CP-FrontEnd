@@ -85,7 +85,7 @@ class _FailedvetPageState extends State<FailedvetPage> {
       }
 
       final response = await http.post(
-        Uri.parse("http://localhost:3000/api/inspections/${batchId}"),
+        Uri.parse("http://192.168.1.94:3000/api/inspections/${batchId}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",

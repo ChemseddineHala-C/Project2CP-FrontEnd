@@ -229,10 +229,10 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
   //                     ? FileImage(_imageFile!)
   //                     : (networkImage != null
   //                     ? NetworkImage(networkImage)
-  //                     : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo')) as ImageProvider,
+  //                     : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo')) as ImageProvider,
   //                 // _imageFile != null
   //                 //     ? FileImage(_imageFile!)
-  //                 //     : const NetworkImage('http://localhost:3000/uploads/fishermen/me/photo') as ImageProvider,
+  //                 //     : const NetworkImage('http://192.168.1.94:3000/uploads/fishermen/me/photo') as ImageProvider,
   //               ),
   //             ),
   //           ),
@@ -289,14 +289,14 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                                 ? NetworkImage(
-                                    'http://localhost:3000' +
+                                    'http://192.168.1.94:3000' +
                                         networkImage.toString().replaceFirst(
                                           'src',
                                           '',
                                         ),
                                   )
                                 : const NetworkImage(
-                                    'http://localhost:3000/uploads/fishermen/me/photo',
+                                    'http://192.168.1.94:3000/uploads/fishermen/me/photo',
                                   ))
                             as ImageProvider,
                 ),

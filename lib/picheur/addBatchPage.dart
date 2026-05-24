@@ -205,7 +205,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse("http://localhost:3000/api/batches"),
+        Uri.parse("http://192.168.1.94:3000/api/batches"),
       );
 
  

@@ -198,7 +198,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://localhost:3000' +
+                      'http://192.168.1.94:3000' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -351,7 +351,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
     if (item is! Map) return null;
     final fp = item['file_path'];
     if (fp == null) return null;
-    return 'http://localhost:3000' + fp.toString().replaceFirst('src', '');
+    return 'http://192.168.1.94:3000' + fp.toString().replaceFirst('src', '');
   }
 
   Widget _buildDownloadTile(
@@ -361,7 +361,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
     bool isDark,
   ) {
     final label = (filename != null && filename.isNotEmpty)
-        ? filename
+        ? filename.split('/')[5]
         : 'No file available';
 
     return Container(
@@ -397,11 +397,12 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
                 ),
                 Text(
                   label,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
               ],
             ),
           ),
+          SizedBox(width: 8,),
           ElevatedButton(
             onPressed: (filename != null && filename.isNotEmpty)
                 ? () => openFile(context, filename)

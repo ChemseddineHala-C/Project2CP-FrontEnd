@@ -88,7 +88,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(15),
-                    height: 86,
+                    //height: 86,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFC),
@@ -116,7 +116,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
                             color: const Color(0xFF0F172A),
                             fontFamily: "Inter",
                             fontWeight: FontWeight.w700,
-                            fontSize: 24,
+                            fontSize: 18,
                             decoration:
                                 widget.batch.status?.toLowerCase() == "rejected"
                                 ? TextDecoration.lineThrough
@@ -499,7 +499,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(13),
       child: Image.network(
-        "http://localhost:3000${path.replaceFirst("src", "")}",
+        "http://192.168.1.94:3000${path.replaceFirst("src", "")}",
         width: 139,
         height: 127,
         fit: BoxFit.cover,
@@ -655,7 +655,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     }
 
     final response = await http.get(
-      Uri.parse("http://localhost:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 

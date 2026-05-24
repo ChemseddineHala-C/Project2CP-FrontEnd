@@ -12,7 +12,7 @@ import 'authstate.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  final String _baseUrl = "http://localhost:3000/api";
+  final String _baseUrl = "http://192.168.1.94:3000/api";
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(

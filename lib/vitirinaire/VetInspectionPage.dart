@@ -184,7 +184,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                           color: Color(0xFF0F172A),
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
                       ),
                       Text(
@@ -193,7 +193,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                           fontFamily: 'Inter',
                           color: Color(0xFF64748B),
                           fontWeight: FontWeight.w500,
-                          fontSize: 14,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -230,7 +230,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
 
             Block(),
             Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -261,7 +261,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -275,7 +275,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                       value: option,
                                       child: Text(
                                         option,
-                                        style: TextStyle(fontSize: 14),
+                                        style: TextStyle(fontSize: 9),
                                       ),
                                     ),
                                   )
@@ -327,7 +327,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -341,7 +341,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                       value: option,
                                       child: Text(
                                         option,
-                                        style: TextStyle(fontSize: 14),
+                                        style: TextStyle(fontSize: 10),
                                       ),
                                     ),
                                   )
@@ -401,7 +401,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -415,7 +415,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                       value: option,
                                       child: Text(
                                         option,
-                                        style: TextStyle(fontSize: 14),
+                                        style: TextStyle(fontSize: 10),
                                       ),
                                     ),
                                   )
@@ -473,7 +473,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -487,7 +487,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                       value: option,
                                       child: Text(
                                         option,
-                                        style: TextStyle(fontSize: 14),
+                                        style: TextStyle(fontSize: 10),
                                       ),
                                     ),
                                   )
@@ -550,7 +550,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -595,7 +595,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Color(0xFF334155),
                               ),
                             ),
@@ -609,7 +609,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                     ),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        vertical: 12,
+                                        vertical: 17,
                                       ),
                                       decoration: BoxDecoration(
                                         color: _parasitesPresent
@@ -638,7 +638,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: 8),
+                                SizedBox(width: 6),
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: () => setState(
@@ -646,7 +646,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                                     ),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        vertical: 12,
+                                        vertical: 17,
                                       ),
                                       decoration: BoxDecoration(
                                         color: !_parasitesPresent
@@ -933,7 +933,7 @@ Widget _buildFishImage(String? path) {
     );
   }
 
-  final imageUrl = "http://localhost:3000${path.replaceFirst('src', '')}";
+  final imageUrl = "http://192.168.1.94:3000${path.replaceFirst('src', '')}";
 
   return ClipRRect(
     borderRadius: BorderRadius.circular(13),

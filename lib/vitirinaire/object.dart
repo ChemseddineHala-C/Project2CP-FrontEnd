@@ -271,7 +271,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://localhost:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "http://192.168.1.94:3000/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 
