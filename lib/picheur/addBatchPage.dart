@@ -3,12 +3,14 @@ import 'package:fishapp/picheur/picheur_Api.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -24,43 +26,57 @@ class Addbatchpage extends StatefulWidget {
 
 class _AddBatchPageState extends State<Addbatchpage> {
   bool _isLoading = false;
-  //String _error = "";
+  LatLng? _currentPosition;
+  final Completer<GoogleMapController> _mapController = Completer();
+  Set<Marker> _markers = {};
+  bool _gpsActive = false;
 
-  // Future<void> _submitBatch() async {
-  //   setState(() => _isLoading = true);
-  //   try {
-  //     final fishName = _isOtherFish
-  //         ? _otherFishController.text
-  //         : _selectedFish ?? "";
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
 
-  //     await ApiService.postMultipart(
-  //       "/api/batches",
-  //       {
-  //         "category": _selectedCategory ?? "",
-  //         "fish_name": fishName,
-  //         "catch_method": _selectedCatchMethod ?? "",
-  //         "quantity": _quantityController.text,
-  //         "price": _priceController.text,
-  //         "latitude": _currentPosition?.latitude.toString() ?? "",
-  //         "longitude": _currentPosition?.longitude.toString() ?? "",
-  //         "notes": _notesController.text,
-  //       },
-  //       _photos,
-  //       "photos",
-  //     );
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
 
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text("Batch submitted successfully!")));
-  //     Navigator.pop(context);
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text(e.toString())));
-  //   }
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
 
-  //   setState(() => _isLoading = false);
-  // }
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      _gpsActive = true;
+      _markers = {
+        Marker(
+          markerId: MarkerId('my_location'),
+          position: _currentPosition!,
+          infoWindow: InfoWindow(title: 'Your Location'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      };
+    });
+
+    final controller = await _mapController.future;
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: _currentPosition!, zoom: 13),
+      ),
+    );
+  }
+
+  Future<void> _openInGoogleMaps() async {
+    if (_currentPosition == null) return;
+
+    final url =
+        'https://www.google.com/maps/search/?api=1'
+        '&query=${_currentPosition!.latitude},${_currentPosition!.longitude}';
+
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
+  }
 
   //
   final Map<String, List<String>> _fishByCategory = {
@@ -105,8 +121,8 @@ class _AddBatchPageState extends State<Addbatchpage> {
 
   //
   //GoogleMapController? _mapController;
-  LatLng? _currentPosition;
-  bool _locationLoaded = false;
+
+  //bool _locationLoaded = false;
 
   //
   // Future<void> _getCurrentLocation() async {
@@ -172,6 +188,14 @@ class _AddBatchPageState extends State<Addbatchpage> {
   }
 
   Future<void> _addBatch() async {
+
+    if (_currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('GPS location not available'),backgroundColor: Colors.red,)
+      );
+      return;
+    }
+
     if (_selectedCategory == null ||
         (_selectedFish == null && !_isOtherFish) ||
         _selectedCatchMethod == null ||
@@ -208,17 +232,15 @@ class _AddBatchPageState extends State<Addbatchpage> {
         Uri.parse("http://192.168.1.94:3000/api/batches"),
       );
 
- 
       request.headers['Authorization'] = 'Bearer $token';
-
 
       request.fields['category'] = _selectedCategory ?? "";
       request.fields['fish_name'] = fishName;
       request.fields['catch_method'] = _selectedCatchMethod ?? "";
       request.fields['quantity_kg'] = _quantityController.text;
       request.fields['price_per_kg'] = _priceController.text;
-      request.fields['latitude'] = "0";
-      request.fields['longitude'] = "0";
+      request.fields['latitude'] = _currentPosition!.latitude.toString();
+      request.fields['longitude'] = _currentPosition!.longitude.toString();
       request.fields['additional_notes'] = _notesController.text;
       request.fields['date_caught'] = DateTime.now().toString();
 
@@ -268,6 +290,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
   @override
   void initState() {
     super.initState();
+    _getCurrentLocation();
   }
 
   @override
@@ -683,7 +706,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
                         subTitle: "CATCH LOCATION",
                         icon: Icons.location_on,
                       ),
-                      if (_locationLoaded)
+                      if (_gpsActive)
                         Container(
                           padding: EdgeInsets.all(3),
                           decoration: BoxDecoration(
@@ -703,39 +726,40 @@ class _AddBatchPageState extends State<Addbatchpage> {
                     ],
                   ),
                   SizedBox(height: 10),
+                  ////
+                  ///
                   GestureDetector(
-                    onTap: () => print("hello"),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        height: 180,
-                        width: double.infinity,
-                        child: _locationLoaded
-                            ? GestureDetector(
-                                onTap: () => {print("map")},
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(13),
-                                  child: Image.network(
-                                    "https://maps.googleapis.com/maps/api/staticmap"
-                                    "?center=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                                    "&zoom=14&size=400x200"
-                                    "&markers=${_currentPosition!.latitude},${_currentPosition!.longitude}"
-                                    "&key=YOUR_API_KEY",
-                                    width: double.infinity,
-                                    height: 180,
-                                    fit: BoxFit.cover,
-                                  ),
+                    onTap: _openInGoogleMaps,
+                    child: Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: _currentPosition == null
+                            ? Center(child: CircularProgressIndicator())
+                            : GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: _currentPosition!,
+                                  zoom: 13,
                                 ),
-                              )
-                            : Container(
-                                color: Color(0xFFF5F7F9),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
+                                onMapCreated: (controller) {
+                                  _mapController.complete(controller);
+                                },
+                                markers: _markers,
+                                zoomControlsEnabled: false,
+                                myLocationButtonEnabled: false,
+                                scrollGesturesEnabled: false,
+                                zoomGesturesEnabled: false,
+                                rotateGesturesEnabled: false,
+                                tiltGesturesEnabled: false,
                               ),
                       ),
                     ),
                   ),
+
                   ////// FOR MAP
                   SizedBox(height: 15),
                   TextFormField(

@@ -3,6 +3,9 @@ import 'package:fishapp/vitirinaire/succesverfc.dart';
 import './object.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
 class vetInspectionPage extends StatefulWidget {
   final FishBatchWithFisherman batch;
@@ -13,6 +16,32 @@ class vetInspectionPage extends StatefulWidget {
 }
 
 class _VetInspectionPageState extends State<vetInspectionPage> {
+  final Completer<GoogleMapController> _mapController = Completer();
+  late LatLng    _catchLocation;
+  late Set<Marker> _markers;
+
+  Future<void> _openInGoogleMaps() async {
+    final url = 'https://www.google.com/maps/search/?api=1'
+                '&query=${widget.batch.latitude},${widget.batch.longitude}';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _catchLocation = LatLng(widget.batch.latitude!, widget.batch.longitude!);
+
+    _markers = {
+      Marker(
+        markerId: MarkerId('catch_location'),
+        position: _catchLocation,
+        infoWindow: InfoWindow(title: 'Catch Location'),
+      )
+    };
+  }
   //variables
   String? _selectedSmell;
   String? _selectedGillColor;
@@ -204,8 +233,35 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
 
             Block(),
             subTitle('CATCH LOCATION'),
-            SizedBox(height: 140),
-
+            GestureDetector(
+              onTap: _openInGoogleMaps,
+              child: Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _catchLocation,
+                      zoom:   12
+                    ),
+                    onMapCreated: (controller) {
+                      _mapController.complete(controller);
+                    },
+                    markers:                _markers,
+                    zoomControlsEnabled:    false,
+                    myLocationButtonEnabled: false,
+                    scrollGesturesEnabled:  false,
+                    zoomGesturesEnabled:    false,
+                    rotateGesturesEnabled:  false,
+                    tiltGesturesEnabled:    false,
+                  ),
+                ),
+              ),
+            ),
             Block(),
             subTitle('BATCH PHOTOS'),
             SizedBox(height: 10),
