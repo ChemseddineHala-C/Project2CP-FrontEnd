@@ -57,6 +57,7 @@ dependencies:
   geocoding: ^4.0.0
   permission_handler: ^12.0.1
   flutter_downloader: ^1.12.0
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
@@ -105,6 +106,7 @@ flutter:
      - images/Bahr.png
      - images/mapLocation.jpg
      - images/launcher.png
+     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
