@@ -1,10 +1,10 @@
-import 'package:fishapp/consumer/batchDetails.dart';
-import 'package:fishapp/consumer/myOrderPage.dart';
-import 'package:fishapp/consumer/notifieCons.dart';
-import 'package:fishapp/consumer/profilconsumer.dart';
-import 'package:fishapp/consumer/shoppingCartPage.dart';
-import 'package:flutter/material.dart';
 import './batchDetails.dart';
+import './myOrderPage.dart';
+import './notifieCons.dart';
+import './profilconsumer.dart';
+import './shoppingCartPage.dart';
+import 'package:flutter/material.dart';
+//import './batchDetails.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

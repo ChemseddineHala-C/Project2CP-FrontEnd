@@ -1,6 +1,6 @@
-import 'package:fishapp/consumer/homePage.dart';
-import 'package:fishapp/consumer/profilconsumer.dart';
-import 'package:fishapp/consumer/shoppingCartPage.dart';
+import './homePage.dart';
+import './profilconsumer.dart';
+import './shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;

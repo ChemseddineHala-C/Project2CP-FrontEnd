@@ -1,4 +1,4 @@
-import 'package:fishapp/signin/signup/resetpasswordver.dart';
+import './resetpasswordver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/authcubit.dart';

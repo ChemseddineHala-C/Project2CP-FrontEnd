@@ -24,7 +24,7 @@
 
     <application
         android:usesCleartextTraffic="true"
-        android:label="fishapp"
+        android:label="BahrFresh"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

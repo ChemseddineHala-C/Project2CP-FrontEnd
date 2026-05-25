@@ -1,10 +1,10 @@
-import 'package:fishapp/picheur/notificationph.dart';
-import 'package:fishapp/signin/cubit/authcubit.dart';
-import 'package:fishapp/signin/cubit/themecubit.dart';
-import 'package:fishapp/signin/signup/splage.dart';
+import './picheur/notificationph.dart';
+import './signin/cubit/authcubit.dart';
+import './signin/cubit/themecubit.dart';
+import './signin/signup/splage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fishapp/vitirinaire/dashboardVet.dart';
+import './vitirinaire/dashboardVet.dart';
 import './admin/userMan.dart';
 
 void main() {

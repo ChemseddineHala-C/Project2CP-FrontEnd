@@ -1,7 +1,7 @@
-import 'package:fishapp/signin/signup/secondpage.dart';
+import './secondpage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fishapp/signin/login.dart';
+import '../login.dart';
 
 class Firstpage extends StatefulWidget{
   const Firstpage({super.key});
