@@ -1248,19 +1248,17 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     // 2. Request storage permission (for Android)
     if (Platform.isAndroid) {
       PermissionStatus status = await Permission.storage.request();
-
+      
       // For Android 11+ (API 30+) need manage external storage permission
       if (await Permission.manageExternalStorage.isDenied) {
         status = await Permission.manageExternalStorage.request();
       }
-
+      
       if (!status.isGranted) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                "Please grant storage permission to download the file",
-              ),
+              content: Text("Please grant storage permission to download the file"),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 3),
             ),
@@ -1279,10 +1277,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
               SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               ),
               SizedBox(width: 12),
               Text("Downloading certificate..."),
@@ -1296,9 +1291,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse(
-        "http://192.168.1.94:3000/api/inspections/batch/$id/certificate",
-      ),
+      Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -1308,11 +1301,11 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     if (response.statusCode == 200) {
       // Get the correct downloads folder path
       String? downloadsPath;
-
+      
       if (Platform.isAndroid) {
         // Correct way to get Download folder path on Android
         downloadsPath = '/storage/emulated/0/Download';
-
+        
         // Check if folder exists, create if not
         final downloadDir = Directory(downloadsPath);
         if (!await downloadDir.exists()) {
@@ -1328,18 +1321,17 @@ Future<void> DownloadCer(String id, BuildContext context) async {
       }
 
       // Create filename with timestamp to avoid duplication
-      String fileName =
-          "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      String fileName = "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       String filePath = "$downloadsPath/$fileName";
-
+      
       // Save the file
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
-
+      
       // Check file size to ensure it was saved correctly
       int fileSize = await file.length();
       print("File saved: $filePath, Size: $fileSize bytes");
-
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1359,7 +1351,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
           ),
         );
       }
-
+      
       print("✅ File saved successfully to: $filePath");
     } else if (response.statusCode == 401) {
       if (context.mounted) {

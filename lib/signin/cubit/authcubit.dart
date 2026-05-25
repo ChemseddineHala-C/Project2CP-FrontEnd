@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -20,17 +20,7 @@ class AuthCubit extends Cubit<AuthState> {
         "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
   );
 
-  // Sauvegarde token ET role ensemble
-  // Future<void> _saveTokenAndRole(String token, String role,
-  //     // {String? refreshToken}
-  //     ) async {
-  //   await storage.write(key: "token", value: token);
-  //   await storage.write(key: "role", value: role);
-  //   // if (refreshToken != null) {
-  //   //   await storage.write(key: "refresh_token", value: refreshToken);
-  //   // }
-  // }
-  // Dans _saveTokenAndRole — ajouter print pour vérifier
+
   Future<void> _saveTokenAndRole(
     String token,
     String role, {
@@ -43,36 +33,6 @@ class AuthCubit extends Cubit<AuthState> {
     final savedToken = await storage.read(key: "token");
     print("TOKEN SAUVEGARDÉ: $savedToken");
   }
-  //---refresh token---
-  // Future<bool> _refreshToken() async {
-  //   try {
-  //     final refreshToken = await storage.read(key: "refresh_token");
-  //     if (refreshToken == null) return false;
-  //
-  //     final response = await http.post(
-  //       Uri.parse("$_baseUrl/refresh-token-fishmen"),
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode({"refresh_token": refreshToken}),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       // Mettre à jour les tokens
-  //       await storage.write(key: "token", value: data['token']);
-  //       if (data['refresh_token'] != null) {
-  //         await storage.write(key: "refresh_token", value: data['refresh_token']);
-  //       }
-  //       return true;
-  //     } else {
-  //       // Refresh token expiré → logout
-  //       await _clearSession();
-  //       emit(AuthInitial());
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // }
 
   //---Remplace http---
   Future<http.Response> _authorizedRequest(
@@ -88,9 +48,6 @@ class AuthCubit extends Cubit<AuthState> {
         "Authorization": "Bearer $t",
       };
       final uri = Uri.parse(url);
-      // if (method == "GET") return http.get(uri, headers: headers);
-      // if (method == "PUT") return http.put(uri, headers: headers, body: jsonEncode(body));
-      // return http.post(uri, headers: headers, body: jsonEncode(body));
       if (method == "GET") return http.get(uri, headers: headers);
       if (method == "PUT")
         return http.put(uri, headers: headers, body: jsonEncode(body));
@@ -107,16 +64,6 @@ class AuthCubit extends Cubit<AuthState> {
       throw Exception("No token found");
     }
     var response = await makeRequest(token);
-
-    // Si token expiré → on tente le refresh
-    // if (response.statusCode == 401) {
-    //   final refreshed = await _refreshToken();
-    //   if (refreshed) {
-    //     token = await _getToken();
-    //     response = await makeRequest(token!); // on réessaie
-    //   }
-    // }
-
     return response;
   }
 
@@ -133,94 +80,9 @@ class AuthCubit extends Cubit<AuthState> {
   // Supprime token + role (pour logout)
   Future<void> _clearSession() async {
     await storage.delete(key: "token");
-    await storage.delete(key: "role");
+    await storage.delete(key: "role");}
     // await storage.delete(key: "refresh_token");
-  }
-  // --- LOGIN GOOGLE+API ---
-  // Future<void> signInWithGoogle() async {
-  //   try {
-  //     emit(AuthLoading());
-  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();//pour ouvrir boit de google account
-  //
-  //     if (googleUser == null) {
-  //       emit(AuthError("User cancelled"));
-  //       return;
-  //     }
-  //
-  //     final googleAuth = await googleUser.authentication; //pour access aux token
-  //     final String? idToken = googleAuth.idToken;
-  //     final String? serverAuthCode = googleUser.serverAuthCode;
-  //     final String email = googleUser.email;
-  //
-  //     // Vérification si le token est bien présent
-  //     if (idToken == null) {
-  //       emit(AuthError("Failed to get ID Token from Google"));
-  //       return;
-  //     }
-  //     // final response= await _authorizedRequest("Post", "$_baseUrl/auth/google-login-fishmen", body: jsonEncode({
-  //     //   "idToken": idToken,
-  //     //   "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
-  //     //   "serverAuthCode": serverAuthCode,
-  //     // }),);
-  //     final response = await http.post(
-  //       Uri.parse("$_baseUrl/google-login-fishmen"),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: jsonEncode({
-  //         "idToken": idToken,
-  //         "clientId": "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
-  //         "serverAuthCode": serverAuthCode,
-  //       }),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       // Sauvegarde token + role si le serveur les renvoie
-  //       if (data['token'] != null && data['role'] != null) {
-  //         await _saveTokenAndRole(data['token'], data['role']);
-  //       }
-  //       // Succès : on envoie l'email pour la suite (Fivepage)
-  //       emit(GooglePasswordRequired(email));
-  //     }else {
-  //       emit(AuthError("Server error: ${response.body}"));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
-  //
-  // // --- LOGIN FACEBOOK+API ---
-  // Future<void> signInWithFacebook() async {
-  //   try {
-  //     emit(AuthLoading());
-  //     final LoginResult result = await FacebookAuth.instance.login();
-  //
-  //     if (result.status != LoginStatus.success) {
-  //       emit(AuthError("Facebook login cancelled"));
-  //       return;
-  //     }
-  //
-  //     final response = await http.post(
-  //       Uri.parse("$_baseUrl/facebook-login-fishmen"),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: jsonEncode({"accessToken": result.accessToken!.token}),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       // ✅ Sauvegarde token + role
-  //       await _saveTokenAndRole(data['token'], data['role']);
-  //       emit(AuthAuthenticated(data));
-  //     } else {
-  //       emit(AuthError("Server error during Facebook login"));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
+
 
   // --- LOGIN CLASSIQUE+API ---
   Future<void> login(String email, String password) async {
@@ -248,44 +110,7 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
-  // --- INSCRIPTION+API ---
-  // Future<void> registerUser(String email, String password) async {
-  //   try {
-  //     emit(AuthLoading());
-  //     final response = await http.post(
-  //       Uri.parse("$_baseUrl/register-fishmen"),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: jsonEncode({"email": email, "password": password}),
-  //     );
-  //
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       final userData = jsonDecode(response.body);
-  //       await _saveTokenAndRole(userData['token'], userData['role'],
-  //         // refreshToken: userData['refresh_token']
-  //       );
-  //       emit(AuthAuthenticated(userData));
-  //     } else {
-  //       emit(AuthError("Registration failed: ${response.statusCode}"));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
 
-  // --- PROFIL ---
-
-  // Future<void> fetchProfile() async {
-  //   emit(ProfileLoaded({
-  //     "name": "Captain Ahmed",
-  //     "email": "ahmed@mail.com",
-  //     "boatName": "Sea Explorer",
-  //     "registration": "MAR-9999",
-  //     "homePort": "Oran",
-  //     "licenseExpiry": "2026",
-  //   }));
-  // }
 
   // --- PROFIL FISHERMAN+API ---
   Future<void> fetchProfile() async {
@@ -300,14 +125,6 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/fishermen/me",
       );
-      // final response = await http.get(
-      //   Uri.parse("$_baseUrl/auth/get-profile-fishmen"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print("RESPONSE DATA: $data");
@@ -355,30 +172,6 @@ class AuthCubit extends Cubit<AuthState> {
         emit(ProfileError("Update failed: ${response.body}"));
         return;
       }
-
-      // ✅ Step 2 — Mettre à jour la photo si sélectionnée
-      // if (profileImage != null) {
-      //   var photoRequest = http.MultipartRequest(
-      //     'PUT',
-      //     Uri.parse("$_baseUrl/fishermen/me/photo"),
-      //   );
-      //   photoRequest.headers['Authorization'] = 'Bearer $token';
-      //   photoRequest.files.add(
-      //     await http.MultipartFile.fromPath('profile_photo', profileImage.path),
-      //   );
-      //
-      //   var photoStreamed = await photoRequest.send();
-      //   var photoResponse = await http.Response.fromStream(photoStreamed);
-      //
-      //   print("PHOTO STATUS: ${photoResponse.statusCode}");
-      //   print("PHOTO RESPONSE: ${photoResponse.body}");
-      //
-      //   if (photoResponse.statusCode != 200) {
-      //     emit(ProfileError("Photo update failed: ${photoResponse.body}"));
-      //     return;
-      //   }
-      // }
-      // ✅ Step 2 — Mettre à jour la photo avec contentType
       if (profileImage != null) {
         var photoRequest = http.MultipartRequest(
           'PUT',
@@ -430,56 +223,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // Future<void> updateProfile({
-  //   required String name,
-  //   required String phone,
-  //   required String homePort,
-  //   // required String boatName,
-  //   // required String capacity,
-  //   File? profileImage
-  // }) async {
-  //   try {
-  //     emit(AuthLoading());
-  //     String? token = await _getToken();
-  //     if (token == null) {
-  //       emit(AuthError("No token found"));
-  //       return;
-  //     }
-  //     final response = await _authorizedRequest(
-  //       "PUT",
-  //       "$_baseUrl/fishermen/me",
-  //       body: {
-  //         "full_name": name,
-  //         "phone_number": phone,
-  //         "home_port": homePort,
-  //         // "boatName": boatName,
-  //         // "capacity": capacity,
-  //       },
-  //     );
-  //     // final response = await http.put(
-  //     //   Uri.parse("$_baseUrl/auth/get-Edit-profile-fishmen"),
-  //     //   headers: {
-  //     //     "Content-Type": "application/json",
-  //     //     "Authorization": "Bearer $token",
-  //     //   },
-  //     //   body: jsonEncode({
-  //     //     "fullName": name,
-  //     //     "phone": phone,
-  //     //     "homePort": homePort,
-  //     //     "boatName": boatName,
-  //     //     "capacity": capacity,
-  //     //   }),
-  //     // );
-  //
-  //     if (response.statusCode == 200) {
-  //       emit(ProfileUpdatedSuccess());
-  //     } else {
-  //       emit(ProfileError("Update failed"));
-  //     }
-  //   } catch (e) {
-  //     emit(ProfileError(e.toString()));
-  //   }
-  // }
   // --- COMPLETE SETUP+API ---
   Future<void> submitSetup({
     required String fullName,
@@ -591,66 +334,6 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
-  // Future<void> submitSetup({
-  //   required String fullName,
-  //   required String nationalId,
-  //   required String phone,
-  //   required String email,
-  //   required String boatName,
-  //   required String registrationNumber,
-  //   required String vesselType,
-  //   required String homePort,
-  //   required String licenseNumber,
-  //   required String expiryDate,
-  //   File? fishingLicense,
-  //   File? boatRegistration,
-  //   File? Idcard,
-  // }) async {
-  //   try {
-  //     emit(SetupLoading());
-  //     String? token = await _getToken();
-  //     if (token == null) {
-  //       emit(AuthError("No token found"));
-  //       return;
-  //     }
-  //     var request = http.MultipartRequest('POST', Uri.parse("$_baseUrl/complete-setup-fishmen"));
-  //     request.headers.addAll({
-  //       "Authorization": "Bearer $token",
-  //     });
-  //
-  //     request.fields['fullName'] = fullName;
-  //     request.fields['nationalId'] = nationalId;
-  //     request.fields['phone'] = phone;
-  //     request.fields['email'] = email;
-  //     request.fields['boatName'] = boatName;
-  //     request.fields['registrationNumber'] = registrationNumber;
-  //     request.fields['vesselType'] = vesselType;
-  //     request.fields['homePort'] = homePort;
-  //     request.fields['licenseNumber'] = licenseNumber;
-  //     request.fields['expiryDate'] = expiryDate;
-  //
-  //     if (fishingLicense != null) {
-  //       request.files.add(await http.MultipartFile.fromPath('fishingLicense', fishingLicense.path));
-  //     }
-  //     if (boatRegistration != null) {
-  //       request.files.add(await http.MultipartFile.fromPath('boatRegistration', boatRegistration.path));
-  //     }
-  //     if (Idcard != null) {
-  //       request.files.add(await http.MultipartFile.fromPath('Id-Card', Idcard.path));
-  //     }
-  //
-  //     var streamedResponse = await request.send();
-  //     var response = await http.Response.fromStream(streamedResponse);
-  //
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       emit(SetupSuccess());
-  //     } else {
-  //       emit(AuthError("Setup failed: ${response.body}"));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
 
   // --- LOGOUT+api ---
   Future<void> logout() async {
@@ -664,7 +347,6 @@ class AuthCubit extends Cubit<AuthState> {
         },
       );
       await _googleSignIn.signOut();
-      await FacebookAuth.instance.logOut();
       await _clearSession();
       emit(AuthInitial());
     } catch (e) {
@@ -672,17 +354,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // --- VET PROFILE ---
-  // Future<void> fetchvitProfile() async {
-  //   emit(ProfileLoaded({
-  //     "name": "Captain hako",
-  //     "email": "hako@mail.com",
-  //     "boatName": "Sea Explorer",
-  //     "registration": "MAR-9999",
-  //     "homePort": "Oran",
-  //     "licenseExpiry": "2026",
-  //   }));
-  // }
   Future<void> fetchvitProfile() async {
     try {
       emit(AuthLoading());
@@ -695,14 +366,6 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/veterinarians/me",
       );
-      // final response = await http.get(
-      //   Uri.parse("$_baseUrl/auth/profile-vit"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print("RESPONSE DATA: $data");
@@ -718,9 +381,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // --- UPDATE VET PROFILE ---
-
-  //edite profile de vitirinaire
   // --- UPDATE VET PROFILE ---
   Future<void> updateProfilevit({
     required String name,
@@ -828,17 +488,6 @@ class AuthCubit extends Cubit<AuthState> {
         "$_baseUrl/api/reject-batch",
         body: {"batchId": batchId, "reason": reason},
       );
-      // final response = await http.post(
-      //   Uri.parse("$_baseUrl/api/reject-batch"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "batchId": batchId,
-      //     "reason": reason,
-      //   }),
-      // );
 
       if (response.statusCode == 200) {
         // Vous pouvez émettre un état de succès ici
@@ -851,44 +500,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // --- VET INSPECTION DATA ---par simulation
-  //   Future<void> fetchInspectionDetails(String batchId) async {
-  //     try {
-  //       emit(AuthLoading());
-  //   String? token = await _getToken();
-  //   if (token == null) {
-  //   emit(AuthError("No token found"));
-  //   return;
-  //   }
-
-  //       final response await _authorizedRequest("GET", "$_baseUrl/api/inspection/$batchId");
-  //
-  //       final response = await http.get(
-  //         Uri.parse("https://yourbackend.com/api/inspection/$batchId"),
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Authorization": "Bearer $token", // 🔐 important
-  //         },
-  //       );
-  //
-  //       if (response.statusCode == 200) {
-  //         final data = jsonDecode(response.body);
-  //
-  //         emit(InspectionDataLoaded({
-  //           "status": data["status"],
-  //           "batchId": data["batchId"],
-  //           "fisherName": data["fisherName"],
-  //           "fishType": data["fishType"],
-  //           "expiryDate": data["expiryDate"],
-  //           "timeLeft": data["timeLeft"],
-  //         }));
-  //       } else {
-  //         emit(AuthError("Failed to load inspection data"));
-  //       }
-  //     } catch (e) {
-  //       emit(AuthError(e.toString()));
-  //     }
-  //   }
   Future<void> fetchInspectionDetails(String batchId) async {
     try {
       emit(AuthLoading());
@@ -996,56 +607,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // --- HOME DATA FISHERMAN ---
-  // Future<void> fetchHomeData() async {
-  //   try {
-  //     emit(AuthLoading());
-  //     // String? token = await _getToken();
-  //     // if (token == null) {
-  //     //   emit(AuthError("No token found"));
-  //     //   return;
-  //     // }
-  //     await Future.delayed(const Duration(seconds: 1));
-  //     emit(HomeDataLoaded({
-  //       "userName":        "Capt. Ahmed",
-  //       "earnings":        "12,450.00 DA",
-  //       "earningsTrend":   "8.4%",
-  //       "weight":          "4,250 kg",
-  //       "weightTrend":     "5.2%",
-  //       "pendingBatches":  24,
-  //       "approvedBatches": 85,
-  //       "rejectedBatches": 12,
-  //       "expiredBatches":  7,
-  //
-  //       // ✅ Donut — valeurs numériques
-  //       "batch_approved":  72.0,
-  //       "batch_expired":   18.0,
-  //       "batch_pending":    4.0,
-  //       "batch_rejected":   6.0,
-  //
-  //       // ✅ Donut — labels String
-  //       "approved_label": "72%",
-  //       "expired_label":  "18%",
-  //       "pending_label":   "4%",
-  //       "rejected_label":  "6%",
-  //       "batch":          "105",   // ← nombre au centre
-  //
-  //       // ✅ Fish distribution
-  //       "sardine_pct":    42.5,
-  //       "salmon_pct":     28.1,
-  //       "tuna_pct":       15.4,
-  //       "seabass_pct":     9.2,
-  //       "other_pct":       4.8,
-  //       "sardine_label":  "42.5%",
-  //       "salmon_label":   "28.1%",
-  //       "tuna_label":     "15.4%",
-  //       "seabass_label":   "9.2%",
-  //       "other_label":     "4.8%",
-  //     }));
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
   Future<void> fetchHomeData() async {
     try {
       emit(AuthLoading());
@@ -1073,17 +634,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //profile de consumer
-  // Future<void> fetchConsumerProfile() async {
-  //   emit(ProfileLoaded({
-  //     "name": "Captain hako",
-  //     "email": "hako@mail.com",
-  //     "boatName": "Sea Explorer",
-  //     "registration": "MAR-9999",
-  //     "homePort": "Oran",
-  //     "licenseExpiry": "2026",
-  //   }));
-  // }
   Future<void> fetchConsumerProfile() async {
     try {
       emit(AuthLoading());
@@ -1096,13 +646,6 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/customers/me",
       );
-      // final response = await http.get(
-      //   Uri.parse("https://api.example.com/profileConsumer"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -1117,9 +660,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //Fill information of Consumer
-  //SUBMIT SETUP CONSUMER
-  //Fill information of Consumer
   //SUBMIT SETUP CONSUMER
   Future<void> submitSetupCons({
     required String fullNameCons,
@@ -1183,17 +723,6 @@ class AuthCubit extends Cubit<AuthState> {
         "$_baseUrl/users/change-password",
         body: {"current_password": currentPassword, "new_password": password, "confirm_password": password},
       );
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/auth/change-password"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "currentPassword": currentPassword,
-      //     "password": password,
-      //   }),
-      // );
 
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
@@ -1222,17 +751,6 @@ class AuthCubit extends Cubit<AuthState> {
         "$_baseUrl/users/change-password",
         body: {"current_password": currentpasswordVit, "new_password": passwordVit, "confirm_password": passwordVit},
       );
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/auth/update-profile"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "currentpasswordVit":currentpasswordVit,
-      //     "passwordVit": passwordVit,
-      //   }),
-      // );
 
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
@@ -1261,17 +779,6 @@ class AuthCubit extends Cubit<AuthState> {
         "$_baseUrl/users/change-password",
         body: {"current_password": currentpasswordCons, "new_password": passwordCons, "confirm_password": passwordCons},
       );
-      // final response = await http.put(
-      //   Uri.parse("$_baseUrl/auth/update-profile"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      //   body: jsonEncode({
-      //     "currentpaaswordCons":currentpasswordCons,
-      //     "passwordCons": passwordCons,
-      //   }),
-      // );
 
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
@@ -1283,7 +790,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //edit profile consumer
   //edit profile consumer
   Future<void> updateProfileConsumer({
     required String name_cons,
@@ -1357,49 +863,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // --- SÉLECTION DU RÔLE ---
-  // Future<void> selectRole(String email,String password,String role) async {
-  //   try {
-  //     emit(AuthLoading());
-  //
-  //     String? token = await _getToken();
-  //     if (token == null) {
-  //       emit(AuthError("No token found"));
-  //       return;
-  //     }
-  //
-  //     // Envoie le rôle au backend
-  //     // final response = await _authorizedRequest("POST", "$_baseUrl/auth/send-email-fishmen", body: {
-  //     //   "email":email,
-  //     //   "role": role});
-  //     //")
-  //     final response = await http.post(
-  //       Uri.parse("$_baseUrl/auth/register"),
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": "Bearer $token",
-  //       },
-  //       body: jsonEncode({
-  //         "email":email,
-  //         "password": password,
-  //         "role": role}),
-  //       // on envoie : {"role": "fishmen"}
-  //       // ou         {"role": "vet"}
-  //       // ou         {"role": "consumer"}
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       // Sauvegarde le rôle localement
-  //       await storage.write(key: "role", value: role);
-  //       emit(RoleSelectedSuccess(role)); // → redirige selon le rôle
-  //     }
-  //     else {
-  //       emit(AuthError("Failed to select role: ${response.body}"));
-  //     }
-  //   } catch (e) {
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
   Future<void> selectRole(String email, String password, String role) async {
     try {
       emit(AuthLoading());
@@ -1488,14 +951,6 @@ class AuthCubit extends Cubit<AuthState> {
           "home_port": homePortvet,
         },
       );
-      // final response = await http.post(
-      //     Uri.parse("$_baseUrl/auth/code_verification"),
-      //     headers:
-      //     {
-      //       "Content-Type": "application/json",
-      //       "Authorization": "Bearer $token",
-      //     },
-      //     body: jsonEncode({"emailvet": emailvet, "passwordvet": passwordvet, "homePortvet": homePortvet,}));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         emit(VetCreatedSuccess());
@@ -1522,13 +977,6 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/admins/dashboard",
       );
-      // final response = await http.get(
-      //   Uri.parse("https://yourbackend.com/api/profile"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print(data);
@@ -1574,13 +1022,6 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/veterinarians/$id",
       );
-      // final response = await http.get(
-      //   Uri.parse("$_baseUrl/auth/profile-fishmen"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -1606,13 +1047,7 @@ class AuthCubit extends Cubit<AuthState> {
         "GET",
         "$_baseUrl/fishermen/$id",
       );
-      // final response = await http.get(
-      //   Uri.parse("$_baseUrl/auth/profile-fishmen"),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": "Bearer $token",
-      //   },
-      // );
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
