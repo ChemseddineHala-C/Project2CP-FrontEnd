@@ -37,7 +37,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   http: ^1.6.0
   google_sign_in: ^6.0.1
-  flutter_facebook_auth: ^6.0.0
+  # flutter_facebook_auth: ^6.0.0
   checkmark: ^0.0.2+1
   equatable: ^2.0.7
   image_picker: ^1.2.1
