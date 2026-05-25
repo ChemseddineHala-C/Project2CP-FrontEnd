@@ -714,7 +714,8 @@ class _AddBatchPageState extends State<Addbatchpage> {
                         borderRadius: BorderRadius.circular(12),
                         child: _currentPosition == null
                             ? Center(child: CircularProgressIndicator())
-                            : GoogleMap(
+                            : Stack( children: [
+                              GoogleMap(
                                 initialCameraPosition: CameraPosition(
                                   target: _currentPosition!,
                                   zoom: 13,
@@ -730,6 +731,15 @@ class _AddBatchPageState extends State<Addbatchpage> {
                                 rotateGesturesEnabled: false,
                                 tiltGesturesEnabled: false,
                               ),
+                              Positioned.fill(
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _openInGoogleMaps,
+                                  ),
+                                ) 
+                              ),
+                              ]),
                       ),
                     ),
                   ),
