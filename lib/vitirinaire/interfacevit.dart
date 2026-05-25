@@ -1,5 +1,5 @@
 // import 'package:flutter/cupertino.dart';
-import 'package:fishapp/vitirinaire/setupvit.dart';
+import './setupvit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 class Interfacevitpage extends StatefulWidget {

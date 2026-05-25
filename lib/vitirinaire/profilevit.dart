@@ -1,4 +1,4 @@
-import 'package:fishapp/vitirinaire/updatpassword.dart';
+import './updatpassword.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';

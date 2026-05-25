@@ -1,6 +1,6 @@
-import 'package:fishapp/vitirinaire/inspectionHistoryPage.dart';
-import 'package:fishapp/vitirinaire/notifieVit.dart';
-import 'package:fishapp/vitirinaire/profilevit.dart';
+import './inspectionHistoryPage.dart';
+import './notifieVit.dart';
+import './profilevit.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

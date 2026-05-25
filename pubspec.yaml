@@ -1,5 +1,5 @@
-name: fishapp
-description: "A new Flutter project."
+name: BahrFresh
+description: "BahrFresh"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -64,7 +64,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: "ic_launcher"
   ios: true
   image_path: "images/launcher.png"
   min_sdk_android: 21

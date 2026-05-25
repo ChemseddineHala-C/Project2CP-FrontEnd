@@ -1,7 +1,7 @@
-import 'package:fishapp/consumer/homePage.dart';
-import 'package:fishapp/consumer/myOrderPage.dart';
-import 'package:fishapp/consumer/passwordchange.dart';
-import 'package:fishapp/consumer/shoppingCartPage.dart';
+import './homePage.dart';
+import './myOrderPage.dart';
+import './passwordchange.dart';
+import './shoppingCartPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';

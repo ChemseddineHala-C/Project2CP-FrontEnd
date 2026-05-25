@@ -1,12 +1,12 @@
-import 'package:fishapp/signin/signup/sixpage.dart';
-import 'package:fishapp/signin/signup/therdpage.dart';
+import './sixpage.dart';
+import './therdpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/authcubit.dart';
 import '../cubit/authstate.dart';
 import 'fivepage.dart';
-import 'package:fishapp/signin/signup/sixpage.dart';
-import 'package:fishapp/signin/signup/therdpage.dart';
+// import 'package:fishapp/signin/signup/sixpage.dart';
+// import 'package:fishapp/signin/signup/therdpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/authcubit.dart';

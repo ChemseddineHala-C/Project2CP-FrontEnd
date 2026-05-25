@@ -1,5 +1,5 @@
 import 'package:checkmark/checkmark.dart';
-import 'package:fishapp/signin/signup/selectrole.dart';
+import './selectrole.dart';
 import 'package:flutter/material.dart';
 class Sixpage extends StatefulWidget {
   final String email;

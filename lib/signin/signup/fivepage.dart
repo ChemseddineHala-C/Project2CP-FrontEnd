@@ -1,10 +1,10 @@
-import 'package:fishapp/signin/signup/sixpage.dart';
+import './sixpage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/authcubit.dart';
 import '../cubit/authstate.dart';
 
-import 'package:fishapp/signin/signup/sixpage.dart';
+import './sixpage.dart';
 import 'package:flutter/material.dart';
 
 class Fivepage extends StatefulWidget {

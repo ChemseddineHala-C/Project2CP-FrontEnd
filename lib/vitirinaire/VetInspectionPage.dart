@@ -1,5 +1,5 @@
-import 'package:fishapp/vitirinaire/failedverfc.dart';
-import 'package:fishapp/vitirinaire/succesverfc.dart';
+import './failedverfc.dart';
+import './succesverfc.dart';
 import './object.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
