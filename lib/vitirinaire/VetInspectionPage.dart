@@ -250,7 +250,8 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: GoogleMap(
+                  child: Stack(children:[
+                    GoogleMap(
                     initialCameraPosition: CameraPosition(
                       target: _catchLocation,
                       zoom: 12,
@@ -265,7 +266,16 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                     zoomGesturesEnabled: false,
                     rotateGesturesEnabled: false,
                     tiltGesturesEnabled: false,
-                  ),
+                    ),
+                    Positioned.fill(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _openInGoogleMaps,
+                        ),
+                      ),
+                    )
+                  ]),
                 ),
               ),
             ),

@@ -551,7 +551,10 @@ void openFile(BuildContext context, String url) {
           ),
         ),
         body: isPdf
-            ? SfPdfViewer.network(url)
+            ? SfPdfViewer.network(url,
+            headers: {
+              'Authorization':'Bearer $_getToken()',
+            })
             : isImage
             ? InteractiveViewer(child: Image.network(url, fit: BoxFit.contain))
             : const Center(child: Text('Type of file is not supported')),
