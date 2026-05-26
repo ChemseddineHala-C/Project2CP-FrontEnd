@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import './editeconsumer.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -27,11 +28,12 @@ class BatchDetails extends StatefulWidget {
 class _BatchDetailsState extends State<BatchDetails> {
   bool _isLoading = true;
   BatchWithInspection? _batch;
+  String? delivery;
 
   double _quantity = 0.5;
   int _currentPhotoIndex = 0;
   late PageController _pageController;
-  String _deliveryAddress = "Rue El wiam, Sidi Bel Abbes";
+  //String _deliveryAddress = "Rue El wiam, Sidi Bel Abbes";
 
   @override
   void initState() {
@@ -51,15 +53,39 @@ class _BatchDetailsState extends State<BatchDetails> {
       _isLoading = true;
     });
     BatchWithInspection? batch = await getBatchWithInspection(widget.id);
+    String? _deliver = await getDeliveryAddress();
     setState(() {
+      delivery = _deliver;
       _batch = batch;
       _isLoading = false;
     });
   }
 
-  static Future<BatchWithInspection?> getBatchWithInspection(
-    int batchId,
-  ) async {
+  Future<String?> getDeliveryAddress() async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        print("No token found");
+        return null;
+      }
+
+      final resCustomer = await http.get(
+        Uri.parse("http://192.168.1.94:3000/api/customers/me"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print(jsonDecode(resCustomer.body));
+      return jsonDecode(resCustomer.body)['delivery_address'].toString();
+    } catch (e) {
+      print("Error fetching batch: $e");
+      return null;
+    }
+  }
+
+  Future<BatchWithInspection?> getBatchWithInspection(int batchId) async {
     try {
       String? token = await _getToken();
       if (token == null) {
@@ -273,42 +299,42 @@ class _BatchDetailsState extends State<BatchDetails> {
     return "${date.year}-${date.month}-${date.day} ${date.hour}:${date.minute}";
   }
 
-  void _editDeliveryAddress() {
-    TextEditingController _addressController = TextEditingController(
-      text: _deliveryAddress,
-    );
+  // void _editDeliveryAddress() {
+  //   TextEditingController _addressController = TextEditingController(
+  //     text: _deliveryAddress,
+  //   );
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delivery Address"),
-        content: TextFormField(
-          controller: _addressController,
-          decoration: InputDecoration(
-            hintText: "Enter your address...",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.black)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() => _deliveryAddress = _addressController.text);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD5A43A),
-            ),
-            child: const Text("OK", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-        backgroundColor: Colors.white,
-      ),
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text("Delivery Address"),
+  //       content: TextFormField(
+  //         controller: _addressController,
+  //         decoration: InputDecoration(
+  //           hintText: "Enter your address...",
+  //           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+  //         ),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("Cancel", style: TextStyle(color: Colors.black)),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () {
+  //             setState(() => _deliveryAddress = _addressController.text);
+  //             Navigator.pop(context);
+  //           },
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: const Color(0xFFD5A43A),
+  //           ),
+  //           child: const Text("OK", style: TextStyle(color: Colors.white)),
+  //         ),
+  //       ],
+  //       backgroundColor: Colors.white,
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -964,12 +990,19 @@ class _BatchDetailsState extends State<BatchDetails> {
                       ),
                       Expanded(
                         child: Text(
-                          _deliveryAddress,
+                          delivery ?? "Not Set",
                           style: const TextStyle(fontSize: 13),
                         ),
                       ),
                       GestureDetector(
-                        onTap: _editDeliveryAddress,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditConsumerProfilePage(),
+                            ),
+                          );
+                        },
                         child: const Icon(
                           Icons.edit_outlined,
                           color: Color(0xFFA2AFC1),
@@ -1254,7 +1287,8 @@ Future<void> DownloadCer(String id, BuildContext context) async {
         // Android 13+ لا يحتاج permission للـ Downloads folder
       } else if (sdkInt >= 30) {
         // Android 11 و 12
-        PermissionStatus status = await Permission.manageExternalStorage.request();
+        PermissionStatus status = await Permission.manageExternalStorage
+            .request();
         if (!status.isGranted) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -1292,7 +1326,10 @@ Future<void> DownloadCer(String id, BuildContext context) async {
               SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               ),
               SizedBox(width: 12),
               Text("Downloading certificate..."),
@@ -1306,7 +1343,9 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse(
+        "http://192.168.1.94:3000/api/inspections/batch/$id/certificate",
+      ),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -1316,11 +1355,11 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     if (response.statusCode == 200) {
       // Get the correct downloads folder path
       String? downloadsPath;
-      
+
       if (Platform.isAndroid) {
         // Correct way to get Download folder path on Android
         downloadsPath = '/storage/emulated/0/Download';
-        
+
         // Check if folder exists, create if not
         final downloadDir = Directory(downloadsPath);
         if (!await downloadDir.exists()) {
@@ -1336,17 +1375,18 @@ Future<void> DownloadCer(String id, BuildContext context) async {
       }
 
       // Create filename with timestamp to avoid duplication
-      String fileName = "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      String fileName =
+          "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       String filePath = "$downloadsPath/$fileName";
-      
+
       // Save the file
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
-      
+
       // Check file size to ensure it was saved correctly
       int fileSize = await file.length();
       print("File saved: $filePath, Size: $fileSize bytes");
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1366,7 +1406,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
           ),
         );
       }
-      
+
       print("✅ File saved successfully to: $filePath");
     } else if (response.statusCode == 401) {
       if (context.mounted) {
