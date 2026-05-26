@@ -87,8 +87,8 @@ class _NotificationConsPageState extends State<NotificationConsPage> {
                       ...notifications.map((notif) =>
                           _buildNotifCard(notif, isDark)).toList(),
 
-                    const SizedBox(height: 20),
-                    _buildEmptyState(),
+                    // const SizedBox(height: 20),
+                    // _buildEmptyState(),
                   ],
                 ),
               ),
