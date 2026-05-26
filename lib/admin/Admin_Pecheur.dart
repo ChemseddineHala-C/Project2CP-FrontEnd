@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -611,6 +612,8 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
     }
   }
 
+  
+
   void _showPdfViewer(BuildContext context, String url) async {
     try {
       showDialog(
@@ -618,10 +621,8 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
-      //
 
-      final token = await _getToken();
-
+      final token    = await _getToken();
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -629,62 +630,37 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
         },
       );
 
-      print('PDF response status: ${response.statusCode}');
-      print('PDF response size: ${response.bodyBytes.length} bytes');
-      print('PDF content type: ${response.headers['content-type']}');
-      print('PDF first bytes: ${String.fromCharCodes(response.bodyBytes.take(50))}');
-
-      if (response.statusCode != 200) {
-        if (context.mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.statusCode}')),
-          );
-        }
-        return;
-      }
-
-      //final response = await http.get(Uri.parse(url));
-      final bytes = response.bodyBytes;
-
-      // final dir = await getTemporaryDirectory();
-      // final file = File('${dir.path}/temp_doc.pdf');
-      // await file.writeAsBytes(bytes);
-
       final dir  = await getTemporaryDirectory();
-      final file = File('${dir.path}/temp_doc_${DateTime.now().millisecondsSinceEpoch}.pdf');
-      await file.writeAsBytes(bytes, flush: true);
-      final savedSize = await file.length();
-      print('Saved file size: $savedSize bytes');
-      print('File exists: ${await file.exists()}');
+      final file = File('${dir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await file.writeAsBytes(response.bodyBytes, flush: true);
 
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
-        
+        Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => Scaffold(
               appBar: AppBar(
+                backgroundColor: const Color.fromARGB(255, 217, 208, 208),
                 title: const Text('Document'),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              //body: SfPdfViewer.file(file),
-              body: SfPdfViewer.memory(
-                Uint8List.fromList(bytes),
+              body: PDFView(
+                filePath: file.path,
               ),
             ),
           ),
         );
       }
     } catch (e) {
+      print('PDF error: $e');
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error loading document')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
