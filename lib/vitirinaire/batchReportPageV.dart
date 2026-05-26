@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -693,24 +694,39 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 2. Request storage permission (for Android)
     if (Platform.isAndroid) {
-      PermissionStatus status = await Permission.storage.request();
-      
-      // For Android 11+ (API 30+) need manage external storage permission
-      if (await Permission.manageExternalStorage.isDenied) {
-        status = await Permission.manageExternalStorage.request();
-      }
-      
-      if (!status.isGranted) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please grant storage permission to download the file"),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 3),
-            ),
-          );
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 33) {
+        // Android 13+ لا يحتاج permission للـ Downloads folder
+      } else if (sdkInt >= 30) {
+        // Android 11 و 12
+        PermissionStatus status = await Permission.manageExternalStorage.request();
+        if (!status.isGranted) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please grant storage permission"),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
         }
-        return;
+      } else {
+        // Android 10 وما دون
+        PermissionStatus status = await Permission.storage.request();
+        if (!status.isGranted) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please grant storage permission"),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
       }
     }
 

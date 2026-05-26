@@ -88,6 +88,7 @@ class _FourpageState extends State<Fourpage> {
                 ),
                 const SizedBox(height: 10),
                 Row(
+                  spacing: 2.5,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(6, (index) => _buildCodeBox(index)),
                 ),
@@ -97,7 +98,7 @@ class _FourpageState extends State<Fourpage> {
                   height: 55,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8DA9C4),
+                      backgroundColor: Color(0xFF013D73),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: state is AuthLoading ? null : () {
@@ -146,15 +147,15 @@ class _FourpageState extends State<Fourpage> {
 
   Widget _buildCodeBox(int index) {
     return SizedBox(
-      width: 60,
-      height: 60,
+      width: 50,
+      height: 70,
       child: TextField(
         controller: _controllers[index],
         focusNode: _focusNodes[index],
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         decoration: InputDecoration(
           counterText: "",
           enabledBorder: OutlineInputBorder(
