@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -541,38 +542,46 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      final response = await http.get(Uri.parse(url));
-      final bytes = response.bodyBytes;
+      final token    = await _getToken();
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
 
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/temp_doc.pdf');
-      await file.writeAsBytes(bytes);
+      final dir  = await getTemporaryDirectory();
+      final file = File('${dir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await file.writeAsBytes(response.bodyBytes, flush: true);
 
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
-
+        Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => Scaffold(
               appBar: AppBar(
+                backgroundColor: const Color.fromARGB(255, 217, 208, 208),
                 title: const Text('Document'),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              body: SfPdfViewer.file(file),
+              body: PDFView(
+                filePath: file.path,
+              ),
             ),
           ),
         );
       }
     } catch (e) {
+      print('PDF error: $e');
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Error loading document')));
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }
