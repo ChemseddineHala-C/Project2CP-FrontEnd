@@ -6,6 +6,8 @@ import '../signin/cubit/authstate.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -442,9 +444,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
           child: ElevatedButton.icon(
             onPressed: () {
               statusAccount(widget.id, context, "reject");
-              setState(() {
-                
-              });
+              setState(() {});
             },
             icon: const Icon(Icons.block, color: Colors.white, size: 20),
             label: const Text(
@@ -469,9 +469,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
           child: ElevatedButton.icon(
             onPressed: () {
               statusAccount(widget.id, context, "approve");
-              setState(() {
-                
-              });
+              setState(() {});
             },
             icon: const Icon(
               Icons.check_circle_outline,
@@ -498,80 +496,129 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
       ],
     );
   }
-}
 
-void openFile(BuildContext context, String url) {
-  final isPdf = url.toLowerCase().endsWith('.pdf');
-  final isImage =
-      url.toLowerCase().endsWith('.jpeg') ||
-      url.toLowerCase().endsWith('.jpg') ||
-      url.toLowerCase().endsWith('.png');
+  void openFile(BuildContext context, String url) {
+    print(url);
+    final isPdf = url.toLowerCase().endsWith('.pdf');
+    final isImage =
+        url.toLowerCase().endsWith('.jpeg') ||
+        url.toLowerCase().endsWith('.png');
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Scaffold(
-        appBar: AppBar(
-          title: Text(isPdf ? 'PDF' : 'Image'),
-          leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back, color: Colors.black),
+    if (isPdf) {
+      // Call the async function properly
+      _showPdfViewer(context, url);
+    } else if (isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: Text('Image'),
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back, color: Colors.black),
+              ),
+            ),
+            body: InteractiveViewer(
+              child: Image.network(url, fit: BoxFit.contain),
+            ),
           ),
         ),
-        body: isPdf
-            ? SfPdfViewer.network(url)
-            : isImage
-            ? InteractiveViewer(child: Image.network(url, fit: BoxFit.contain))
-            : const Center(child: Text('Type of file is not supported')),
-      ),
-    ),
-  );
-}
+      );
+    } else {
+      // Show error dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Type of file is not supported')),
+      );
+    }
+  }
 
-void statusAccount(String id, BuildContext context, String action) async {
-  try {
-    String? token = await _getToken();
-    if (token == null) {
+  void _showPdfViewer(BuildContext context, String url) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await http.get(Uri.parse(url));
+      final bytes = response.bodyBytes;
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/temp_doc.pdf');
+      await file.writeAsBytes(bytes);
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Scaffold(
+              appBar: AppBar(
+                title: const Text('Document'),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              body: SfPdfViewer.file(file),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Error loading document')));
+      }
+    }
+  }
+
+  void statusAccount(String id, BuildContext context, String action) async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("No token found, please login again"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final response = await http.put(
+        Uri.parse("http://192.168.1.94:3000/api/veterinarians/$id/$action"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("OK"), backgroundColor: Colors.green),
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      print("$e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("No token found, please login again"),
+          SnackBar(
+            content: Text("Error: ${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
       }
-      return;
-    }
-
-    final response = await http.put(
-      Uri.parse("http://192.168.1.94:3000/api/veterinarians/$id/$action"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({}),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("OK"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-      return;
-    }
-  } catch (e) {
-    print("$e");
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 }

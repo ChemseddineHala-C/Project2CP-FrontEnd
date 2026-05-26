@@ -54,6 +54,17 @@ class _TherdpageState extends State<Therdpage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.blue[300], borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(width: 8),
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(width: 8),
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(2))),
+                  ],
+                ),
+                const SizedBox(height: 30),
                 const Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextField(

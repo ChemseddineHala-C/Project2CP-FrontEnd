@@ -653,12 +653,12 @@ class UserItemCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (isApprovedOrRejected) ...[
+                        //if (isApprovedOrRejected) ...[
                           const SizedBox(width: 8),
                           // Trashbin IconButton
                           IconButton(
                             onPressed: () {
-                              deactivateAccountUser(user.id, context);
+                              deleteUser(user.id, context);
                             },
                             icon: const Icon(
                               Icons.delete_outline,
@@ -671,7 +671,7 @@ class UserItemCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        ],
+                        //],
                       ],
                     ),
                   ],
@@ -750,7 +750,7 @@ class UserCardData {
   });
 }
 
-void deactivateAccountUser(String id, BuildContext context) async {
+void deleteUser(String id, BuildContext context) async {
   try {
     String? token = await _getToken();
     if (token == null) {
@@ -766,7 +766,7 @@ void deactivateAccountUser(String id, BuildContext context) async {
     }
 
     final response = await http.delete(
-      Uri.parse("http://192.168.1.94:3000/api/users/$id"),
+      Uri.parse("http://192.168.1.94:3000/api/users/$id/delete"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
@@ -777,14 +777,14 @@ void deactivateAccountUser(String id, BuildContext context) async {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Account deactivated successfully"),
+            content: Text("Account deleted successfully"),
             backgroundColor: Colors.green,
           ),
         );
       }
     }
   } catch (e) {
-    print("Error in deactivateAccount: $e");
+    print("Error in deleteAccount: $e");
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
