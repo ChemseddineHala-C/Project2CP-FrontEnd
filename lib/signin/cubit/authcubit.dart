@@ -104,7 +104,7 @@ class AuthCubit extends Cubit<AuthState> {
         );
         emit(AuthAuthenticated(data));
       } else {
-        emit(AuthError("Invalid email or password"));
+        emit(AuthError("${jsonDecode(response.body)}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -995,7 +995,7 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthLoading());
 
       final response = await http.post(
-        Uri.parse("$_baseUrl/reset-password-fishmen"),
+        Uri.parse("$_baseUrl/auth/forgot-password"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email}),
       );

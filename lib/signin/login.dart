@@ -7,7 +7,7 @@ import '../admin/homepageadmin.dart';
 import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import '../vitirinaire/dashboardVet.dart';
-
+import './signup/resetpassword.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                 context,
                 MaterialPageRoute(builder: (_) => HomePageC()),
               );
-            } else if (role == "super_admin" || role == "admin"){
+            } else if (role == "super_admin" || role == "admin") {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => HomepageadminPage()),
@@ -118,7 +118,6 @@ class _LoginPageState extends State<LoginPage> {
                     //     fontSize: 20,
                     //   ),
                     // ),
-
                     const SizedBox(height: 30),
 
                     // EMAIL
@@ -154,22 +153,27 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: isLoading
                             ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
+                                color: Colors.white,
+                              )
                             : const Text(
-                          "Login",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                                "Login",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => ForgotPasswordPage()),
+                        );
+                      },
                       child: const Text("Forgot password?"),
                     ),
                   ],
@@ -199,20 +203,16 @@ class _LoginPageState extends State<LoginPage> {
           obscureText: isPassword ? _isObscured : false,
           decoration: InputDecoration(
             hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             suffixIcon: isPassword
                 ? IconButton(
-              icon: Icon(
-                _isObscured
-                    ? Icons.visibility_off
-                    : Icons.visibility,
-              ),
-              onPressed: () {
-                setState(() => _isObscured = !_isObscured);
-              },
-            )
+                    icon: Icon(
+                      _isObscured ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() => _isObscured = !_isObscured);
+                    },
+                  )
                 : null,
           ),
         ),
