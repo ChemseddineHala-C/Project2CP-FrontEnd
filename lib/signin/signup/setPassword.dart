@@ -1,0 +1,165 @@
+//import 'package:app_links/app_links.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../login.dart';
+
+class ResetPasswordPage extends StatefulWidget {
+  final String token;
+  final String email;
+
+  const ResetPasswordPage({required this.token, required this.email});
+
+  @override
+  _ResetPasswordPageState createState() => _ResetPasswordPageState();
+}
+
+class _ResetPasswordPageState extends State<ResetPasswordPage> {
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _loading = false;
+  bool _obscure1 = true;
+  bool _obscure2 = true;
+
+  Future<void> _resetPassword() async {
+    if (_newPasswordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty)
+      return;
+
+    setState(() => _loading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.94:3000/api/auth/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': widget.token,
+          'email': widget.email,
+          'new_password': _newPasswordController.text,
+          'confirm_password': _confirmPasswordController.text,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Password reset successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => LoginPage()),
+            (route) => false,
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          'New Password',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('New Password', style: TextStyle(fontSize: 14)),
+            SizedBox(height: 8),
+            TextField(
+              controller: _newPasswordController,
+              obscureText: _obscure1,
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure1 ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _obscure1 = !_obscure1),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text('Confirm Password', style: TextStyle(fontSize: 14)),
+            SizedBox(height: 8),
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: _obscure2,
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure2 ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => setState(() => _obscure2 = !_obscure2),
+                ),
+              ),
+            ),
+            SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _resetPassword,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF1A3A5C),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: _loading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Update Password',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
