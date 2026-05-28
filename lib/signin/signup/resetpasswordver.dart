@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import '../login.dart';
 
 class ResetPasswordSentPage extends StatelessWidget {
   final String email; // ← reçoit l'email depuis ForgotPasswordPage
 
-  const ResetPasswordSentPage({
-    super.key,
-    required this.email,
-  });
+  const ResetPasswordSentPage({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +32,6 @@ class ResetPasswordSentPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-
             const SizedBox(height: 60),
 
             // ─── Icône enveloppe + cadenas ────────────
@@ -64,7 +61,6 @@ class ResetPasswordSentPage extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-
             // ─── Enveloppe (fond violet clair) ────────
             CustomPaint(
               size: const Size(160, 120),
@@ -113,9 +109,7 @@ class ResetPasswordSentPage extends StatelessWidget {
               color: Colors.black,
             ),
           ),
-          const TextSpan(
-            text: " with\ninstructions to reset your password.",
-          ),
+          const TextSpan(text: " with\ninstructions to reset your password."),
         ],
       ),
     );
@@ -128,10 +122,10 @@ class ResetPasswordSentPage extends StatelessWidget {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (context) => const LoginPage()),
-          //   );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
           // Retourne à LoginPage en supprimant toutes les pages
           // Navigator.popUntil(context, (route) => route.isFirst);
 
@@ -162,7 +156,8 @@ class _EnvelopePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFE8E0FF) // ← violet très clair
+      ..color =
+          const Color(0xFFE8E0FF) // ← violet très clair
       ..style = PaintingStyle.fill;
 
     // Corps de l'enveloppe (rectangle arrondi)
@@ -174,21 +169,22 @@ class _EnvelopePainter extends CustomPainter {
 
     // Rabat de l'enveloppe (triangle en haut)
     final flapPath = Path();
-    flapPath.moveTo(0, size.height * 0.25);            // coin gauche
+    flapPath.moveTo(0, size.height * 0.25); // coin gauche
     flapPath.lineTo(size.width / 2, size.height * 0.6); // pointe bas
-    flapPath.lineTo(size.width, size.height * 0.25);   // coin droit
+    flapPath.lineTo(size.width, size.height * 0.25); // coin droit
     flapPath.close();
     canvas.drawPath(flapPath, paint);
 
     // Haut de l'enveloppe (triangle inversé = ouverture)
     final topPath = Path();
-    topPath.moveTo(0, 0);                              // coin haut gauche
+    topPath.moveTo(0, 0); // coin haut gauche
     topPath.lineTo(size.width / 2, size.height * 0.35); // pointe bas
-    topPath.lineTo(size.width, 0);                     // coin haut droit
+    topPath.lineTo(size.width, 0); // coin haut droit
     topPath.close();
 
     final topPaint = Paint()
-      ..color = const Color(0xFFD4C8F5) // ← violet légèrement plus foncé
+      ..color =
+          const Color(0xFFD4C8F5) // ← violet légèrement plus foncé
       ..style = PaintingStyle.fill;
     canvas.drawPath(topPath, topPaint);
   }
