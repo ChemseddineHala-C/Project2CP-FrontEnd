@@ -8,6 +8,7 @@ import 'Weather&Safety.dart';
 import 'addBatchPage.dart';
 import 'batchDetailsPage.dart';
 import 'homepage.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -42,7 +43,7 @@ class _MyBatchesPageState extends State<MyBatchesPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/batches/me"),
+        Uri.parse("http://$HOST:3000/api/batches/me"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -381,7 +382,7 @@ Widget BatchCard(FishBatch batch) {
               borderRadius: BorderRadius.circular(8),
               child: imageUrl != null
                   ? Image.network(
-                      "http://192.168.1.94:3000$imageUrl",
+                      "http://$HOST:3000$imageUrl",
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,

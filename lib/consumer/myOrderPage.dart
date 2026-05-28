@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 
@@ -72,7 +73,7 @@ class OrderItem {
 
     print(cleanPath);
 
-    return "http://192.168.1.94:3000$cleanPath";
+    return "http://$HOST:3000$cleanPath";
   }
 }
 
@@ -151,7 +152,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/orders"),
+        Uri.parse("http://$HOST:3000/api/orders"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -278,7 +279,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                           "Delivered",
                           "Pending",
                           "Processing",
-                          "Cancelled"
+                          "Cancelled",
                         ].map(_buildFilterChip).toList(),
                       ),
                     ),
@@ -521,19 +522,18 @@ class OrderCard extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
 
-                if (status.compareTo("delivered") != 0 && status.compareTo("cancelled") != 0)
+                if (status.compareTo("delivered") != 0 &&
+                    status.compareTo("cancelled") != 0)
                   InkWell(
                     onTap: () {
                       status.compareTo("pending") == 0
-                          ? {
-                            cancelOrder(item.id!, context),
-                          }
+                          ? {cancelOrder(item.id!, context)}
                           : ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Not supported yet"),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                              SnackBar(
+                                content: Text("Not supported yet"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                     },
                     child: Container(
                       padding: EdgeInsets.all(8),
@@ -630,7 +630,7 @@ void cancelOrder(int id, BuildContext context) async {
     }
 
     final response = await http.put(
-      Uri.parse("http://192.168.1.94:3000/api/orders/$id/cancel"),
+      Uri.parse("http://$HOST:3000/api/orders/$id/cancel"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

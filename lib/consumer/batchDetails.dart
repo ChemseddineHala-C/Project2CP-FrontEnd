@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import './editeconsumer.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -70,7 +71,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       }
 
       final resCustomer = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/customers/me"),
+        Uri.parse("http://$HOST:3000/api/customers/me"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -94,7 +95,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/batches/$batchId"),
+        Uri.parse("http://$HOST:3000/api/batches/$batchId"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -156,7 +157,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://192.168.1.94:3000/api/cart/items"),
+        Uri.parse("http://$HOST:3000/api/cart/items"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -234,7 +235,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://192.168.1.94:3000/api/orders/buy-now"),
+        Uri.parse("http://$HOST:3000/api/orders/buy-now"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -1220,13 +1221,13 @@ class BatchWithInspection {
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${photo![0].replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${photo![0].replaceFirst("src/", "")}";
   }
 
   List<String> getAllPhotoUrls() {
     if (photo == null || photo!.isEmpty) return [];
     return photo!
-        .map((p) => "http://192.168.1.94:3000/${p.replaceFirst("src/", "")}")
+        .map((p) => "http://$HOST:3000/${p.replaceFirst("src/", "")}")
         .toList();
   }
 
@@ -1343,9 +1344,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse(
-        "http://192.168.1.94:3000/api/inspections/batch/$id/certificate",
-      ),
+      Uri.parse("http://$HOST:3000/api/inspections/batch/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 

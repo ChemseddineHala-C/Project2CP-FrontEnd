@@ -9,12 +9,13 @@ import 'editprofilvit.dart';
 import 'inspectionHistoryPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../signin/signup/splage.dart';
+import '../HOST.dart';
+
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<void> _clearSession() async {
-    await storage.delete(key: "token");
-    await storage.delete(key: "role");
+  await storage.delete(key: "token");
+  await storage.delete(key: "role");
 }
-
 
 class ProfilevitPage extends StatefulWidget {
   const ProfilevitPage({super.key});
@@ -96,7 +97,9 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                             _clearSession(),
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => SplashPage()),
+                              MaterialPageRoute(
+                                builder: (context) => SplashPage(),
+                              ),
                             ),
                           },
                           style: ElevatedButton.styleFrom(
@@ -106,16 +109,17 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                               borderRadius: BorderRadius.circular(13),
                             ),
                             alignment: Alignment.center,
-                          ), 
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("log out"),
                               Icon(Icons.logout_outlined),
                             ],
-                          )),
-                      ), 
-                    )
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -178,7 +182,7 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                 user["profile_photo"] != null &&
                     user["profile_photo"].toString().isNotEmpty
                 ? NetworkImage(
-                    "http://192.168.1.94:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
+                    "http://$HOST:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
                   )
                 : null,
             child:
@@ -507,9 +511,12 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
             },
             icon: _navIcon(Icons.access_time, false),
           ),
-          IconButton(onPressed: () {
-            context.read<AuthCubit>().fetchvitProfile();
-          }, icon: _navIcon(Icons.person, true)),
+          IconButton(
+            onPressed: () {
+              context.read<AuthCubit>().fetchvitProfile();
+            },
+            icon: _navIcon(Icons.person, true),
+          ),
         ],
       ),
     );

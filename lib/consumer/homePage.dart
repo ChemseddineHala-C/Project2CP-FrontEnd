@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -36,7 +37,7 @@ class _HomePageCState extends State<HomePageC> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/batches/market"),
+        Uri.parse("http://$HOST:3000/api/batches/market"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -601,12 +602,12 @@ class CustomerBatch {
   // ✅ دالة للحصول على رابط صورة الصياد
   String getFishermanPhotoUrl() {
     if (fishermanPhoto == null || fishermanPhoto!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
   }
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${photo![0].replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${photo![0].replaceFirst("src/", "")}";
   }
 }
 
@@ -634,7 +635,7 @@ class Customer {
 
   String getProfilePhotoUrl() {
     if (profilePhoto == null || profilePhoto!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${profilePhoto!.replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${profilePhoto!.replaceFirst("src/", "")}";
   }
 }
 

@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import '../HOST.dart';
+
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -210,7 +212,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://192.168.1.94:3000' +
+                      'http://$HOST:3000' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -363,7 +365,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
     if (item is! Map) return null;
     final fp = item['file_path'];
     if (fp == null) return null;
-    return 'http://192.168.1.94:3000' + fp.toString().replaceFirst('src', '');
+    return 'http://$HOST:3000' + fp.toString().replaceFirst('src', '');
   }
 
   Widget _buildDownloadTile(
@@ -602,7 +604,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
       }
 
       final response = await http.put(
-        Uri.parse("http://192.168.1.94:3000/api/veterinarians/$id/$action"),
+        Uri.parse("http://$HOST:3000/api/veterinarians/$id/$action"),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",

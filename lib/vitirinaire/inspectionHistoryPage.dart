@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import './object.dart';
 import './batchReportPageV.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -33,7 +34,7 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/inspections/history"),
+        Uri.parse("http://$HOST:3000/api/inspections/history"),
         headers: {"Authorization": "Bearer $token"},
       );
 

@@ -6,6 +6,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import '../HOST.dart';
 
 class vetInspectionPage extends StatefulWidget {
   final FishBatchWithFisherman batch;
@@ -44,7 +45,7 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
         ),
       };
     } else {
-      _catchLocation = LatLng(35.6971, -0.6308); 
+      _catchLocation = LatLng(35.6971, -0.6308);
       _markers = {};
     }
   }
@@ -250,32 +251,32 @@ class _VetInspectionPageState extends State<vetInspectionPage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Stack(children:[
-                    GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _catchLocation,
-                      zoom: 12,
-                    ),
-                    onMapCreated: (controller) {
-                      _mapController.complete(controller);
-                    },
-                    markers: _markers,
-                    zoomControlsEnabled: false,
-                    myLocationButtonEnabled: false,
-                    scrollGesturesEnabled: false,
-                    zoomGesturesEnabled: false,
-                    rotateGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                    ),
-                    Positioned.fill(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _openInGoogleMaps,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: _catchLocation,
+                          zoom: 12,
+                        ),
+                        onMapCreated: (controller) {
+                          _mapController.complete(controller);
+                        },
+                        markers: _markers,
+                        zoomControlsEnabled: false,
+                        myLocationButtonEnabled: false,
+                        scrollGesturesEnabled: false,
+                        zoomGesturesEnabled: false,
+                        rotateGesturesEnabled: false,
+                        tiltGesturesEnabled: false,
+                      ),
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(onTap: _openInGoogleMaps),
                         ),
                       ),
-                    )
-                  ]),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1010,7 +1011,7 @@ Widget _buildFishImage(String? path) {
     );
   }
 
-  final imageUrl = "http://192.168.1.94:3000${path.replaceFirst('src', '')}";
+  final imageUrl = "http://$HOST:3000${path.replaceFirst('src', '')}";
 
   return ClipRRect(
     borderRadius: BorderRadius.circular(13),

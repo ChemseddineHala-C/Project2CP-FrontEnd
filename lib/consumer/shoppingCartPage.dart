@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -22,7 +23,7 @@ class CartApiService {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/cart"),
+        Uri.parse("http://$HOST:3000/api/cart"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -54,7 +55,7 @@ class CartApiService {
       if (token == null) return null;
 
       final response = await http.put(
-        Uri.parse("http://192.168.1.94:3000/api/cart/items/$cartItemId"),
+        Uri.parse("http://$HOST:3000/api/cart/items/$cartItemId"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -83,7 +84,7 @@ class CartApiService {
       if (token == null) return null;
 
       final response = await http.delete(
-        Uri.parse("http://192.168.1.94:3000/api/cart/items/$cartItemId"),
+        Uri.parse("http://$HOST:3000/api/cart/items/$cartItemId"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -145,7 +146,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       }
 
       final response = await http.post(
-        Uri.parse("http://192.168.1.94:3000/api/orders"),
+        Uri.parse("http://$HOST:3000/api/orders"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -826,13 +827,13 @@ class CartItem {
         .replaceAll(']', '')
         .replaceFirst('src', '');
 
-    return "http://192.168.1.94:3000$cleanPath";
+    return "http://$HOST:3000$cleanPath";
   }
 
   List<String> getAllPhotoUrls() {
     if (photo == null || photo!.isEmpty) return [];
     return photo!
-        .map((p) => "http://192.168.1.94:3000/${p.replaceFirst("src/", "")}")
+        .map((p) => "http://$HOST:3000/${p.replaceFirst("src/", "")}")
         .toList();
   }
 }
@@ -863,5 +864,3 @@ class Cart {
     );
   }
 }
-
-

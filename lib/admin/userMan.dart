@@ -6,6 +6,7 @@ import './Admin_Pecheur.dart';
 import './admin_vit.dart';
 import './homepageadmin.dart';
 import './addvet.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -75,7 +76,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
   String _getApiEndpoint(String role, String userId, String action) {
     final roleKey = role == 'Fisherman' ? 'fishermen' : 'veterinarians';
-    return 'http://192.168.1.94:3000/api/$roleKey/$userId/$action';
+    return 'http://$HOST:3000/api/$roleKey/$userId/$action';
   }
 
   Future<void> _approveUser(UserCardData user) async {
@@ -168,7 +169,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
 
     if (profilePhoto.startsWith('src/') || profilePhoto.contains('/uploads/')) {
-      return 'http://192.168.1.94:3000/$profilePhoto';
+      return 'http://$HOST:3000/$profilePhoto';
     }
 
     return 'images/fish1.png';
@@ -182,7 +183,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/users"),
+        Uri.parse("http://$HOST:3000/api/users"),
         headers: {"Authorization": "Bearer $token"},
       );
 
@@ -654,23 +655,23 @@ class UserItemCard extends StatelessWidget {
                           ),
                         ],
                         //if (isApprovedOrRejected) ...[
-                          const SizedBox(width: 8),
-                          // Trashbin IconButton
-                          IconButton(
-                            onPressed: () {
-                              deleteUser(user.id, context);
-                            },
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Color(0xFFBA1A1A),
-                            ),
-                            style: IconButton.styleFrom(
-                              backgroundColor: const Color(0x33FFDAD6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                        const SizedBox(width: 8),
+                        // Trashbin IconButton
+                        IconButton(
+                          onPressed: () {
+                            deleteUser(user.id, context);
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Color(0xFFBA1A1A),
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0x33FFDAD6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                        ),
                         //],
                       ],
                     ),
@@ -766,7 +767,7 @@ void deleteUser(String id, BuildContext context) async {
     }
 
     final response = await http.delete(
-      Uri.parse("http://192.168.1.94:3000/api/users/$id/delete"),
+      Uri.parse("http://$HOST:3000/api/users/$id/delete"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

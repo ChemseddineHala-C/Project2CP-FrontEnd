@@ -8,18 +8,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'authstate.dart';
+import '../../HOST.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  final String _baseUrl = "http://192.168.1.94:3000/api";
+  final String _baseUrl = "http://$HOST:3000/api";
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     serverClientId:
         "936821595024-uek9ov9mlscdqvbg483dughq9b5u1ksi.apps.googleusercontent.com",
   );
-
 
   Future<void> _saveTokenAndRole(
     String token,
@@ -80,9 +80,9 @@ class AuthCubit extends Cubit<AuthState> {
   // Supprime token + role (pour logout)
   Future<void> _clearSession() async {
     await storage.delete(key: "token");
-    await storage.delete(key: "role");}
-    // await storage.delete(key: "refresh_token");
-
+    await storage.delete(key: "role");
+  }
+  // await storage.delete(key: "refresh_token");
 
   // --- LOGIN CLASSIQUE+API ---
   Future<void> login(String email, String password) async {
@@ -110,7 +110,6 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
-
 
   // --- PROFIL FISHERMAN+API ---
   Future<void> fetchProfile() async {
@@ -212,7 +211,9 @@ class AuthCubit extends Cubit<AuthState> {
         print("PHOTO RESPONSE: ${photoResponse.body}");
 
         if (photoResponse.statusCode != 200) {
-          emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
+          emit(
+            ProfileError("message: ${jsonDecode(response.body)['message']}"),
+          );
           return;
         }
       }
@@ -721,7 +722,11 @@ class AuthCubit extends Cubit<AuthState> {
       final response = await _authorizedRequest(
         "PUT",
         "$_baseUrl/users/change-password",
-        body: {"current_password": currentPassword, "new_password": password, "confirm_password": password},
+        body: {
+          "current_password": currentPassword,
+          "new_password": password,
+          "confirm_password": password,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -749,7 +754,11 @@ class AuthCubit extends Cubit<AuthState> {
       final response = await _authorizedRequest(
         "PUT",
         "$_baseUrl/users/change-password",
-        body: {"current_password": currentpasswordVit, "new_password": passwordVit, "confirm_password": passwordVit},
+        body: {
+          "current_password": currentpasswordVit,
+          "new_password": passwordVit,
+          "confirm_password": passwordVit,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -777,7 +786,11 @@ class AuthCubit extends Cubit<AuthState> {
       final response = await _authorizedRequest(
         "PUT",
         "$_baseUrl/users/change-password",
-        body: {"current_password": currentpasswordCons, "new_password": passwordCons, "confirm_password": passwordCons},
+        body: {
+          "current_password": currentpasswordCons,
+          "new_password": passwordCons,
+          "confirm_password": passwordCons,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -1048,7 +1061,6 @@ class AuthCubit extends Cubit<AuthState> {
         "$_baseUrl/fishermen/$id",
       );
 
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print(data);
@@ -1060,6 +1072,7 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(e.toString()));
     }
   }
+
   Future<void> noti() async {
     try {
       emit(AuthLoading());
@@ -1068,7 +1081,10 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError("No token found"));
         return;
       }
-      final response = await _authorizedRequest("GET", "$_baseUrl/notifications");
+      final response = await _authorizedRequest(
+        "GET",
+        "$_baseUrl/notifications",
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
