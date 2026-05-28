@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import '../HOST.dart';
 
 class FishBatchWithFisherman {
   final int? id;
@@ -271,7 +272,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 

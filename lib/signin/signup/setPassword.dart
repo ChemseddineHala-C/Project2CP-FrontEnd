@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../login.dart';
+import '../../HOST.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final String token;
@@ -30,7 +31,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.94:3000/api/auth/reset-password'),
+        Uri.parse('http://$HOST:3000/api/auth/reset-password'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'token': widget.token,

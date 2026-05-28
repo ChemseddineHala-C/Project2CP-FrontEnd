@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -35,7 +36,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/inspections/$batchId/report"),
+        Uri.parse("http://$HOST:3000/api/inspections/$batchId/report"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -345,7 +346,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
   Widget _inspectorTile(String full_name, String ID, String picture) {
     // ✅ التحقق من صحة رابط الصورة
     final imageUrl = picture.isNotEmpty
-        ? "http://192.168.1.94:3000/${picture.replaceFirst("src/", "")}"
+        ? "http://$HOST:3000/${picture.replaceFirst("src/", "")}"
         : null;
 
     return Container(
@@ -701,7 +702,8 @@ Future<void> DownloadCer(String id, BuildContext context) async {
         // Android 13+ لا يحتاج permission للـ Downloads folder
       } else if (sdkInt >= 30) {
         // Android 11 و 12
-        PermissionStatus status = await Permission.manageExternalStorage.request();
+        PermissionStatus status = await Permission.manageExternalStorage
+            .request();
         if (!status.isGranted) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -739,7 +741,10 @@ Future<void> DownloadCer(String id, BuildContext context) async {
               SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               ),
               SizedBox(width: 12),
               Text("Downloading certificate..."),
@@ -753,7 +758,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse("http://$HOST:3000/api/inspections/batch/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -763,11 +768,11 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     if (response.statusCode == 200) {
       // Get the correct downloads folder path
       String? downloadsPath;
-      
+
       if (Platform.isAndroid) {
         // Correct way to get Download folder path on Android
         downloadsPath = '/storage/emulated/0/Download';
-        
+
         // Check if folder exists, create if not
         final downloadDir = Directory(downloadsPath);
         if (!await downloadDir.exists()) {
@@ -783,17 +788,18 @@ Future<void> DownloadCer(String id, BuildContext context) async {
       }
 
       // Create filename with timestamp to avoid duplication
-      String fileName = "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      String fileName =
+          "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       String filePath = "$downloadsPath/$fileName";
-      
+
       // Save the file
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
-      
+
       // Check file size to ensure it was saved correctly
       int fileSize = await file.length();
       print("File saved: $filePath, Size: $fileSize bytes");
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -813,7 +819,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
           ),
         );
       }
-      
+
       print("✅ File saved successfully to: $filePath");
     } else if (response.statusCode == 401) {
       if (context.mounted) {

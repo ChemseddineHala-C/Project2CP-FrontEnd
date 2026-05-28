@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -98,7 +99,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                   'src',
                   '',
                 );
-                return 'http://192.168.1.94:3000' + fp;
+                return 'http://$HOST:3000' + fp;
               }
               return '';
             }
@@ -264,7 +265,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://192.168.1.94:3000' +
+                      'http://$HOST:3000' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -535,9 +536,10 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
   void openFile(BuildContext context, String url) {
     print(url);
     final isPdf = url.toLowerCase().endsWith('.pdf');
-    final isImage = url.toLowerCase().endsWith('.jpeg') || 
-                    url.toLowerCase().endsWith('.png');
-    
+    final isImage =
+        url.toLowerCase().endsWith('.jpeg') ||
+        url.toLowerCase().endsWith('.png');
+
     if (isPdf) {
       // Call the async function properly
       _showPdfViewer(context, url);
@@ -554,7 +556,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
               ),
             ),
             body: InteractiveViewer(
-              child: Image.network(url, fit: BoxFit.contain)
+              child: Image.network(url, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -583,7 +585,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
       }
 
       final response = await http.put(
-        Uri.parse("http://192.168.1.94:3000/api/fishermen/$id/$action"),
+        Uri.parse("http://$HOST:3000/api/fishermen/$id/$action"),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",
@@ -612,8 +614,6 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
     }
   }
 
-  
-
   void _showPdfViewer(BuildContext context, String url) async {
     try {
       showDialog(
@@ -622,16 +622,16 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      final token    = await _getToken();
+      final token = await _getToken();
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
+        headers: {if (token != null) 'Authorization': 'Bearer $token'},
       );
 
-      final dir  = await getTemporaryDirectory();
-      final file = File('${dir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
       await file.writeAsBytes(response.bodyBytes, flush: true);
 
       if (context.mounted) {
@@ -648,9 +648,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              body: PDFView(
-                filePath: file.path,
-              ),
+              body: PDFView(filePath: file.path),
             ),
           ),
         );
@@ -659,13 +657,10 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
       print('PDF error: $e');
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
-
 }
-
-

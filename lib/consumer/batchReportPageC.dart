@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -35,7 +36,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
       // ✅ تصحيح الرابط (إزالة الشرطة المائلة الزائدة)
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/inspections/$batchId/report"),
+        Uri.parse("http://$HOST:3000/api/inspections/$batchId/report"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -345,7 +346,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
   Widget _inspectorTile(String full_name, String ID, String picture) {
     // ✅ التحقق من صحة رابط الصورة
     final imageUrl = picture.isNotEmpty
-        ? "http://192.168.1.94:3000/${picture.replaceFirst("src/", "")}"
+        ? "http://$HOST:3000/${picture.replaceFirst("src/", "")}"
         : null;
 
     return Container(
@@ -753,7 +754,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://192.168.1.94:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse("http://$HOST:3000/api/inspections/batch/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -925,7 +926,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://192.168.1.94:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "http://$HOST:3000/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 

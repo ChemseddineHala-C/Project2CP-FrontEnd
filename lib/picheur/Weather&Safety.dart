@@ -9,6 +9,7 @@ import 'dart:async';
 import 'homepage.dart';
 import 'myBatches.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
@@ -57,8 +58,9 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
             position: _currentPosition!,
             infoWindow: const InfoWindow(title: 'YOUR VESSEL'),
             icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueBlue),
-          )
+              BitmapDescriptor.hueBlue,
+            ),
+          ),
         };
       });
 
@@ -137,7 +139,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
     try {
       final token = await _storage.read(key: 'token');
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/fishermen/me/port"),
+        Uri.parse("http://$HOST:3000/api/fishermen/me/port"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -165,7 +167,8 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
   Future<void> _navigateToPort() async {
     if (_currentPosition == null || _homePort.isEmpty) return;
     final query = Uri.encodeComponent(_homePort);
-    final url = 'https://www.google.com/maps/dir/?api=1'
+    final url =
+        'https://www.google.com/maps/dir/?api=1'
         '&origin=${_currentPosition!.latitude},${_currentPosition!.longitude}'
         '&destination=$query'
         '&travelmode=driving';
@@ -304,12 +307,16 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
                       const Text(
                         "Navigation Map",
                         style: TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 22),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 22,
+                        ),
                       ),
                       if (_gpsActive)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.shade50,
                             borderRadius: BorderRadius.circular(4),
@@ -498,18 +505,17 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.all(10),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(13)),
+                borderRadius: BorderRadius.circular(13),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.navigation_outlined,
-                    color: Color(0xFF033F78)),
+                const Icon(Icons.navigation_outlined, color: Color(0xFF033F78)),
                 const SizedBox(width: 8),
                 const Text(
                   "Navigate to\nPort",
-                  style:
-                      TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -614,8 +620,7 @@ class WeatherInfo extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 title,
-                style:
-                    const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
               ),
             ],
           ),

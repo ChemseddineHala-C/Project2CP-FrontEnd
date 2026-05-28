@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './object.dart';
 import './dashboardVet.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -33,7 +34,7 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.94:3000/api/inspections/pending"),
+        Uri.parse("http://$HOST:3000/api/inspections/pending"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -103,7 +104,7 @@ class _PendingBatchesPageState extends State<PendingBatchesPage> {
               MaterialPageRoute(
                 builder: (context) => const InspectorDashboard(),
               ),
-            ),  
+            ),
           },
           icon: Icon(Icons.arrow_back),
           color: Color(0xFF0F172A),
@@ -388,7 +389,12 @@ class PendingBatchCard extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => vetInspectionPage(batch: batch,)));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => vetInspectionPage(batch: batch),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,

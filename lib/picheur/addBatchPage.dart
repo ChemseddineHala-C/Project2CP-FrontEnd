@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -203,7 +204,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse("http://192.168.1.94:3000/api/batches"),
+        Uri.parse("http://$HOST:3000/api/batches"),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

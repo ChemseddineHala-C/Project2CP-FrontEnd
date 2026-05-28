@@ -7,6 +7,7 @@ import '../signin/cubit/authcubit.dart';
 import '../signin/cubit/authstate.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -217,14 +218,14 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                                 ? NetworkImage(
-                                    'http://192.168.1.94:3000' +
+                                    'http://$HOST:3000' +
                                         networkImage.toString().replaceFirst(
                                           'src',
                                           '',
                                         ),
                                   )
-                                : const NetworkImage(
-                                    'http://192.168.1.94:3000/uploads/fishermen/me/photo',
+                                : NetworkImage(
+                                    'http://$HOST:3000/uploads/fishermen/me/photo',
                                   ))
                             as ImageProvider,
                 ),
@@ -506,7 +507,7 @@ void deactivateAccount(BuildContext context) async {
     }
 
     final response = await http.delete(
-      Uri.parse("http://192.168.1.94:3000/api/users/me"),
+      Uri.parse("http://$HOST:3000/api/users/me"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

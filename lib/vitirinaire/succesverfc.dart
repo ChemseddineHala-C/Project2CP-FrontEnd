@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../vitirinaire/PendingBatchesPage.dart';
+import '../HOST.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -84,7 +85,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
       }
 
       final response = await http.post(
-        Uri.parse("http://192.168.1.94:3000/api/inspections/${batchId}"),
+        Uri.parse("http://$HOST:3000/api/inspections/${batchId}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -142,7 +143,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
 
       final response = await http.get(
         Uri.parse(
-          "http://192.168.1.94:3000/api/inspections/${widget.batch.id}/certificate",
+          "http://$HOST:3000/api/inspections/${widget.batch.id}/certificate",
         ),
         headers: {"Authorization": "Bearer $token"},
       );

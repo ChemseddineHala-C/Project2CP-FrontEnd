@@ -8,6 +8,7 @@ import '../signin/cubit/authstate.dart';
 import 'Weather&Safety.dart';
 import 'addBatchPage.dart';
 import 'myBatches.dart';
+import '../HOST.dart';
 
 class HomePageP extends StatefulWidget {
   const HomePageP({super.key});
@@ -134,7 +135,7 @@ class _HomePagePState extends State<HomePageP> {
                     : const Color(0xFFE3F2FD),
                 backgroundImage: profilePhoto != null
                     ? NetworkImage(
-                        "http://192.168.1.94:3000${profilePhoto.replaceFirst('src', '')}",
+                        "http://$HOST:3000${profilePhoto.replaceFirst('src', '')}",
                       )
                     : null,
                 child: profilePhoto == null

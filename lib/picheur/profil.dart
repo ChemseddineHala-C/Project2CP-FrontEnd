@@ -11,11 +11,12 @@ import 'myBatches.dart';
 import 'password.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../signin/signup/splage.dart';
-Future<void> _clearSession() async {
-    await storage.delete(key: "token");
-    await storage.delete(key: "role");
-}
+import '../HOST.dart';
 
+Future<void> _clearSession() async {
+  await storage.delete(key: "token");
+  await storage.delete(key: "role");
+}
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 
@@ -124,7 +125,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             _clearSession(),
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => SplashPage()),
+                              MaterialPageRoute(
+                                builder: (context) => SplashPage(),
+                              ),
                             ),
                           },
                           style: ElevatedButton.styleFrom(
@@ -134,16 +137,17 @@ class _ProfilePageState extends State<ProfilePage> {
                               borderRadius: BorderRadius.circular(13),
                             ),
                             alignment: Alignment.center,
-                          ), 
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("log out"),
                               Icon(Icons.logout_outlined),
                             ],
-                          )),
-                      ), 
-                    )
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -204,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 : const Color(0xFFE3F2FD),
             backgroundImage: user["profile_photo"] != null
                 ? NetworkImage(
-                    "http://192.168.1.94:3000${user["profile_photo"].replaceFirst('src', '')}",
+                    "http://$HOST:3000${user["profile_photo"].replaceFirst('src', '')}",
                   )
                 : null,
             child: user["profile_photo"] == null
