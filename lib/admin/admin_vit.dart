@@ -190,8 +190,8 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
   }
 
   Widget _buildProfileHeader(Map<String, dynamic> user, bool isDark) {
-    Color cover = user["account_status"] == "approved" ? Color(0xFFD1FAE5): user["account_status"] == "rejected"? Color(0xFFFEE2E2): Color(0xFFFEF3C7) ;
-    Color word = user["account_status"] == "approved" ? Color(0xFF047857): user["account_status"] == "rejected"? Color(0xFFBA1A1A): Color(0xFFB45309) ;
+    Color cover = user["account_status"] == "approved" ? Color(0xFFD1FAE5): user["account_status"] == "rejected"? Color(0xFFFEE2E2):user["account_status"] == "pending"? Color(0xFFFEF3C7):Color(0xFFE3E3E3) ;
+    Color word = user["account_status"] == "approved" ? Color(0xFF047857): user["account_status"] == "rejected"? Color(0xFFBA1A1A):user["account_status"] == "pending"? Color(0xFFB45309):Color(0xFF475569) ;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
