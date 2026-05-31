@@ -42,21 +42,40 @@ class _MyAppState extends State<MyApp> {
     _initDeepLinks();
   }
 
-  void _initDeepLinks() {
-    _appLinks.uriLinkStream.listen((uri) {
-      if (uri.scheme == 'bahrfresh' && uri.host == 'reset-password') {
-        final token = uri.queryParameters['token'];
-        final email = uri.queryParameters['email'];
+  void _initDeepLinks() async {
 
-        if (token != null && email != null) {
+    // ── الرابط الذي فتح التطبيق (cold start) ────────
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint('Initial link error: $e');
+    }
+
+    // ── الروابط التي تأتي والتطبيق شغال ─────────────
+    _appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (uri.scheme == 'bahrfresh' && uri.host == 'reset-password') {
+      final token = uri.queryParameters['token'];
+      final email = uri.queryParameters['email'];
+
+      if (token != null && email != null) {
+        // تأخير بسيط حتى يكون الـ navigator جاهز
+        Future.delayed(Duration(milliseconds: 500), () {
           _navKey.currentState?.push(
             MaterialPageRoute(
               builder: (_) => ResetPasswordPage(token: token, email: email),
             ),
           );
-        }
+        });
       }
-    });
+    }
   }
   /// ch
 

@@ -374,7 +374,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(ProfileLoaded(data));
       } else {
         emit(
-          ProfileError("Failed to load vet profile: ${response.statusCode}"),
+          ProfileError("message: ${jsonDecode(response.body)['message']}"),
         );
       }
     } catch (e) {
@@ -411,7 +411,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       if (response.statusCode != 200) {
-        emit(ProfileError("Update failed: ${response.body}"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
         return;
       }
 
@@ -443,7 +443,7 @@ class AuthCubit extends Cubit<AuthState> {
         print("PHOTO RESPONSE: ${photoResponse.body}");
 
         if (photoResponse.statusCode != 200) {
-          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+          emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
           return;
         }
       }
@@ -466,7 +466,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200) {
         emit(EmailSentSuccess());
       } else {
-        emit(AuthError("Server error: ${response.statusCode}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -494,7 +494,7 @@ class AuthCubit extends Cubit<AuthState> {
         // Vous pouvez émettre un état de succès ici
         emit(InspectionDataLoaded(jsonDecode(response.body)));
       } else {
-        emit(AuthError("Failed to send rejection"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -628,7 +628,7 @@ class AuthCubit extends Cubit<AuthState> {
         // ✅ تغيير: إرسال HomeDataLoaded بدلاً من ProfileLoaded
         emit(HomeDataLoaded(data));
       } else {
-        emit(AuthError("Failed to load Home page"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -654,7 +654,7 @@ class AuthCubit extends Cubit<AuthState> {
         print("TOKEN: ${data['token']}");
         emit(ProfileLoaded(data));
       } else {
-        emit(ProfileError("Failed to load profile"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -700,7 +700,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         emit(SetupSuccess());
       } else {
-        emit(AuthError("Setup failed: ${response.body}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -732,7 +732,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
       } else {
-        emit(ProfileError("Update failed"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -764,7 +764,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
       } else {
-        emit(ProfileError("Update failed"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -796,7 +796,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200) {
         emit(PasswordUpdatedSuccess());
       } else {
-        emit(ProfileError("Update failed"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -833,7 +833,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
 
       if (response.statusCode != 200) {
-        emit(ProfileError("Update failed: ${response.body}"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
         return;
       }
 
@@ -865,7 +865,7 @@ class AuthCubit extends Cubit<AuthState> {
         print("PHOTO RESPONSE: ${photoResponse.body}");
 
         if (photoResponse.statusCode != 200) {
-          emit(ProfileError("Photo update failed: ${photoResponse.body}"));
+          emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
           return;
         }
       }
@@ -904,7 +904,7 @@ class AuthCubit extends Cubit<AuthState> {
 
         emit(RoleSelectedSuccess(role));
       } else {
-        emit(AuthError("Failed: ${response.body}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -923,7 +923,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200) {
         emit(CodeVerifiedSuccess());
       } else {
-        emit(AuthError("Server error: ${response.statusCode}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -968,7 +968,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         emit(VetCreatedSuccess());
       } else {
-        emit(AuthError("Setup failed: ${response.body}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -995,7 +995,7 @@ class AuthCubit extends Cubit<AuthState> {
         print(data);
         emit(AdminLoaded(data));
       } else {
-        emit(AuthError("${jsonDecode(response.body)}"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -1041,7 +1041,7 @@ class AuthCubit extends Cubit<AuthState> {
         print(data);
         emit(AdminLoaded(data));
       } else {
-        emit(AuthError("Failed to load profile"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -1066,7 +1066,7 @@ class AuthCubit extends Cubit<AuthState> {
         print(data);
         emit(AdminLoaded(data));
       } else {
-        emit(AuthError("Failed to load profile"));
+        emit(AuthError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -1091,7 +1091,7 @@ class AuthCubit extends Cubit<AuthState> {
         print("NOTIFICATIONS: $data");
         emit(ProfileLoaded({"notifications": data}));
       } else {
-        emit(ProfileError("Failed to load notifications"));
+        emit(ProfileError("message: ${jsonDecode(response.body)['message']}"));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
