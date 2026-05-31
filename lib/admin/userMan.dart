@@ -71,7 +71,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
   bool _isApprovedOrRejected(String accountStatus) {
     final status = accountStatus.toLowerCase();
-    return status == 'approved' || status == 'rejected';
+    return status != 'suspended';
   }
 
   String _getApiEndpoint(String role, String userId, String action) {
@@ -525,7 +525,7 @@ class UserItemCard extends StatelessWidget {
               child: user.image.startsWith('http')
                   ? Image.network(
                       user.image,
-                      width: 70,
+                      width: 75,
                       height: 80,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Image.asset(
@@ -717,7 +717,10 @@ class UserItemCard extends StatelessWidget {
     } else if (statusLower == 'rejected') {
       bgColor = const Color(0xFFFEE2E2);
       textColor = const Color(0xFFBA1A1A);
-    } else {
+    } else if (statusLower == 'suspended') {
+      bgColor = const Color(0xFFE3E3E3);
+      textColor = const Color(0xFF475569);
+    }else {
       bgColor = const Color(0xFFFEF3C7);
       textColor = const Color(0xFFB45309);
     }
