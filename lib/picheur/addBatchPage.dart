@@ -243,10 +243,14 @@ class _AddBatchPageState extends State<Addbatchpage> {
             backgroundColor: Colors.green,
           ),
         );
-
         Navigator.pop(context);
       } else {
-        throw Exception("Failed to submit: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       print("Error: $e");

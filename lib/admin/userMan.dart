@@ -607,7 +607,7 @@ class UserItemCard extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
-                                      "Not found",
+                                      "Not currently supported",
                                       style: TextStyle(fontSize: 10),
                                     ),
                                     backgroundColor: Colors.red,
@@ -711,7 +711,7 @@ class UserItemCard extends StatelessWidget {
     Color bgColor;
     Color textColor;
 
-    if (statusLower == 'approved') {
+    if (statusLower == 'approved' || statusLower == 'active') {
       bgColor = const Color(0xFFD1FAE5);
       textColor = const Color(0xFF047857);
     } else if (statusLower == 'rejected') {
