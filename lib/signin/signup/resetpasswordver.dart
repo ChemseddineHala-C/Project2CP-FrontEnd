@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../login.dart';
+import './verifyRestCodePage.dart';
 
 class ResetPasswordSentPage extends StatelessWidget {
-  final String email; // ← reçoit l'email depuis ForgotPasswordPage
+  final String email;
 
   const ResetPasswordSentPage({super.key, required this.email});
 
@@ -124,7 +125,7 @@ class ResetPasswordSentPage extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
+            MaterialPageRoute(builder: (context) => VerifyResetCodePage(email: email)),
           );
           // Retourne à LoginPage en supprimant toutes les pages
           // Navigator.popUntil(context, (route) => route.isFirst);
@@ -139,7 +140,7 @@ class ResetPasswordSentPage extends StatelessWidget {
           elevation: 0,
         ),
         child: const Text(
-          "Back to login",
+          "Move to next",
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,
