@@ -99,7 +99,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
                   'src',
                   '',
                 );
-                return 'http://$HOST:3000' + fp;
+                return '$HOST' + fp;
               }
               return '';
             }
@@ -267,7 +267,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://$HOST:3000' +
+                      '$HOST' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -587,7 +587,7 @@ class _AdminpecheurinfoState extends State<Adminpecheurinfo> {
       }
 
       final response = await http.put(
-        Uri.parse("http://$HOST:3000/api/fishermen/$id/$action"),
+        Uri.parse("$HOST/api/fishermen/$id/$action"),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",

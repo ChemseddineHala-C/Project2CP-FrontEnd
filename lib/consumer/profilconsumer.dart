@@ -176,7 +176,7 @@ class _ProfileConsumerPageState extends State<ProfileConsumerPage> {
                 : const Color(0xFFE3F2FD),
             backgroundImage: user["profile_photo"] != null
                 ? NetworkImage(
-                    "http://$HOST:3000" +
+                    "$HOST" +
                         user["profile_photo"].replaceFirst('src', ''),
                   )
                 : null,

@@ -85,7 +85,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
       }
 
       final response = await http.post(
-        Uri.parse("http://$HOST:3000/api/inspections/${batchId}"),
+        Uri.parse("$HOST/api/inspections/${batchId}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -143,7 +143,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
 
       final response = await http.get(
         Uri.parse(
-          "http://$HOST:3000/api/inspections/${widget.batch.id}/certificate",
+          "$HOST/api/inspections/${widget.batch.id}/certificate",
         ),
         headers: {"Authorization": "Bearer $token"},
       );

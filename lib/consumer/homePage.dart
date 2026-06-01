@@ -37,7 +37,7 @@ class _HomePageCState extends State<HomePageC> {
       }
 
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/batches/market"),
+        Uri.parse("$HOST/api/batches/market"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -602,12 +602,12 @@ class CustomerBatch {
   // ✅ دالة للحصول على رابط صورة الصياد
   String getFishermanPhotoUrl() {
     if (fishermanPhoto == null || fishermanPhoto!.isEmpty) return '';
-    return "http://$HOST:3000/${fishermanPhoto!.replaceFirst("src/", "")}";
+    return "$HOST/${fishermanPhoto!.replaceFirst("src/", "")}";
   }
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
-    return "http://$HOST:3000/${photo![0].replaceFirst("src/", "")}";
+    return "$HOST/${photo![0].replaceFirst("src/", "")}";
   }
 }
 
@@ -635,7 +635,7 @@ class Customer {
 
   String getProfilePhotoUrl() {
     if (profilePhoto == null || profilePhoto!.isEmpty) return '';
-    return "http://$HOST:3000/${profilePhoto!.replaceFirst("src/", "")}";
+    return "$HOST/${profilePhoto!.replaceFirst("src/", "")}";
   }
 }
 

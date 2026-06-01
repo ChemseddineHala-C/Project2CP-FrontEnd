@@ -76,7 +76,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
   String _getApiEndpoint(String role, String userId, String action) {
     final roleKey = role == 'Fisherman' ? 'fishermen' : 'veterinarians';
-    return 'http://$HOST:3000/api/$roleKey/$userId/$action';
+    return '$HOST/api/$roleKey/$userId/$action';
   }
 
   Future<void> _approveUser(UserCardData user) async {
@@ -169,7 +169,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     }
 
     if (profilePhoto.startsWith('src/') || profilePhoto.contains('/uploads/')) {
-      return 'http://$HOST:3000/$profilePhoto';
+      return '$HOST/$profilePhoto';
     }
 
     return 'images/fish1.png';
@@ -183,7 +183,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/users"),
+        Uri.parse("$HOST/api/users"),
         headers: {"Authorization": "Bearer $token"},
       );
 
@@ -770,7 +770,7 @@ void deleteUser(String id, BuildContext context) async {
     }
 
     final response = await http.delete(
-      Uri.parse("http://$HOST:3000/api/users/$id/delete"),
+      Uri.parse("$HOST/api/users/$id/delete"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

@@ -204,7 +204,7 @@ class _AddBatchPageState extends State<Addbatchpage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse("http://$HOST:3000/api/batches"),
+        Uri.parse("$HOST/api/batches"),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

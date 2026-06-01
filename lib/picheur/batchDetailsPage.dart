@@ -485,7 +485,7 @@ class _BatchDetailsState extends State<BatchDetailspage> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(13),
       child: Image.network(
-        "http://$HOST:3000${path.replaceFirst("src", "")}",
+        "$HOST${path.replaceFirst("src", "")}",
         width: 139,
         height: 127,
         fit: BoxFit.cover,
@@ -654,7 +654,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
     // 4. Send request to server
     final response = await http.get(
       Uri.parse(
-        "http://$HOST:3000/api/inspections/batch/$id/certificate",
+        "$HOST/api/inspections/batch/$id/certificate",
       ),
       headers: {"Authorization": "Bearer $token"},
     );
@@ -717,30 +717,30 @@ Future<void> DownloadCer(String id, BuildContext context) async {
         );
       }
 
-      print("✅ File saved successfully to: $filePath");
-    } else if (response.statusCode == 401) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Session expired, please login again"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } else if (response.statusCode == 404) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Certificate not found for this ID"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
+      print("File saved successfully to: $filePath");
+    // } else if (response.statusCode == 401) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Session expired, please login again"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
+    // } else if (response.statusCode == 404) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Certificate not found for this ID"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Download failed: Error ${response.statusCode}"),
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
             backgroundColor: Colors.red,
           ),
         );

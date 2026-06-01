@@ -208,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 : const Color(0xFFE3F2FD),
             backgroundImage: user["profile_photo"] != null
                 ? NetworkImage(
-                    "http://$HOST:3000${user["profile_photo"].replaceFirst('src', '')}",
+                    "$HOST${user["profile_photo"].replaceFirst('src', '')}",
                   )
                 : null,
             child: user["profile_photo"] == null

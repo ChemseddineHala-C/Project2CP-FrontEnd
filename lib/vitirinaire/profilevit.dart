@@ -182,7 +182,7 @@ class _ProfilevitPageState extends State<ProfilevitPage> {
                 user["profile_photo"] != null &&
                     user["profile_photo"].toString().isNotEmpty
                 ? NetworkImage(
-                    "http://$HOST:3000${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
+                    "$HOST${user["profile_photo"]?.toString().replaceFirst('src', '') ?? ''}",
                   )
                 : null,
             child:

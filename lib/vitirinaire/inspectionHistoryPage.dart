@@ -34,7 +34,7 @@ class _InspectionHistoryPageState extends State<InspectionHistoryPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/inspections/history"),
+        Uri.parse("$HOST/api/inspections/history"),
         headers: {"Authorization": "Bearer $token"},
       );
 

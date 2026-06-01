@@ -218,14 +218,14 @@ class _EditConsumerProfilePageState extends State<EditConsumerProfilePage> {
                       ? FileImage(_imageFile!)
                       : (networkImage != null
                                 ? NetworkImage(
-                                    'http://$HOST:3000' +
+                                    '$HOST' +
                                         networkImage.toString().replaceFirst(
                                           'src',
                                           '',
                                         ),
                                   )
                                 : NetworkImage(
-                                    'http://$HOST:3000/uploads/fishermen/me/photo',
+                                    '$HOST/uploads/fishermen/me/photo',
                                   ))
                             as ImageProvider,
                 ),
@@ -507,7 +507,7 @@ void deactivateAccount(BuildContext context) async {
     }
 
     final response = await http.delete(
-      Uri.parse("http://$HOST:3000/api/users/me"),
+      Uri.parse("$HOST/api/users/me"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

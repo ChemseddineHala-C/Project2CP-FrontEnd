@@ -135,7 +135,7 @@ class _HomePagePState extends State<HomePageP> {
                     : const Color(0xFFE3F2FD),
                 backgroundImage: profilePhoto != null
                     ? NetworkImage(
-                        "http://$HOST:3000${profilePhoto.replaceFirst('src', '')}",
+                        "$HOST${profilePhoto.replaceFirst('src', '')}",
                       )
                     : null,
                 child: profilePhoto == null
