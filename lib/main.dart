@@ -39,40 +39,40 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _initDeepLinks();
+    // _initDeepLinks();
   }
 
-  void _initDeepLinks() async {
-    try {
-      final initialUri = await _appLinks.getInitialLink();
-      if (initialUri != null) {
-        _handleDeepLink(initialUri);
-      }
-    } catch (e) {
-      debugPrint('Initial link error: $e');
-    }
-    _appLinks.uriLinkStream.listen((uri) {
-      _handleDeepLink(uri);
-    });
-  }
+  // void _initDeepLinks() async {
+  //   try {
+  //     final initialUri = await _appLinks.getInitialLink();
+  //     if (initialUri != null) {
+  //       _handleDeepLink(initialUri);
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Initial link error: $e');
+  //   }
+  //   _appLinks.uriLinkStream.listen((uri) {
+  //     _handleDeepLink(uri);
+  //   });
+  // }
 
-  void _handleDeepLink(Uri uri) {
-    if (uri.scheme == 'bahrfresh' && uri.host == 'reset-password') {
-      final token = uri.queryParameters['token'];
-      final email = uri.queryParameters['email'];
+  // void _handleDeepLink(Uri uri) {
+  //   if (uri.scheme == 'bahrfresh' && uri.host == 'reset-password') {
+  //     final token = uri.queryParameters['token'];
+  //     final email = uri.queryParameters['email'];
 
-      if (token != null && email != null) {
-        // تأخير بسيط حتى يكون الـ navigator جاهز
-        Future.delayed(Duration(milliseconds: 500), () {
-          _navKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => ResetPasswordPage(token: token, email: email),
-            ),
-          );
-        });
-      }
-    }
-  }
+  //     if (token != null && email != null) {
+  //       // تأخير بسيط حتى يكون الـ navigator جاهز
+  //       Future.delayed(Duration(milliseconds: 500), () {
+  //         _navKey.currentState?.push(
+  //           MaterialPageRoute(
+  //             builder: (_) => ResetPasswordPage(token: token, email: email),
+  //           ),
+  //         );
+  //       });
+  //     }
+  //   }
+  // }
 
   /// ch
 
