@@ -214,7 +214,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
               color: Colors.grey[200],
               child: user["profile_photo"] != null
                   ? Image.network(
-                      'http://$HOST:3000' +
+                      '$HOST' +
                           user["profile_photo"].toString().replaceFirst(
                             'src',
                             '',
@@ -367,7 +367,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
     if (item is! Map) return null;
     final fp = item['file_path'];
     if (fp == null) return null;
-    return 'http://$HOST:3000' + fp.toString().replaceFirst('src', '');
+    return '$HOST' + fp.toString().replaceFirst('src', '');
   }
 
   Widget _buildDownloadTile(
@@ -606,7 +606,7 @@ class _AdminvitinfoState extends State<Adminvitinfo> {
       }
 
       final response = await http.put(
-        Uri.parse("http://$HOST:3000/api/veterinarians/$id/$action"),
+        Uri.parse("$HOST/api/veterinarians/$id/$action"),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json",

@@ -139,7 +139,7 @@ class _WeatherSafetyState extends State<WeatherSafetypage> {
     try {
       final token = await _storage.read(key: 'token');
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/fishermen/me/port"),
+        Uri.parse("$HOST/api/fishermen/me/port"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",

@@ -272,7 +272,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://$HOST:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "$HOST/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 

@@ -71,7 +71,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       }
 
       final resCustomer = await http.get(
-        Uri.parse("http://$HOST:3000/api/customers/me"),
+        Uri.parse("$HOST/api/customers/me"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -95,7 +95,7 @@ class _BatchDetailsState extends State<BatchDetails> {
       }
 
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/batches/$batchId"),
+        Uri.parse("$HOST/api/batches/$batchId"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -157,7 +157,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://$HOST:3000/api/cart/items"),
+        Uri.parse("$HOST/api/cart/items"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -235,7 +235,7 @@ class _BatchDetailsState extends State<BatchDetails> {
 
       // ✅ إنشاء الطلب
       final response = await http.post(
-        Uri.parse("http://$HOST:3000/api/orders/buy-now"),
+        Uri.parse("$HOST/api/orders/buy-now"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -1221,13 +1221,13 @@ class BatchWithInspection {
 
   String getFirstPhotoUrl() {
     if (photo == null || photo!.isEmpty) return '';
-    return "http://$HOST:3000/${photo![0].replaceFirst("src/", "")}";
+    return "$HOST/${photo![0].replaceFirst("src/", "")}";
   }
 
   List<String> getAllPhotoUrls() {
     if (photo == null || photo!.isEmpty) return [];
     return photo!
-        .map((p) => "http://$HOST:3000/${p.replaceFirst("src/", "")}")
+        .map((p) => "$HOST/${p.replaceFirst("src/", "")}")
         .toList();
   }
 
@@ -1344,7 +1344,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://$HOST:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse("$HOST/api/inspections/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -1393,7 +1393,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("✅ Certificate downloaded successfully"),
+                Text("Certificate downloaded successfully"),
                 Text(
                   "Saved to: Download/$fileName",
                   style: TextStyle(fontSize: 12),
@@ -1406,30 +1406,30 @@ Future<void> DownloadCer(String id, BuildContext context) async {
         );
       }
 
-      print("✅ File saved successfully to: $filePath");
-    } else if (response.statusCode == 401) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Session expired, please login again"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } else if (response.statusCode == 404) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Certificate not found for this ID"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
+      print("File saved successfully to: $filePath");
+    // } else if (response.statusCode == 401) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Session expired, please login again"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
+    // } else if (response.statusCode == 404) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Certificate not found for this ID"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Download failed: Error ${response.statusCode}"),
+            content: Text("message: ${jsonDecode(response.body)}"),
             backgroundColor: Colors.red,
           ),
         );

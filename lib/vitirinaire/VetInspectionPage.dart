@@ -1011,7 +1011,7 @@ Widget _buildFishImage(String? path) {
     );
   }
 
-  final imageUrl = "http://$HOST:3000${path.replaceFirst('src', '')}";
+  final imageUrl = "$HOST${path.replaceFirst('src', '')}";
 
   return ClipRRect(
     borderRadius: BorderRadius.circular(13),

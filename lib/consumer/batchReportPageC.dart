@@ -36,7 +36,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
 
       // ✅ تصحيح الرابط (إزالة الشرطة المائلة الزائدة)
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/inspections/$batchId/report"),
+        Uri.parse("$HOST/api/inspections/$batchId/report"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -346,7 +346,7 @@ class _BatchReportPageState extends State<BatchReportPage> {
   Widget _inspectorTile(String full_name, String ID, String picture) {
     // ✅ التحقق من صحة رابط الصورة
     final imageUrl = picture.isNotEmpty
-        ? "http://$HOST:3000/${picture.replaceFirst("src/", "")}"
+        ? "$HOST/${picture.replaceFirst("src/", "")}"
         : null;
 
     return Container(
@@ -754,7 +754,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
 
     // 4. Send request to server
     final response = await http.get(
-      Uri.parse("http://$HOST:3000/api/inspections/batch/$id/certificate"),
+      Uri.parse("$HOST/api/inspections/$id/certificate"),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -802,7 +802,7 @@ Future<void> DownloadCer(String id, BuildContext context) async {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("✅ Certificate downloaded successfully"),
+                Text("Certificate downloaded successfully"),
                 Text(
                   "Saved to: Download/$fileName",
                   style: TextStyle(fontSize: 12),
@@ -815,30 +815,30 @@ Future<void> DownloadCer(String id, BuildContext context) async {
         );
       }
       
-      print("✅ File saved successfully to: $filePath");
-    } else if (response.statusCode == 401) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Session expired, please login again"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } else if (response.statusCode == 404) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Certificate not found for this ID"),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
+      print("File saved successfully to: $filePath");
+    // } else if (response.statusCode == 401) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Session expired, please login again"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
+    // } else if (response.statusCode == 404) {
+    //   if (context.mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(
+    //         content: Text("Certificate not found for this ID"),
+    //         backgroundColor: Colors.orange,
+    //       ),
+    //     );
+    //   }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Download failed: Error ${response.statusCode}"),
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
             backgroundColor: Colors.red,
           ),
         );
@@ -926,7 +926,7 @@ class InspectorDetails {
 
   String getVetPhotoUrl() {
     if (vetPhoto == null || vetPhoto!.isEmpty) return '';
-    return "http://$HOST:3000/${vetPhoto!.replaceFirst("src/", "")}";
+    return "$HOST/${vetPhoto!.replaceFirst("src/", "")}";
   }
 }
 

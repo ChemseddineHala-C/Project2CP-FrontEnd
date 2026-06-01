@@ -43,8 +43,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initDeepLinks() async {
-
-    // ── الرابط الذي فتح التطبيق (cold start) ────────
     try {
       final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
@@ -53,8 +51,6 @@ class _MyAppState extends State<MyApp> {
     } catch (e) {
       debugPrint('Initial link error: $e');
     }
-
-    // ── الروابط التي تأتي والتطبيق شغال ─────────────
     _appLinks.uriLinkStream.listen((uri) {
       _handleDeepLink(uri);
     });
@@ -77,6 +73,7 @@ class _MyAppState extends State<MyApp> {
       }
     }
   }
+
   /// ch
 
   @override
@@ -86,6 +83,7 @@ class _MyAppState extends State<MyApp> {
         return MaterialApp(
           /// ch
           navigatorKey: _navKey,
+
           /// ch
           debugShowCheckedModeBanner: false,
           title: "Let's Fishing",
@@ -151,6 +149,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
-

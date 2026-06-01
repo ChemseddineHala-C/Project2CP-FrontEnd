@@ -73,7 +73,7 @@ class OrderItem {
 
     print(cleanPath);
 
-    return "http://$HOST:3000$cleanPath";
+    return "$HOST$cleanPath";
   }
 }
 
@@ -152,7 +152,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
       }
 
       final response = await http.get(
-        Uri.parse("http://$HOST:3000/api/orders"),
+        Uri.parse("$HOST/api/orders"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -630,7 +630,7 @@ void cancelOrder(int id, BuildContext context) async {
     }
 
     final response = await http.put(
-      Uri.parse("http://$HOST:3000/api/orders/$id/cancel"),
+      Uri.parse("$HOST/api/orders/$id/cancel"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",

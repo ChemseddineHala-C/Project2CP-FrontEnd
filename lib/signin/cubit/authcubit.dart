@@ -13,7 +13,7 @@ import '../../HOST.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  final String _baseUrl = "http://$HOST:3000/api";
+  final String _baseUrl = "$HOST/api";
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -405,7 +405,7 @@ class AuthCubit extends Cubit<AuthState> {
         body: {
           "full_name": name,
           "phone_number": phone,
-          "home_port": homePort,
+          "assigned_port": homePort,
           "boat_name": boatName,
         },
       );
