@@ -69,146 +69,144 @@ class _FourpageState extends State<Fourpage> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.blue[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+          return //SingleChildScrollView(
+          //child:
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.blue[300],
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.blue[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.blue[300],
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                Text(
+                  "We just sent 6-digit code to",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                ),
+                Text(
+                  widget.email,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "We just sent 6-digit code to",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                ),
+                Text(
+                  ", enter it below:",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                ),
+                const SizedBox(height: 30),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Code",
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    widget.email,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  spacing: 2.5,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(6, (index) => _buildCodeBox(index)),
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF013D73),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: state is AuthLoading
+                        ? null
+                        : () {
+                            // Décommentez ceci quand votre backend est prêt :
+                            context.read<AuthCubit>().verifyCode(
+                              widget.email,
+                              _fullCode,
+                            );
+                          },
+                    child: state is AuthLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "Verify email",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Wrong email? "),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(
+                        context,
+                      ), // Corrigé : onTap au lieu de onPressed
+                      child: const Text(
+                        "Send to different email",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    "By using Let's fishing, you agree to the",
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Text(
+                    "Terms and Privacy Policy",
+                    style: TextStyle(
+                      color: Colors.grey[600],
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
-                  Text(
-                    ", enter it below:",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[700], fontSize: 16),
-                  ),
-                  const SizedBox(height: 30),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Code",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    spacing: 2.5,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(6, (index) => _buildCodeBox(index)),
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF013D73),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: state is AuthLoading
-                          ? null
-                          : () {
-                              // Décommentez ceci quand votre backend est prêt :
-                              context.read<AuthCubit>().verifyCode(
-                                widget.email,
-                                _fullCode,
-                              );
-                            },
-                      child: state is AuthLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Verify email",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Wrong email? "),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(
-                          context,
-                        ), // Corrigé : onTap au lieu de onPressed
-                        child: const Text(
-                          "Send to different email",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(
-                      "By using Let's fishing, you agree to the",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Text(
-                      "Terms and Privacy Policy",
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
+          //);
         },
       ),
     );
