@@ -7,8 +7,13 @@ import '../signin/cubit/authstate.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../vitirinaire/PendingBatchesPage.dart';
+import './batchReportPageV.dart';
 import '../HOST.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import './PendingBatchesPage.dart';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
@@ -44,6 +49,54 @@ class FailedvetPage extends StatefulWidget {
 class _FailedvetPageState extends State<FailedvetPage> {
   final TextEditingController _rejectionController = TextEditingController();
   bool _isLoading = false;
+  int? inspectId;
+
+  Future<void> updateNote(String note, int id) async {
+    try {
+      String? token = await _getToken();
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found. Please login again."),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      print("$note");
+      final response = await http.put(
+        Uri.parse("$HOST/api/inspections/$id/note"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"notes": note}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        //return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        //return;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+  }
 
   Future<void> submitInspection({
     required int batchId,
@@ -91,6 +144,9 @@ class _FailedvetPageState extends State<FailedvetPage> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          inspectId = jsonDecode(response.body)['inspection_id'] as int;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Inspection submitted successfully!"),
@@ -107,10 +163,6 @@ class _FailedvetPageState extends State<FailedvetPage> {
         );
         //return;
       }
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const PendingBatchesPage()),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
@@ -133,7 +185,7 @@ class _FailedvetPageState extends State<FailedvetPage> {
         internalTemperature: widget.op5,
         parasitesPresent: widget.op6,
         freshnessScore: widget.op7,
-        notes: _rejectionController.text,
+        notes: "",
         decision: 'rejected',
         context: context,
       );
@@ -143,6 +195,19 @@ class _FailedvetPageState extends State<FailedvetPage> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _updateNote(String note, int id) async {
+    updateNote(note, id);
+    setState(() {
+      _rejectionController.clear();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _submitBatches();
   }
 
   @override
@@ -165,7 +230,14 @@ class _FailedvetPageState extends State<FailedvetPage> {
             Icons.arrow_back,
             color: isDark ? Colors.white : const Color(0xFF011A33),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PendingBatchesPage()
+              ),
+            );
+          },
         ),
         title: Text(
           "Vet Inspection",
@@ -200,7 +272,10 @@ class _FailedvetPageState extends State<FailedvetPage> {
                     title: "Digital certificate",
                     subtitle: "PDF format",
                     actionIcon: Icons.download_outlined,
-                    onTap: () {},
+                    onTap: () {
+                      print("view");
+                      DownloadCer("$inspectId", context);
+                    },
                     isDark: isDark,
                   ),
                   const SizedBox(height: 12),
@@ -209,7 +284,18 @@ class _FailedvetPageState extends State<FailedvetPage> {
                     title: "View Batch Report",
                     subtitle: "",
                     actionIcon: Icons.open_in_new_outlined,
-                    onTap: () {},
+                    onTap: () {
+                      print("view");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BatchReportPage(
+                            batchId: widget.batch.id!,
+                            id: inspectId!,
+                          ),
+                        ),
+                      );
+                    },
                     isDark: isDark,
                   ),
                 ],
@@ -377,7 +463,7 @@ class _FailedvetPageState extends State<FailedvetPage> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              _submitBatches();
+              _updateNote(_rejectionController.text,inspectId!);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(
@@ -410,7 +496,7 @@ class _FailedvetPageState extends State<FailedvetPage> {
     VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -458,5 +544,172 @@ class _FailedvetPageState extends State<FailedvetPage> {
         ),
       ),
     );
+  }
+}
+
+Future<void> DownloadCer(String id, BuildContext context) async {
+  try {
+    // 1. Check for token
+    String? token = await _getToken();
+    if (token == null) {
+      print("No token found");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No token found, please login again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // 2. Request storage permission (for Android)
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt >= 33) {
+        // Android 13+ لا يحتاج permission للـ Downloads folder
+      } else if (sdkInt >= 30) {
+        // Android 11 و 12
+        PermissionStatus status = await Permission.manageExternalStorage
+            .request();
+        if (!status.isGranted) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please grant storage permission"),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      } else {
+        // Android 10 وما دون
+        PermissionStatus status = await Permission.storage.request();
+        if (!status.isGranted) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please grant storage permission"),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      }
+    }
+
+    // 3. Show loading message
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(width: 12),
+              Text("Downloading certificate..."),
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    // 4. Send request to server
+    final response = await http.get(
+      Uri.parse("$HOST/api/inspections/$id/certificate"),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    print("DOWNLOAD STATUS: ${response.statusCode}");
+
+    // 5. Handle response
+    if (response.statusCode == 200) {
+      // Get the correct downloads folder path
+      String? downloadsPath;
+
+      if (Platform.isAndroid) {
+        // Correct way to get Download folder path on Android
+        downloadsPath = '/storage/emulated/0/Download';
+
+        // Check if folder exists, create if not
+        final downloadDir = Directory(downloadsPath);
+        if (!await downloadDir.exists()) {
+          await downloadDir.create(recursive: true);
+        }
+      } else if (Platform.isIOS) {
+        // For iOS, use documents directory
+        final directory = await getApplicationDocumentsDirectory();
+        downloadsPath = directory.path;
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        downloadsPath = directory.path;
+      }
+
+      // Create filename with timestamp to avoid duplication
+      String fileName =
+          "certificate_${id}_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      String filePath = "$downloadsPath/$fileName";
+
+      // Save the file
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Check file size to ensure it was saved correctly
+      int fileSize = await file.length();
+      print("File saved: $filePath, Size: $fileSize bytes");
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Certificate downloaded successfully"),
+                Text(
+                  "Saved to: Download/$fileName",
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      print("File saved successfully to: $filePath");
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("message: ${jsonDecode(response.body)['message']}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    print("Error in DownloadCer: $e");
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
