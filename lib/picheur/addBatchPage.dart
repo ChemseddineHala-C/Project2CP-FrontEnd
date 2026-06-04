@@ -11,10 +11,18 @@ import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../HOST.dart';
+import 'dart:math';
 
 final FlutterSecureStorage storage = const FlutterSecureStorage();
 Future<String?> _getToken() async {
   return await storage.read(key: "token");
+}
+
+LatLng _generateRandomLocation() {
+  final random = Random();
+  final latitude = (random.nextDouble() * 180) - 90; 
+  final longitude = (random.nextDouble() * 360) - 180; 
+  return LatLng(latitude, longitude);
 }
 
 class Addbatchpage extends StatefulWidget {
@@ -163,10 +171,13 @@ class _AddBatchPageState extends State<Addbatchpage> {
   }
 
   Future<void> _addBatch() async {
-
     if (_currentPosition == null) {
+      _currentPosition = _generateRandomLocation();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('GPS location not available'),backgroundColor: Colors.red,)
+        SnackBar(
+          content: Text('GPS location not available, so we will use trial value for location'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -719,32 +730,32 @@ class _AddBatchPageState extends State<Addbatchpage> {
                         borderRadius: BorderRadius.circular(12),
                         child: _currentPosition == null
                             ? Center(child: CircularProgressIndicator())
-                            : Stack( children: [
-                              GoogleMap(
-                                initialCameraPosition: CameraPosition(
-                                  target: _currentPosition!,
-                                  zoom: 13,
-                                ),
-                                onMapCreated: (controller) {
-                                  _mapController.complete(controller);
-                                },
-                                markers: _markers,
-                                zoomControlsEnabled: false,
-                                myLocationButtonEnabled: false,
-                                scrollGesturesEnabled: false,
-                                zoomGesturesEnabled: false,
-                                rotateGesturesEnabled: false,
-                                tiltGesturesEnabled: false,
-                              ),
-                              Positioned.fill(
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: _openInGoogleMaps,
+                            : Stack(
+                                children: [
+                                  GoogleMap(
+                                    initialCameraPosition: CameraPosition(
+                                      target: _currentPosition!,
+                                      zoom: 13,
+                                    ),
+                                    onMapCreated: (controller) {
+                                      _mapController.complete(controller);
+                                    },
+                                    markers: _markers,
+                                    zoomControlsEnabled: false,
+                                    myLocationButtonEnabled: false,
+                                    scrollGesturesEnabled: false,
+                                    zoomGesturesEnabled: false,
+                                    rotateGesturesEnabled: false,
+                                    tiltGesturesEnabled: false,
                                   ),
-                                ) 
+                                  Positioned.fill(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(onTap: _openInGoogleMaps),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              ]),
                       ),
                     ),
                   ),
@@ -856,5 +867,3 @@ class SubTitle extends StatelessWidget {
     );
   }
 }
-
-

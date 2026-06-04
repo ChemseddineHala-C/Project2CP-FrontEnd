@@ -80,7 +80,7 @@
 
 	<!-- Google Maps API Key -->
 	<key>GMSApiKey</key>
-	<string>AzIAzSySCfC-FNsW57NajtqgSQHWu7sRSruSNWzU</string>
+	<string>THE_API_KEY_OF_GOOGLE_MAP</string>
 
 </dict>
 </plist>
