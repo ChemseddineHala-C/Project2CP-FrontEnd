@@ -159,7 +159,7 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
             _homePortvitController.text =
                 state.user["home_port"]?.toString() ?? "";
             _boatNamevitController.text =
-                state.user["boat_name"]?.toString() ?? "";
+                state.user["specialization"]?.toString() ?? "";
             _isInitialized = true;
             _updateCompletionPercent();
           }
@@ -327,10 +327,10 @@ class _EditProfilevitPageState extends State<EditProfilevitPage> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          "Boat Name",
+          "Specialization",
           _boatNamevitController,
           isDark,
-          prefixIcon: Icons.directions_boat_outlined,
+          prefixIcon: Icons.medical_services_outlined,
         ),
       ],
     );

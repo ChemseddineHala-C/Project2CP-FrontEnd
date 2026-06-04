@@ -80,6 +80,9 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
             backgroundColor: Colors.green,
           ),
         );
+        setState(() {
+          _approvedController.clear();
+        });
         //return;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -490,7 +493,7 @@ class _VetInspectionPageState extends State<SuccessedVetPage> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              _updateNote(_approvedController.text,inspectId!);
+              updateNote(_approvedController.text,inspectId!);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(
