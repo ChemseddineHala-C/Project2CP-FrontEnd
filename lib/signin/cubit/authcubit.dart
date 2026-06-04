@@ -406,7 +406,7 @@ class AuthCubit extends Cubit<AuthState> {
           "full_name": name,
           "phone_number": phone,
           "assigned_port": homePort,
-          "boat_name": boatName,
+          "specialization": boatName,
         },
       );
 

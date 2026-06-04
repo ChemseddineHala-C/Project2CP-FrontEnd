@@ -80,6 +80,9 @@ class _FailedvetPageState extends State<FailedvetPage> {
             backgroundColor: Colors.green,
           ),
         );
+        setState(() {
+          _rejectionController.clear();
+        });
         //return;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -463,7 +466,7 @@ class _FailedvetPageState extends State<FailedvetPage> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              _updateNote(_rejectionController.text,inspectId!);
+              updateNote(_rejectionController.text,inspectId!);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(
